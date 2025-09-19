@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Houston Clothing Drive - Volunteer Management</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- React + Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #fafafa;
+    }
+
+    :root {
+      --primary-red: #ef4444;
+      --secondary-red: #dc2626;
+      --warm-bg: #fff7ed;
+      --medium-silver: #e2e8f0;
+      --white: #ffffff;
+      --text-primary: #0f172a;
+      --text-light: #64748b;
+      --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .navbar {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--medium-silver);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo { display: flex; align-items: center; gap: 0.75rem; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+
+    .logo-icon {
+      width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary-red), #ff6b6b);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;
+    }
+
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { color: var(--text-light); text-decoration: none; font-weight: 500; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.2s ease; }
+    .nav-links a:hover { background: #fee2e2; color: var(--secondary-red); }
+
+    .btn {
+      background: var(--primary-red); color: white; border: none; padding: 0.5rem 1rem;
+      border-radius: 8px; cursor: pointer; font-weight: 500; box-shadow: var(--shadow-medium); transition: all 0.2s ease;
+    }
+    .btn:hover { background: var(--secondary-red); }
+
+    main {
+      max-width: 1280px; margin: 2rem auto; padding: 1rem 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function Navbar() {
+      return (
+        <nav className="navbar">
+          <div className="nav-container">
+            <div className="logo">
+              <div className="logo-icon">H</div>
+              Houston Clothing Drive
+            </div>
+            <div className="nav-links">
+              <a href="#">Home</a>
+              <a href="#">Volunteers</a>
+              <a href="#">Donations</a>
+              <a href="#">Events</a>
+              <button className="btn">Login</button>
+            </div>
+          </div>
+        </nav>
+      );
+    }
+
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    function App() {
+      const [monthOffset, setMonthOffset] = React.useState(0);
+
+      function calendarDays() {
+        const date = new Date(currentYear, currentMonth + monthOffset, 1);
+        const firstDayIndex = date.getDay();
+        const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+        const daysArray = Array(firstDayIndex).fill(null);
+        for (let i = 1; i <= daysInMonth; i++) daysArray.push(i);
+
+        return daysArray;
+      }
+
+      return (
+        <div>
+          <Navbar />
+          <main style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "flex-start", paddingTop: "2rem" }}>
+            <div style={{
+                width: "700px",
+                background: "var(--white)",
+                padding: "2rem",
+                borderRadius: "12px",
+                boxShadow: "var(--shadow-medium)"
+            }}>
+              <h2 style={{ color: "var(--primary-red)", marginBottom: "1.5rem" }}>Event Calendar</h2>
+
+              {/* Month navigation */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                  <button className="btn" onClick={() => setMonthOffset(monthOffset - 1)}>◀</button>
+                  <h3 style={{ margin: 0 }}>{monthNames[(currentMonth + monthOffset + 12) % 12]} {currentYear + Math.floor((currentMonth + monthOffset)/12)}</h3>
+                  <button className="btn" onClick={() => setMonthOffset(monthOffset + 1)}>▶</button>
+              </div>
+
+              {/* Calendar grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem" }}>
+                  {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => (
+                      <div key={d} style={{ fontWeight: "600", textAlign: "center" }}>{d}</div>
+                  ))}
+                  {calendarDays().map((day, idx) => (
+                      <div key={idx} style={{
+                          height: "50px",
+                          textAlign: "center",
+                          lineHeight: "50px",
+                          borderRadius: "8px",
+                          background: day ? "var(--warm-bg)" : "transparent",
+                          color: day ? "var(--text-primary)" : "transparent"
+                      }}>
+                          {day || ""}
+                      </div>
+                  ))}
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

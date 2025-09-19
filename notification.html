@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Houston Clothing Drive - Volunteer Management</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- React + Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #fafafa;
+    }
+
+    :root {
+      --primary-red: #ef4444;
+      --secondary-red: #dc2626;
+      --warm-red: #fef2f2;
+      --light-red: #fee2e2;
+      --accent-red: #ff6b6b;
+      --silver: #f8fafc;
+      --medium-silver: #e2e8f0;
+      --dark-silver: #94a3b8;
+      --white: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-light: #64748b;
+      --warm-bg: #fff7ed;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Navigation */
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--medium-silver);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary-red), var(--accent-red));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      background: var(--light-red);
+      color: var(--secondary-red);
+    }
+
+    /* Buttons */
+    .btn {
+      background: var(--primary-red);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--secondary-red);
+      box-shadow: var(--shadow-medium);
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 1rem 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    function Navbar() {
+      return (
+        <nav className="navbar">
+          <div className="nav-container">
+            <div className="logo">
+              <div className="logo-icon">H</div>
+              Houston Clothing Drive
+            </div>
+            <div className="nav-links">
+              <a href="#">Home</a>
+              <a href="#">Volunteers</a>
+              <a href="#">Donations</a>
+              <a href="#">Events</a>
+              <button className="btn">Login</button>
+            </div>
+          </div>
+        </nav>
+      );
+    }
+
+    function App() {
+      return (
+        <div>
+          <Navbar />
+            <main style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "flex-start", paddingTop: "2rem" }}>
+            <div style={{
+                width: "600px",
+                background: "var(--white)",
+                padding: "2rem",
+                borderRadius: "12px",
+                boxShadow: "var(--shadow-medium)"
+            }}>
+                <h2 style={{ color: "var(--primary-red)", marginBottom: "1.5rem" }}>Notifications</h2>
+
+                {/* Notification items */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div style={{
+                    padding: "1rem",
+                    border: "1px solid var(--medium-silver)",
+                    borderRadius: "8px",
+                    background: "var(--warm-bg)"
+                }}>
+                    <p style={{ margin: 0, fontWeight: 500 }}>New Event Assigned</p>
+                    <small style={{ color: "var(--text-light)" }}>You have been assigned to the Clothing Drive on Sep 20, 2025.</small>
+                </div>
+
+                <div style={{
+                    padding: "1rem",
+                    border: "1px solid var(--medium-silver)",
+                    borderRadius: "8px",
+                    background: "var(--warm-bg)"
+                }}>
+                    <p style={{ margin: 0, fontWeight: 500 }}>Event Update</p>
+                    <small style={{ color: "var(--text-light)" }}>The donation collection time has changed to 10:00 AM.</small>
+                </div>
+
+                <div style={{
+                    padding: "1rem",
+                    border: "1px solid var(--medium-silver)",
+                    borderRadius: "8px",
+                    background: "var(--warm-bg)"
+                }}>
+                    <p style={{ margin: 0, fontWeight: 500 }}>Reminder</p>
+                    <small style={{ color: "var(--text-light)" }}>Don't forget to submit your volunteer report by Friday.</small>
+                </div>
+                </div>
+
+                {/* Clear all notifications button */}
+                <button className="btn" style={{ marginTop: "2rem", width: "100%" }}>Clear All</button>
+            </div>
+            </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

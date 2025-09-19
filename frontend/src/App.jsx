@@ -1,15 +1,20 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
+// src/App.jsx
+import React from "react";
+import NavBar from "./components/NavBar.jsx";
+import Login from "./pages/login.jsx";
+import "./App.css";
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        {/* other pages here */}
-      </Routes>
-    </Router>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh", // Full viewport height
+      }}
+    >
+      <NavBar />
+      <Login />  
+    </div>
   );
 }
-
-export default App;
