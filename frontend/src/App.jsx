@@ -11,7 +11,10 @@ export default function App() {
   return (
     <div>
       <NavBar />
-      <Calendar />
-    </div>
+      {/* <Calendar /> */}
+      {/* Notifications /> */}
+      {/* Registration /> */}
+      <Login />
+      </div>
   );
 }
