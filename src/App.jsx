@@ -1,10 +1,10 @@
 import React from 'react';
+import UserProfiles from './pages/user_profiles/userProfile.jsx';
 
 function App() {
   return (
     <div>
-      <h1>Vite + React</h1>
-      <p>Welcome to your new React app!</p>
+      <UserProfiles />
     </div>
   );
 }
