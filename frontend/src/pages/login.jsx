@@ -1,6 +1,6 @@
 // src/pages/login.jsx
 import React from "react";
-import NavBar from "../components/NavBar.jsx"; // Import the central NavBar
+import NavBar from "../components/NavBar.jsx"; //may need NavBar later
 
 
 export default function Login() {

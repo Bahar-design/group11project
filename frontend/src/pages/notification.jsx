@@ -1,6 +1,6 @@
 // src/pages/notifications.jsx
 import React from "react";
-import NavBar from "../components/NavBar.jsx"; // Reuse the central NavBar
+import NavBar from "../components/NavBar.jsx"; //ma need it later for navbar 
 
 export default function Notifications() {
   return (
@@ -18,7 +18,7 @@ export default function Notifications() {
         >
           <h2 style={{ color: "var(--primary-red)", marginBottom: "1.5rem" }}>Notifications</h2>
 
-          {/* Notification items */}
+          {/* Notifications */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div
               style={{
@@ -30,7 +30,7 @@ export default function Notifications() {
             >
               <p style={{ margin: 0, fontWeight: 500 }}>New Event Assigned</p>
               <small style={{ color: "var(--text-light)" }}>
-                You have been assigned to the Clothing Drive on Sep 20, 2025.
+                You are assigned to the Clothing Drive on Sep 19, 2025.
               </small>
             </div>
 
@@ -44,7 +44,7 @@ export default function Notifications() {
             >
               <p style={{ margin: 0, fontWeight: 500 }}>Event Update</p>
               <small style={{ color: "var(--text-light)" }}>
-                The donation collection time has changed to 10:00 AM.
+                The Monday Madness donation event time has changed to 11:00 AM.
               </small>
             </div>
 
@@ -63,9 +63,9 @@ export default function Notifications() {
             </div>
           </div>
 
-          {/* Clear all notifications button */}
+          {/* Delete all Notifications */}
           <button className="btn" style={{ marginTop: "2rem", width: "100%" }}>
-            Clear All
+            Delete All
           </button>
         </div>
       </main>

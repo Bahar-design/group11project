@@ -1,0 +1,16 @@
+/* CSS for calendar */
+.rbc-toolbar-label {
+  font-size: 1.8rem;   
+  font-weight: bold;
+  color: #333;         
+}
+
+/* Stylikng for events */
+.rbc-event {
+  background-color: #ff6b6b !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 500;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
