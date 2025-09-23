@@ -901,3 +901,187 @@ form .btn-primary {
     font-size: 1.5rem;
   }
 }
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Event Modal */
+.event-modal {
+  max-width: 70vw;
+  width: 100%;
+  border-radius: 24px;
+  box-shadow: var(--shadow-large);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.event-modal-header {
+  justify-content: space-between;
+}
+
+.event-modal-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.event-modal-description {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.event-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.event-form-group-full {
+  grid-column: span 2;
+}
+
+.event-form-error {
+  color: var(--primary-red);
+  font-size: 0.9em;
+}
+
+.event-form-submit {
+  grid-column: span 2;
+  margin-top: 1rem;
+}
+
+/* Report Modal */
+.report-modal {
+  max-width: 70vw;
+  width: 100%;
+  border-radius: 24px;
+  box-shadow: var(--shadow-large);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.report-modal-header {
+  justify-content: space-between;
+}
+
+.report-modal-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.report-modal-description {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.report-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.report-event-item {
+  border: 1px solid var(--medium-silver);
+  border-radius: 12px;
+  background: var(--silver);
+  padding: 1.5rem;
+}
+
+.report-event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.report-event-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.report-event-meta {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.report-event-print-btn {
+  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+}
+
+.report-event-details {
+  margin-top: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+}
+
+.report-event-volunteers-list {
+  margin-left: 1.2rem;
+  margin-top: 0.2rem;
+}
+
+/* Quick Actions */
+.quick-actions-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.quick-action-btn {
+  justify-content: center;
+}
+
+.quick-action-btn-disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.quick-action-btn-loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Administrative Tools */
+.management-tools-section {
+  margin-top: 2rem;
+}
+
+.admin-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.admin-tool-item {
+  background: var(--silver);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.admin-tool-title {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-tool-description {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-tool-button {
+  width: 100%;
+}
