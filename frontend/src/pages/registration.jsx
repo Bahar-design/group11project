@@ -1,20 +1,12 @@
-// src/pages/Register.jsx
+//registration.jsx
 import React from "react";
-import Navbar from "../components/Navbar";      //needed for navigation bar
+import NavBar from "../components/NavBar.jsx"; // Use your central NavBar
 
-function Register() {
+export default function Registration() {
   return (
     <div>
-      <Navbar />
-      <main
-        style={{
-          flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          paddingTop: "2rem",
-        }}
-      >
+
+      <main style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
         <div
           style={{
             width: "450px",
@@ -24,25 +16,9 @@ function Register() {
             boxShadow: "var(--shadow-medium)",
           }}
         >
-          <h2
-            style={{
-              color: "var(--primary-red)",
-              marginBottom: "1.5rem",
-            }}
-          >
-            Register
-          </h2>
+          <h2 style={{ color: "var(--primary-red)", marginBottom: "1.5rem" }}>Register</h2>
 
-          <label
-            style={{
-              display: "block",
-              marginBottom: "0.5rem",
-              fontWeight: 500,
-              color: "var(--text-secondary)",
-            }}
-          >
-            Email
-          </label>
+          <label style={{ display: "block", marginBottom: "0.5rem" }}>Email</label>
           <input
             type="email"
             placeholder="Enter your email"
@@ -56,16 +32,7 @@ function Register() {
             }}
           />
 
-          <label
-            style={{
-              display: "block",
-              marginBottom: "0.5rem",
-              fontWeight: 500,
-              color: "var(--text-secondary)",
-            }}
-          >
-            Password
-          </label>
+          <label style={{ display: "block", marginBottom: "0.5rem", marginTop: "1rem" }}>Password</label>
           <input
             type="password"
             placeholder="Enter your password"
@@ -82,28 +49,14 @@ function Register() {
           <button
             type="submit"
             className="btn"
-            style={{ width: "100%", marginTop: "0.5rem" }}
+            style={{ width: "100%", marginTop: "1rem" }}
           >
             Register
           </button>
 
-          <p
-            style={{
-              textAlign: "center",
-              marginTop: "1rem",
-              fontSize: "0.9rem",
-              color: "var(--text-light)",
-            }}
-          >
+          <p style={{ textAlign: "center", marginTop: "1rem" }}>
             Already have an account?{" "}
-            <a
-              href="#"
-              style={{
-                color: "var(--primary-red)",
-                textDecoration: "none",
-                fontWeight: 500,
-              }}
-            >
+            <a href="#" style={{ color: "var(--primary-red)", fontWeight: 500 }}>
               Sign In
             </a>
           </p>
@@ -112,5 +65,3 @@ function Register() {
     </div>
   );
 }
-
-export default Register;
