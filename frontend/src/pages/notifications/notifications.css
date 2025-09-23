@@ -1,0 +1,54 @@
+/* notifications.css */
+.notifications-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 2rem;
+}
+
+.notifications-card {
+  width: 800px; 
+  background: var(--white);
+  padding: 2.5rem; 
+  border-radius: 12px;
+  box-shadow: var(--shadow-medium);
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem; 
+  border: 1px solid var(--medium-silver);
+  border-radius: 8px;
+  background: var(--warm-bg);
+  font-size: 1rem; 
+}
+
+.notification-text {
+  color: var(--text-light);
+  font-size: 0.95rem; 
+}
+
+.notification-title {
+  margin: 0;
+  font-weight: 600; 
+  font-size: 1.05rem;
+}
+
+.delete-btn {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  margin-left: 1rem;
+  color: var(--primary-red);
+  border: none;
+  border-radius: 6px;
+  background: var(--white);
+  cursor: pointer;
+  transition: background-color 0.2s; 
+}
+
+
+.delete-btn:hover {
+  background: #fee2e2;
+}
