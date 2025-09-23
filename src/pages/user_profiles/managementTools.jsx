@@ -251,6 +251,7 @@ const ManagementTools = ({ user }) => {
                     className="react-select-container"
                     classNamePrefix="react-select"
                     placeholder="Select required skills..."
+                    required
                   />
                   {eventFormErrors.requiredSkills && <div className="event-form-error">{eventFormErrors.requiredSkills}</div>}
                 </div>
@@ -263,6 +264,7 @@ const ManagementTools = ({ user }) => {
                     className="react-select-container"
                     classNamePrefix="react-select"
                     placeholder="Select urgency..."
+                    required
                   />
                   {eventFormErrors.urgency && <div className="event-form-error">{eventFormErrors.urgency}</div>}
                 </div>
@@ -275,6 +277,7 @@ const ManagementTools = ({ user }) => {
                     className="red"
                     style={{ width: '100%' }}
                     placeholder="Select event date"
+                    required
                   />
                   {eventFormErrors.date && <div className="event-form-error">{eventFormErrors.date}</div>}
                 </div>
