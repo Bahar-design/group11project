@@ -11,10 +11,10 @@ export default function App() {
   return (
     <div>
       <NavBar />
-       {/* <Calendar /> */} 
-      <Notifications />  
-      {/* Registration /> */}
-     {/* <Login /> */}
+       {/* <Calendar /> *} 
+      {/*<Notifications />*/}  
+     {/* < Registration /> */} 
+      <Login /> 
       </div>
   );
 }
