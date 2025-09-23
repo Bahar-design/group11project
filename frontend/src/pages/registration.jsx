@@ -1,4 +1,4 @@
-// src/pages/registration.jsx
+//registration.jsx
 import React from "react";
 import NavBar from "../components/NavBar.jsx"; // Use your central NavBar
 

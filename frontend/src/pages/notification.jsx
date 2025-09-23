@@ -1,4 +1,4 @@
-// src/pages/notifications.jsx
+//notifications.jsx
 import React from "react";
 import NavBar from "../components/NavBar.jsx"; //ma need it later for navbar 
 
