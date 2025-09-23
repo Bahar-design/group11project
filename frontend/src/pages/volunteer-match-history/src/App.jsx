@@ -1,8 +1,6 @@
 import React from "react";
 
-// Tailwind-only, single-file React app that mirrors the provided mock.
-// Drop this file in src/App.jsx (or use it as your root component) in a Vite + React + Tailwind project.
-// No external UI libraries required.
+
 
 function Chip({ children }) {
   return (
