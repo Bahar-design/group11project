@@ -1,15 +1,20 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
+import React from 'react';
+import NavBar from './components/NavBar';
+import Login from './pages/login';
+import Registration from './pages/registration';
+import Notifications from './pages/notifications/notification'; 
+import Calendar from './pages/calendar/calendar';
 
-function App() {
+import './App.css';
+
+export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        {/* other pages here */}
-      </Routes>
-    </Router>
+    <div>
+      <NavBar />
+       {/* <Calendar /> *} 
+      {/*<Notifications />*/}  
+     {/* < Registration /> */} 
+      <Login /> 
+      </div>
   );
 }
-
-export default App;
