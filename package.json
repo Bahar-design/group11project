@@ -1,0 +1,23 @@
+{
+  "name": "group11project",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.2"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.3",
+    "react": "^19.1.1",
+    "react-datepicker": "^8.7.0",
+    "react-dom": "^19.1.1",
+    "react-multi-date-picker": "^4.5.2",
+    "react-select": "^5.10.2"
+  },
+  "main": "src/main.jsx"
+}
