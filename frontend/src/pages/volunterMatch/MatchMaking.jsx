@@ -310,7 +310,7 @@ function Footer() {
   );
 }
 
-export default function App() {
+export default function MatchMaking() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />

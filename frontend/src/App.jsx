@@ -4,6 +4,8 @@ import Login from './pages/login';
 import Registration from './pages/registration';
 import Notifications from './pages/notifications/notification'; 
 import Calendar from './pages/calendar/calendar';
+import MatchMaking from "./pages/volunterMatch/MatchMaking";
+
 
 
 import './App.css';
@@ -15,7 +17,8 @@ export default function App() {
        {/* <Calendar /> *} 
       {/*<Notifications />*/}  
      {/* < Registration /> */} 
-      <Login /> 
+     <MatchMaking />
+      {/*<Login /> */}
       </div>
   );
 }
