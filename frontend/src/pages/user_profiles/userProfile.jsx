@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Layout from '../../components/layout.jsx';
-import VolunteerProfile from '../components/volunteerProfile.jsx';
+import VolunteerProfile from './volunteerProfile.jsx';
 import AdminProfile from './adminProfile.jsx';
 import './userProfile.css';
-import 'styling2/style.css';
+import '../../../styling2/style.css';
 
 const UserProfiles = () => {
   const [activeUserType, setActiveUserType] = useState('volunteer');

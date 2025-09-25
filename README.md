@@ -1,3 +1,0 @@
-# Group 11 project
-
-Project will design a software application for a non-profit organization to help manage and optimize their volunteer activities.

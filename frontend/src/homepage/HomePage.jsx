@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./App.css"; // we'll use your custom CSS variables here
+import "../App.css"; // we'll use your custom CSS variables here
 
 const features = [
   {

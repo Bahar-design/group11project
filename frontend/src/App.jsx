@@ -6,6 +6,7 @@ import Notifications from './pages/notifications/notification';
 import Calendar from './pages/calendar/calendar';
 import MatchMaking from "./pages/volunterMatch/MatchMaking";
 import UserProfiles from "./pages/user_profiles/userProfile";
+import HomePage from './homepage/HomePage';
 
 
 
@@ -15,13 +16,14 @@ import './App.css';
 export default function App() {
   return (
     <div>
-      <NavBar />
-       {/* <Calendar /> *} 
+      {/*<NavBar />*/}
+       {/* <Calendar /> */}
       {/*<Notifications />*/}  
      {/* < Registration /> */} 
      {/*<MatchMaking /> */}
-      {/*<Login />  */}
-      <UserProfiles />
+      {/*<Login /> */}
+      {/*<UserProfiles /> */}
+      <HomePage />
       </div>
   );
 }
