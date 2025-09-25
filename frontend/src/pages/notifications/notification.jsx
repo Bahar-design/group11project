@@ -2,10 +2,13 @@
 import React from "react";
 import NavBar from "../../components/NavBar.jsx";  //may need navbar later
 import "./notifications.css";
+import Footer from "../../components/footer.jsx";
+import Header from "../../components/header.jsx";
 
 export default function Notifications() {
   return (
     <div>
+      <Header />
 
       <main className="notifications-container">
         <div className="notifications-card">
@@ -50,6 +53,7 @@ export default function Notifications() {
   </button>   */ }
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

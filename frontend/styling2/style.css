@@ -107,6 +107,7 @@ button:focus-visible {
   color: var(--text-primary);
   text-decoration: none;
   cursor: pointer;
+  margin-right: 2rem;
 }
 
 .logo-icon {
@@ -159,6 +160,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: 2rem;
 }
 
 .btn-login {

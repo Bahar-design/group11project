@@ -1,11 +1,14 @@
 // src/pages/login.jsx
 import React from "react";
-import NavBar from "../components/NavBar.jsx"; //may need NavBar later
+import NavBar from "../../components/NavBar.jsx"; //may need NavBar later
+import Footer from "../../components/footer.jsx";
+import Header from "../../components/header.jsx";
 
 
 export default function Login() {
   return (
     <div>
+      <Header />
    
       <main style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
         <div
@@ -63,6 +66,7 @@ export default function Login() {
           </p>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

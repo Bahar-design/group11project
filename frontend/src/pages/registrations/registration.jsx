@@ -1,10 +1,13 @@
 //registration.jsx
 import React from "react";
-import NavBar from "../components/NavBar.jsx"; // Use your central NavBar
+import NavBar from "../../components/NavBar.jsx"; // Use your central NavBar
+import Footer from "../../components/footer.jsx";
+import Header from "../../components/header.jsx";
 
 export default function Registration() {
   return (
     <div>
+      <Header />
 
       <main style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
         <div
@@ -62,6 +65,7 @@ export default function Registration() {
           </p>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

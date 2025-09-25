@@ -1,7 +1,7 @@
 import React from 'react';
 import NavBar from './components/NavBar';
-import Login from './pages/login';
-import Registration from './pages/registration';
+import Login from './pages/logins/login';
+import Registration from './pages/registrations/registration';
 import Notifications from './pages/notifications/notification'; 
 import Calendar from './pages/calendar/calendar';
 import MatchMaking from "./pages/volunterMatch/MatchMaking";
@@ -17,13 +17,13 @@ export default function App() {
   return (
     <div>
       {/*<NavBar />*/}
-       {/* <Calendar /> */}
-      {/*<Notifications />*/}  
-     {/* < Registration /> */} 
+      {/* <Calendar /> */} 
+      {/* <Notifications /> */}
+     {/* < Registration /> */}
      {/*<MatchMaking /> */}
-      {/*<Login /> */}
+      {/* <Login /> */} 
       {/*<UserProfiles /> */}
-      <HomePage />
+      <HomePage /> 
       </div>
   );
 }
