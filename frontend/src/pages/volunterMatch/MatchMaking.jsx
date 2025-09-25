@@ -1,5 +1,8 @@
 import React from "react";
 import './MatchMaking.css';
+import Footer from "../../components/footer.jsx";
+import Header from "../../components/header.jsx";
+
 
 
 
@@ -261,6 +264,7 @@ function SkillsAvailability() {
   );
 }
 
+/*
 function Footer() {
   return (
     <footer className="mt-12 border-t border-slate-200 bg-slate-900 text-slate-200">
@@ -310,11 +314,12 @@ function Footer() {
     </footer>
   );
 }
+  */
 
 export default function MatchMaking() {
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navbar />
+      <Header />
       <Hero />
 
       <main className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 md:grid-cols-3">

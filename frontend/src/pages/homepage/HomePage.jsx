@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../App.css"; // we'll use your custom CSS variables here
+import Footer from "../../components/footer.jsx";
+import Header from "../../components/header.jsx";
 
 const features = [
   {
@@ -40,79 +41,8 @@ export default function HomePage() {
   return (
 
     <div style={{ fontFamily: "'Inter', sans-serif" }}>
-      {/* Navbar */}
-      <nav
-        className="navbar navbar-expand-lg shadow-sm"
-        style={{
-          background: "rgba(255,255,255,0.95)",
-          backdropFilter: "blur(10px)",
-          borderBottom: "1px solid var(--medium-silver)",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <div className="container d-flex justify-content-between align-items-center">
-          <div
-            className="navbar-brand d-flex align-items-center"
-            style={{
-              fontWeight: 700,
-              fontSize: "1.5rem",
-              color: "var(--text-primary)",
-            }}
-          >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, var(--primary-red), var(--accent-red))",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                marginRight: "0.75rem",
-              }}
-            >
-              
-            </div>
-            Houston Hearts
-          </div>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav ms-auto">
-              {["Home", "Events", "Volunteer", "Impact", "About", "Sign In"].map(
-                (link) => (
-                  <li className="nav-item" key={link}>
-                    <a
-                      className="nav-link"
-                      href={`#${link.toLowerCase()}`}
-                      style={{
-                        color: "var(--text-secondary)",
-                        fontWeight: 500,
-                        borderRadius: "8px",
-                        padding: "0.5rem 1rem",
-                      }}
-                    >
-                      {link}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-        </div>
-      </nav>
+      <Header />
+
 
       {/* Hero Section */}
       <div
@@ -410,83 +340,10 @@ export default function HomePage() {
           Join Us Today
         </button>
       </div>
-
       
-      {/* Footer */}
-      <footer className="footer">
-  <div className="footer-container">
-    {/* Top Grid */}
-    <div className="footer-grid">
-      {/* Brand & Description */}
-      <div>
-        <div className="footer-logo">
-          <div className="footer-logo-icon">🤝</div>
-          <span className="footer-logo-text">Houston Hearts</span>
-        </div>
-        <p className="footer-desc">
-          Connecting hearts through clothing donations. Every item shared is a story of hope, dignity, and community care across Houston.
-        </p>
-        <div className="footer-socials">
-          {["📧", "📱", "🌐"].map((icon, idx) => (
-            <div key={idx}>{icon}</div>
-          ))}
-        </div>
-      </div>
+      <Footer />
 
-      {/* Get Involved */}
-      <div>
-        <h3 className="footer-heading"> Get Involved</h3>
-        <div className="footer-links">
-          {["Volunteer Opportunities", "Upcoming Events", "Donation Guidelines", "Emergency Response", "Become a Team Leader"].map(
-            (link, idx) => (
-              <button key={idx}>{link}</button>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Service Areas */}
-      <div>
-        <h3 className="footer-heading"> Service Areas</h3>
-        <div className="footer-links">
-          {[" Downtown Houston", " Sugar Land Community", " Katy Neighborhoods", " Cypress Areas", "Greater Houston Metro"].map(
-            (area, idx) => (
-              <div key={idx}>{area}</div>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Contact */}
-      <div>
-        <h3 className="footer-heading">📞 Connect With Us</h3>
-        <div className="footer-contact">
-          <div>volunteer@houstonhearts.org</div>
-          <div>(713) 555-HELP (4357)</div>
-          <div> Emergency: (713) 555-URGENT</div>
-          <div> Houston, TX 77001</div>
-          <div className="footer-contact-box">
-            <strong>24/7 Crisis Support</strong>
-            <br />
-            For urgent clothing needs during disasters
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Bottom Footer */}
-    <div className="footer-bottom">
-      <p>&copy; 2025 Houston Hearts Clothing Drive. Making a difference, one family at a time.</p>
-      <div className="footer-bottom-links">
-        {["Privacy Policy", "Terms of Service", "Volunteer Agreement", "Accessibility", "Report Issue"].map(
-          (link, idx) => (
-            <button key={idx}>{link}</button>
-          )
-        )}
-      </div>
-    </div>
-  </div>
-</footer>
+   
 
 
     </div>
