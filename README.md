@@ -5,7 +5,7 @@ In order to run the frontend, navigate to the frontend folder:
 cd ~/Documents/group11project/frontend/
 ```
 
-and then run npm run dev:
+and then type: npm run dev
 
 ```bash
 cd ~/Documents/group11project/frontend$ npm run dev
