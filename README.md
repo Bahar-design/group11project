@@ -1,3 +1,14 @@
+
+In order to run the frontend, navigate to the frontend folder:
+
+```bash
+cd ~/Documents/group11project/frontend/
+
+
+and then run npm run dev:
+
+cd ~/Documents/group11project/frontend$ npm run dev
+
 **Note:** In order to see pages, in `App.jsx` the user will have to uncomment the pages inside the `<div>` section.  
 *Caution:* only one page can be uncommented at a time.
 
