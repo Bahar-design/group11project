@@ -8,8 +8,13 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.6;
   color: #1a1a1a;
-  background: #fafafa;
+  background: var(--silver) !important;
 }
+
+.layout {
+  background: var(--silver) !important;
+}
+
 
 /* variables */
 :root {

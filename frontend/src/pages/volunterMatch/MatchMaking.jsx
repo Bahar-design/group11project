@@ -1,7 +1,7 @@
+
 import React from "react";
 import './MatchMaking.css';
-import Footer from "../../components/footer.jsx";
-import Header from "../../components/header.jsx";
+import Layout from "../../components/layout.jsx";
 
 
 
@@ -264,77 +264,24 @@ function SkillsAvailability() {
   );
 }
 
-/*
-function Footer() {
-  return (
-    <footer className="mt-12 border-t border-slate-200 bg-slate-900 text-slate-200">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-10 md:grid-cols-4">
-        <div>
-          <div className="mb-3 flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-500 text-white">❤</div>
-            <span className="text-sm font-semibold">Houston Hearts</span>
-          </div>
-          <p className="text-xs text-slate-400">
-            Connecting hearts through clothing donations. Every item shared is a story of hope, dignity, and community care across Houston.
-          </p>
-        </div>
-        <div>
-          <div className="mb-3 text-sm font-semibold text-white">Get Involved</div>
-          <ul className="space-y-2 text-xs text-slate-300">
-            <li><a href="#" className="hover:underline">Volunteer Opportunities</a></li>
-            <li><a href="#" className="hover:underline">Upcoming Events</a></li>
-            <li><a href="#" className="hover:underline">Donation Guidelines</a></li>
-            <li><a href="#" className="hover:underline">Become a Team Leader</a></li>
-          </ul>
-        </div>
-        <div>
-          <div className="mb-3 text-sm font-semibold text-white">Service Areas</div>
-          <ul className="space-y-2 text-xs text-slate-300">
-            <li>Downtown Houston</li>
-            <li>Sugar Land Community</li>
-            <li>Katy Neighborhoods</li>
-            <li>Greater Houston Metro</li>
-          </ul>
-        </div>
-        <div>
-          <div className="mb-3 text-sm font-semibold text-white">Connect With Us</div>
-          <ul className="space-y-2 text-xs text-slate-300">
-            <li><a href="mailto:volunteer@houstonhearts.org" className="hover:underline">volunteer@houstonhearts.org</a></li>
-            <li>(713) 555‑HELP</li>
-            <li>Emergency: (713) 555‑URGENT</li>
-            <li>Houston, TX 77001</li>
-          </ul>
-        </div>
-      </div>
-      <div className="border-t border-slate-800" />
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 text-xs text-slate-400">
-        <div>© {new Date().getFullYear()} Houston Hearts. All rights reserved.</div>
-        <div className="text-slate-500">24/7 Crisis Support — for urgent clothing needs during disasters</div>
-      </div>
-    </footer>
-  );
-}
-  */
-
 export default function MatchMaking() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Header />
-      <Hero />
-
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
-        <div className="md:col-span-3">
-          <EventsPanel />
-        </div>
-        <div className="md:col-span-3">
-          <ImpactPanel />
-        </div>
-        {/* <div className="md:col-span-3">
-          <SkillsAvailability />
-        </div> */}
-      </main>
-
-      <Footer />
-    </div>
+    <Layout currentPage="volunteer">
+      <div className="min-h-screen bg-slate-50">
+        <Hero />
+        <main className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
+          <div className="md:col-span-3">
+            <EventsPanel />
+          </div>
+          <div className="md:col-span-3">
+            <ImpactPanel />
+          </div>
+          {/* <div className="md:col-span-3">
+            <SkillsAvailability />
+          </div> */}
+        </main>
+      </div>
+    </Layout>
   );
 }
+

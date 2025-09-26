@@ -1,15 +1,11 @@
 // src/pages/login.jsx
-import React from "react";
-import NavBar from "../../components/NavBar.jsx"; //may need NavBar later
-import Footer from "../../components/footer.jsx";
-import Header from "../../components/header.jsx";
 
+import React from "react";
+import Layout from "../../components/layout.jsx";
 
 export default function Login() {
   return (
-    <div>
-      <Header />
-   
+    <Layout currentPage="login">
       <main style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
         <div
           style={{
@@ -66,7 +62,7 @@ export default function Login() {
           </p>
         </div>
       </main>
-      <Footer />
-    </div>
+    </Layout>
   );
 }
+

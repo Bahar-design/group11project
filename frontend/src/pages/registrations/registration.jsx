@@ -1,14 +1,11 @@
 //registration.jsx
+
 import React from "react";
-import NavBar from "../../components/NavBar.jsx"; // Use your central NavBar
-import Footer from "../../components/footer.jsx";
-import Header from "../../components/header.jsx";
+import Layout from "../../components/layout.jsx";
 
 export default function Registration() {
   return (
-    <div>
-      <Header />
-
+    <Layout currentPage="register">
       <main style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
         <div
           style={{
@@ -65,7 +62,7 @@ export default function Registration() {
           </p>
         </div>
       </main>
-      <Footer />
-    </div>
+    </Layout>
   );
 }
+

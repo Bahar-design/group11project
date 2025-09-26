@@ -49,33 +49,9 @@ const UserProfiles = () => {
       currentPage="profile" 
       isLoggedIn={true} 
       onLogout={handleLogout}
-      showHeader={false}
+      showHeader={true}
     >
-      <div className="app">
-        {/* Your original Navbar */}
-        <nav className="navbar">
-          <div className="nav-container">
-            <div className="logo">
-              <div className="logo-icon">🤝</div>
-              <span>Houston Hearts</span>
-            </div>
-            <div className="nav-links">
-              <a href="#dashboard">Dashboard</a>
-              <a href="#events">Events</a>
-              <a href="#profile" className="active">Profile</a>
-              <a href="#impact">Impact</a>
-            </div>
-            <div className="user-menu">
-              <div className="user-avatar" title="Profile Menu">
-                {user[activeUserType].initials}
-              </div>
-              <button className="btn-logout" onClick={handleLogout}>
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </nav>
-        
+      <div className="app" style={{ background: 'var(--silver)', minHeight: '100vh' }}>
         <div className="container">
           {/* User Type Toggle */}
           <div className="user-type-toggle">
