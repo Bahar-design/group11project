@@ -2,6 +2,8 @@ import React, {useState} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Footer from "../../components/footer.jsx";
 import Header from "../../components/header.jsx";
+import logo from "../homepage/images/volunteer_1.png";
+import secondPic from "../homepage/images/volunteerRed.png";
 
 const features = [
   {
@@ -112,9 +114,11 @@ export default function HomePage() {
             >
               Learn More
             </a>
+            < img  className="logo-img" src= {logo} alt="volunteer"/>
           </div>
         </div>
       </div>
+
       
               {/* Stats Section */}
 <section className="stats py-5">
@@ -133,33 +137,9 @@ export default function HomePage() {
   </div>
 </section>
 
-
-{/* Page Navigation Tabs */}
-<div className="container mb-5">
-  <div className="page-tabs">
-    {[
-      { label: " Homepage", id: "home" },
-      { label: " Volunteer Portal", id: "volunteer" },
-      { label: "Admin Hub", id: "admin" },
-      { label: " Authentication", id: "login" },
-    ].map((tab, idx) => (
-      <button
-        key={idx}
-        className={`tab ${activeTab === tab.id ? "active" : ""}`}
-        onClick={() => setActiveTab(tab.id)}
-      >
-        {tab.label}
-      </button>
-    ))}
-  </div>
-  
-</div>
-
-
-<div className="container my-5">
-  {activeTab === "home" && (
+<div className="container my-5" style={{ backgroundColor: "white" }}>
     <div>
-      <h2 className="mb-4 text-center" style={{ color: "var(--text-primary)" }}>
+      <h2 className="mb-4 text-center" style={{ color: "var(--text-primary)", }}>
         How We Transform Lives
       </h2>
       <div className="row g-4">
@@ -170,10 +150,10 @@ export default function HomePage() {
               style={{
                 boxShadow: "var(--shadow-soft)",
                 borderRadius: "12px",
-                padding: "1rem",
+                padding: "1rem", 
               }}
             >
-              <div className="card-body">
+              <div className="card-body" style={{ backgroundColor: "white" }}>
                 <h5 className="card-title" style={{ color: "var(--text-primary)" }}>
                   {f.title}
                 </h5>
@@ -186,146 +166,13 @@ export default function HomePage() {
         ))}
       </div>
     </div>
-  )}
-
-  {activeTab === "volunteer" && (
-    <div>
-      <h2 className="text-center">Volunteer Portal Content Here</h2>
-      {/* Replace with real volunteer portal content */}
-    </div>
-  )}
-
-  {activeTab === "admin" && (
-    <div>
-      <h2 className="text-center">Admin Hub Content Here</h2>
-      {/* Replace with real admin content */}
-    </div>
-  )}
-  {activeTab === "login" && (
-  <section className="dashboard-section page-content active">
-    <div className="container">
-      <h2 className="section-title text-center">Join Our Community</h2>
-      <p className="section-subtitle text-center mb-5">
-        Sign in to start making a difference, or create your account to join Houston's most impactful volunteer network
-      </p>
-
-      {/* Login / Registration Forms */}
-      <div className="login-forms">
-        {/* Sign In Form */}
-        <div className="form-card">
-          <h3 className="form-title">Sign In</h3>
-          <form>
-            <div className="form-group">
-              <label>Username or Email</label>
-              <input type="text" className="form-input" placeholder="Enter your username" />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input type="password" className="form-input" placeholder="Enter your password" />
-            </div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <label className="d-flex align-items-center gap-2" style={{ fontSize: "0.9rem" }}>
-                <input type="checkbox" className="skill-checkbox" />
-                Remember me
-              </label>
-              <button href="#" style={{ color: "var(--primary-red)", textDecoration: "none", fontSize: "0.9rem" }}>
-                Forgot password?
-              </button>
-            </div>
-            <button type="submit" className="btn-primary w-100">
-              Sign In 
-            </button>
-          </form>
-
-          <div className="text-center mt-3 p-3" style={{ background: "var(--silver)", borderRadius: "12px" }}>
-            <div style={{ fontWeight: 600, marginBottom: "0.5rem" }}>Demo Accounts</div>
-            <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-              <strong>Admin:</strong> admin / admin123
-              <br />
-              <strong>Volunteer:</strong> volunteer1 / vol123
-            </div>
-          </div>
-        </div>
-
-        {/* Create Account Form */}
-        <div className="form-card">
-          <h3 className="form-title"> Create Account</h3>
-          <form>
-            <div className="form-group">
-              <label>Full Name</label>
-              <input type="text" className="form-input" placeholder="Enter your full name" />
-            </div>
-            <div className="form-group">
-              <label>Email Address</label>
-              <input type="email" className="form-input" placeholder="your@email.com" />
-            </div>
-            <div className="form-group">
-              <label>Username</label>
-              <input type="text" className="form-input" placeholder="Choose a username" />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input type="password" className="form-input" placeholder="Create a secure password" />
-            </div>
-            <div className="form-group">
-              <label>Account Type</label>
-              <select className="form-input">
-                <option> Volunteer - Help families in need</option>
-                <option> Administrator - Manage events and volunteers</option>
-              </select>
-            </div>
-            <div className="mb-3">
-              <label className="d-flex align-items-start gap-2" style={{ fontSize: "0.9rem", lineHeight: 1.4 }}>
-                <input type="checkbox" className="skill-checkbox" style={{ marginTop: "0.2rem" }} />
-                I agree to the Terms of Service and Privacy Policy, and I'm excited to start making a positive impact in Houston's community
-              </label>
-            </div>
-            <button type="submit" className="btn-primary w-100">
-              Create Account 
-            </button>
-          </form>
-
-          <div className="text-center mt-2">
-            <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
-              After registration, complete your volunteer profile to get matched with perfect opportunities!
-            </p>
-          </div>
-
-          {/* Skills Selection */}
-          <div className="skills-grid mt-4">
-            {[
-              " Tailoring & Alterations",
-              "Sewing & Stitching",
-              "Customer Service",
-              "Organization & Sorting",
-              "Communication",
-              "Bilingual (Spanish)",
-              "Leadership & Training",
-              "Computer & Data Entry",
-              "Business & Admin",
-              "Adaptability & Problem Solving",
-            ].map((skill, idx) => (
-              <div className="skill-item" key={idx}>
-                <input type="checkbox" className="skill-checkbox" id={`skill-${idx}`} />
-                <label htmlFor={`skill-${idx}`}>{skill}</label>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-)}
-
-
 </div>
-
-      {/* Call to Action */}
       <div
         className="py-5 text-center"
         style={{ background: "var(--warm-red)", color: "var(--text-primary)" }}
       >
         <h3 className="mb-3">Ready to Make an Impact?</h3>
+        <img className="secondPic" src= {secondPic} alt="volunteer"/>
         <button
           href="#volunteer"
           className="btn btn-primary btn-lg"

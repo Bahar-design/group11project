@@ -487,3 +487,65 @@ button:focus-visible {
 .app-content {
   min-height: calc(100vh - 200px);
 }
+
+/*stats homepage*/
+.stats {
+  background-color: #f9f9f9; /* light background */
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  min-width: 180px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ef4444; /* primary color */
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: #000;
+}
+
+.card {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.secondPic {
+position: relative;
+margin-left: auto;
+margin-right: auto;
+box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.6);
+
+}
+.logo-img {
+  width: 100%;
+  height: auto;
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.6);
+}
