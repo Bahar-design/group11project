@@ -16,7 +16,6 @@ import './App.css';
 export default function App() {
   return (
     <div>
-      {/*<NavBar />*/}
       {/* <Calendar /> */}
       {/* <Notifications /> */}
      {/* < Registration /> */}
