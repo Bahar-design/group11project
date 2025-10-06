@@ -28,3 +28,10 @@ export default function App() {
     </div>
   );
 }
+
+
+In order to run the backend, navigate to the backend folder:
+
+```bash
+cd ~/Documents/group11project/backend/
+```
