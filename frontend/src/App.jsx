@@ -20,13 +20,13 @@ export default function App() {
   return (
     <div>
       {/* <Calendar /> */}
-      {/* <Notifications /> */}
-      {/* <Registration /> */}
-      {/* <MatchMaking /> */}
-      {/* <Login /> */}
-      {/* <UserProfiles /> */}
-      {/* <HomePage /> */}
-      <EventsPage />
+      {/* <Notifications /> */} 
+      {/* <Registration /> */} 
+       <MatchMaking /> 
+      {/* <Login /> */} 
+      {/*<UserProfiles /> */} 
+      {/* <HomePage /> */} 
+      {/*<EventsPage /> */}
     </div>
     
     //<Router>
