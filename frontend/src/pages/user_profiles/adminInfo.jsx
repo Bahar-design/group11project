@@ -1,20 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AdminInfo = ({ user }) => {
   const [formData, setFormData] = useState({
-    name: user.name || '',
-    email: user.email || '',
-    phone: user.phone || '',
-    address1: user.address1 || '',
-    address2: user.address2 || '',
-    city: user.city || '',
-    state: user.state || '',
-    zipCode: user.zipCode || '',
-    adminLevel: user.adminLevel || 'Regional Administrator',
-    department: user.department || 'Southwest Regional Operations',
-    startDate: user.startDate || '2023-06-15',
-    emergencyContact: user.emergencyContact || 'Regional Director - (713) 555-0001'
+    name: '',
+    email: '',
+    phone: '',
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    adminLevel: 'Regional Administrator',
+    department: 'Southwest Regional Operations',
+    startDate: '2023-06-15',
+    emergencyContact: 'Regional Director - (713) 555-0001'
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  // Fetch user profile from backend on mount
+  useEffect(() => {
+    setLoading(true);
+    axios.get('/api/user-profile?type=admin')
+      .then(res => {
+        setFormData(prev => ({ ...prev, ...res.data }));
+        setLoading(false);
+      })
+      .catch(err => {
+        setError('Failed to load user profile');
+        setLoading(false);
+      });
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -24,9 +42,17 @@ const AdminInfo = ({ user }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Saving admin info:', formData);
+    setError(null);
+    setSuccess(false);
+    try {
+      const res = await axios.post('/api/user-profile?type=admin', formData);
+      setFormData(prev => ({ ...prev, ...res.data }));
+      setSuccess(true);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save profile');
+    }
   };
 
   const regions = ['Sugar Land', 'Katy', 'Southwest Houston'];
@@ -37,8 +63,11 @@ const AdminInfo = ({ user }) => {
     { icon: '🚨', number: '3', label: 'Emergency Responses' }
   ];
 
+  if (loading) return <div>Loading...</div>;
   return (
     <div>
+      {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
+      {success && <div style={{ color: 'green', marginBottom: 10 }}>Profile saved!</div>}
       <div className="profile-grid">
         <div className="profile-card">
           <div className="profile-card-header">

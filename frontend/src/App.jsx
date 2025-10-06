@@ -25,8 +25,8 @@ export default function App() {
       {/* <MatchMaking /> */}
       {/* <Login /> */}
       {/* <UserProfiles /> */}
-      {/* <HomePage /> */}
-      <EventsPage />
+      {/*<HomePage />*/}
+      <EventsPage /> 
     </div>
     
     //<Router>
