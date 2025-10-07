@@ -1,68 +1,67 @@
-//registration.jsx
-
-import React from "react";
+import React, { useState } from "react";
 import Layout from "../../components/layout.jsx";
+import "./registration.css";
 
 export default function Registration() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch("http://localhost:4000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.message || "Registration failed");
+      } else {
+        setMessage("Registration successful!");
+      }
+    } catch (err) {
+      setMessage("Error connecting to backend");
+    }
+  };
+
   return (
     <Layout currentPage="register">
-      <main style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
-        <div
-          style={{
-            width: "450px",
-            background: "var(--white)",
-            padding: "3rem",
-            borderRadius: "12px",
-            boxShadow: "var(--shadow-medium)",
-          }}
-        >
-          <h2 style={{ color: "var(--primary-red)", marginBottom: "1.5rem" }}>Register</h2>
+      <main className="registration-main">
+        <div className="registration-card">
+          <h2>Register</h2>
 
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Email</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              border: "1px solid var(--medium-silver)",
-              borderRadius: "8px",
-              marginBottom: "1rem",
-              fontSize: "1rem",
-            }}
-          />
+          <form onSubmit={handleRegister}>
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          <label style={{ display: "block", marginBottom: "0.5rem", marginTop: "1rem" }}>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              border: "1px solid var(--medium-silver)",
-              borderRadius: "8px",
-              marginBottom: "1rem",
-              fontSize: "1rem",
-            }}
-          />
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          <button
-            type="submit"
-            className="btn"
-            style={{ width: "100%", marginTop: "1rem" }}
-          >
-            Register
-          </button>
+            <button type="submit" className="btn">Register</button>
+          </form>
 
-          <p style={{ textAlign: "center", marginTop: "1rem" }}>
-            Already have an account?{" "}
-            <a href="#" style={{ color: "var(--primary-red)", fontWeight: 500 }}>
-              Sign In
-            </a>
+          {message && <p style={{ color: "var(--primary-red)", marginTop: "1rem" }}>{message}</p>}
+
+          <p>
+            Already have an account? <a href="#">Sign In</a>
           </p>
         </div>
       </main>
     </Layout>
   );
 }
-

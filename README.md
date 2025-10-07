@@ -1,5 +1,5 @@
 
-In order to run the frontend, navigate to the frontend folder:
+In order to run the website, first navigate to the frontend folder:
 
 ```bash
 cd ~/Documents/group11project/frontend/
@@ -31,7 +31,7 @@ export default function App() {
 ```
 
 
-In order to run the backend, navigate to the backend folder:
+Then navigate to the backend folder:
 
 
 ```bash

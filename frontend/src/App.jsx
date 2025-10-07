@@ -21,9 +21,9 @@ export default function App() {
     <div>
       {/* <Calendar /> */}
       {/* <Notifications /> */}
-      {/* <Registration /> */}
+      <Registration /> 
       {/* <MatchMaking /> */}
-       <Login /> 
+      {/* <Login /> */}
       {/* <UserProfiles /> */}
       {/*<HomePage />*/}
       {/*<EventsPage /> */}
