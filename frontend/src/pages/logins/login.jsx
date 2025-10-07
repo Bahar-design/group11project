@@ -1,68 +1,67 @@
-// src/pages/login.jsx
-
-import React from "react";
+import React, { useState } from "react";
 import Layout from "../../components/layout.jsx";
+import "./login.css";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.message);
+      } else {
+        setMessage(`Welcome ${data.user.name}!`);
+      }
+    } catch (err) {
+      setMessage("Error connecting to backend");
+    }
+  };
+
   return (
     <Layout currentPage="login">
-      <main style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
-        <div
-          style={{
-            width: "450px",
-            background: "var(--white)",
-            padding: "3rem",
-            borderRadius: "12px",
-            boxShadow: "var(--shadow-medium)",
-          }}
-        >
-          <h2 style={{ color: "var(--primary-red)", marginBottom: "1.5rem" }}>Login</h2>
+      <main className="login-main">
+        <div className="login-card">
+          <h2>Login</h2>
 
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Username or Email</label>
-          <input
-            type="text"
-            placeholder="Enter your username or email"
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              border: "1px solid var(--medium-silver)",
-              borderRadius: "8px",
-              marginBottom: "1rem",
-              fontSize: "1rem",
-            }}
-          />
+          <form onSubmit={handleLogin}>
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          <label style={{ display: "block", marginBottom: "0.5rem", marginTop: "1rem" }}>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              border: "1px solid var(--medium-silver)",
-              borderRadius: "8px",
-              marginBottom: "1rem",
-              fontSize: "1rem",
-            }}
-          />
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          <button
-            type="submit"
-            className="btn"
-            style={{ width: "100%", marginTop: "1rem" }}
-          >
-            Sign In
-          </button>
+            <button type="submit" className="btn">Sign In</button>
+          </form>
 
-          <p style={{ textAlign: "center", marginTop: "1rem" }}>
-            Don’t have an account?{" "}
-            <a href="#" style={{ color: "var(--primary-red)", fontWeight: 500 }}>
-              Register
-            </a>
+          {message && <p style={{ color: "var(--primary-red)", marginTop: "1rem" }}>{message}</p>}
+
+          <p>
+            Don’t have an account? <a href="#">Register</a>
           </p>
         </div>
       </main>
     </Layout>
   );
 }
-

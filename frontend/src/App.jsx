@@ -23,10 +23,10 @@ export default function App() {
       {/* <Notifications /> */}
       {/* <Registration /> */}
       {/* <MatchMaking /> */}
-      {/* <Login /> */}
+       <Login /> 
       {/* <UserProfiles /> */}
       {/*<HomePage />*/}
-      <EventsPage /> 
+      {/*<EventsPage /> */}
     </div>
     
     //<Router>

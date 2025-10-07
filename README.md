@@ -32,6 +32,17 @@ export default function App() {
 
 In order to run the backend, navigate to the backend folder:
 
+
 ```bash
 cd ~/Documents/group11project/backend/
 ```
+
+and then type: node app.js
+
+```bash
+cd ~/Documents/group11project/backend$ node app.js
+Backend server running on port 4000
+```
+
+**Note:**  The frontend fetches backend dynamically using the .env variable.
+
