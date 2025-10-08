@@ -1,9 +1,8 @@
 // controllers/loginController.js
 
 const users = [
-  { name: "Amy", email: "amy@email.com", password: "1234" },
-  { name: "Bob", email: "bob@email.com", password: "5678" },
-  { name: "Charlie", email: "charlie@email.com", password: "abcd" },
+  { name: "Sarah Johnson", email: "sarah.j@email.com", password: "1234" },
+  { name: "Maria Delgado", email: "maria.d@houstonhearts.org", password: "5678" },
 ];
 
 function login(req, res) {
