@@ -15,7 +15,7 @@ app.use(express.json());  // parse JSON request bodies
 
 // Routes
 app.use('/api/user-profile', userProfileRouter);
-app.use('/api/auth', loginRoutes); // login endpoint
+app.use('/api/login', loginRoutes); // login endpoint
 app.use("/api/register", registrationRouter);       //for registration
  
 // Error handler

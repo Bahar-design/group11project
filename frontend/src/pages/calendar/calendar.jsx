@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Calendar as Calendars, momentLocalizer } from "react-big-calendar";  //library for event calendar
 import moment from "moment";
-import NavBar from "../../components/NavBar.jsx";  //may need it later
 import Footer from "../../components/footer.jsx";
 import Header from "../../components/header.jsx";
 import "react-big-calendar/lib/css/react-big-calendar.css";

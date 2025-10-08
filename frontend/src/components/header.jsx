@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";   //for navigation through pages, installed with: npm install react-router-dom
+
 
 const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navItems = [
     { id: 'home', label: 'Home', href: '#home' },
@@ -15,7 +18,8 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout })
     if (isLoggedIn) {
       onLogout && onLogout();
     } else {
-      onLogin && onLogin();
+      navigate("/login");
+      //onLogin && onLogin();
     }
   };
 
@@ -37,7 +41,12 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout })
               key={item.id}
               href={item.href}
               className={currentPage === item.id ? 'active' : ''}
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                if (item.id === "home") {
+                  navigate("/");      //navigate to the homepage
+                }
+              }}
             >
               {item.label}
             </a>

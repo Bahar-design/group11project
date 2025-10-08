@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../../components/layout.jsx";
 import "./login.css";
+import { Link } from "react-router-dom";              //for the registration link
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -9,6 +10,12 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // Frontend check: show error if email or password is empty
+    if (!email || !password) {
+      setMessage("Error: type in Email and Password");
+      return; // stop the function here
+    }
 
     try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth`, {
@@ -28,6 +35,7 @@ export default function Login() {
       setMessage("Error connecting to backend");
     }
   };
+
 
   return (
     <Layout currentPage="login">
@@ -58,10 +66,11 @@ export default function Login() {
           {message && <p style={{ color: "var(--primary-red)", marginTop: "1rem" }}>{message}</p>}
 
           <p>
-            Don’t have an account? <a href="#">Register</a>
+            Don’t have an account? <Link to="/register">Register</Link>
           </p>
         </div>
       </main>
     </Layout>
   );
 }
+
