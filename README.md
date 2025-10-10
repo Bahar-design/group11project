@@ -1,37 +1,5 @@
 
-In order to run the website, first navigate to the frontend folder:
-
-```bash
-cd ~/Documents/group11project/frontend/
-```
-
-and then type: npm run dev
-
-```bash
-cd ~/Documents/group11project/frontend$ npm run dev
-```
-
-**Note:** In order to see pages, in `App.jsx` the user will have to uncomment the pages inside the `<div>` section.  
-*Caution:* only one page can be uncommented at a time.
-
-```jsx
-export default function App() {
-  return (
-    <div>
-      {/* <Calendar /> */}
-      {/* <Notifications /> */}
-      {/* <Registration /> */}
-      {/* <MatchMaking /> */}
-      {/* <Login /> */} 
-      {/* <UserProfiles /> */}
-      <HomePage /> 
-    </div>
-  );
-}
-```
-
-
-Then navigate to the backend folder:
+In order to run the website, first open the terminal and navigate to the backend folder:
 
 
 ```bash
@@ -45,6 +13,22 @@ cd ~/Documents/group11project/backend$ node app.js
 ```
 
 You should see: Backend server running on port 4000
+
+
+Then open another termianl besides the first one, and navigate to the frontend folder:
+
+```bash
+cd ~/Documents/group11project/frontend/
+```
+
+and then type: npm run dev
+
+```bash
+cd ~/Documents/group11project/frontend$ npm run dev
+```
+
+App.js should automatically show the homepage 
+
 
 **Note:**  The frontend fetches backend dynamically using the .env variable.
 
