@@ -37,10 +37,10 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default function HomePage({ isLoggedIn, onLogout }) {
   const [activeTab, setActiveTab] = useState("home");
   return (
-    <Layout currentPage="home">
+    <Layout currentPage="home" isLoggedIn={isLoggedIn} onLogout={onLogout}>
       <div style={{ fontFamily: "'Inter', sans-serif" }}>
         {/* Hero Section */}
         <div

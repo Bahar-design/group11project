@@ -1,7 +1,7 @@
 // controllers/loginController.js
 
 const users = [
-  { name: "Sarah Johnson", email: "sarah.j@email.com", password: "1234" },
+  { name: "Sarah Johnson", email: 'sarah.j@email.com', password: '1234' },
   { name: "Maria Delgado", email: "maria.d@houstonhearts.org", password: "5678" },
 ];
 

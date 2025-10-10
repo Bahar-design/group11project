@@ -1,24 +1,25 @@
 import React, { useState } from "react";
 import Layout from "../../components/layout.jsx";
 import "./login.css";
-import { Link } from "react-router-dom";              //for the registration link
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Login() {
+export default function Login({ onLogin, isLoggedIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
+  const navigate = useNavigate();
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Frontend check: show error if email or password is empty
     if (!email || !password) {
       setMessage("Error: type in Email and Password");
-      return; // stop the function here
+      return;
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -27,18 +28,18 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.message);
+        setMessage(data.message || "Login failed");
       } else {
-        setMessage(`Welcome ${data.user.name}!`);
+        onLogin(); // update login state
+        navigate("/user-profiles");
       }
     } catch (err) {
       setMessage("Error connecting to backend");
     }
   };
 
-
   return (
-    <Layout currentPage="login">
+    <Layout currentPage="login" isLoggedIn={isLoggedIn} onLogin={onLogin}>
       <main className="login-main">
         <div className="login-card">
           <h2>Login</h2>
@@ -73,4 +74,3 @@ export default function Login() {
     </Layout>
   );
 }
-

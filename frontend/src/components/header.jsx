@@ -17,6 +17,7 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout })
   const handleLoginClick = () => {
     if (isLoggedIn) {
       onLogout && onLogout();
+      navigate("/");
     } else {
       navigate("/login");
       //onLogin && onLogin();
@@ -41,10 +42,13 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout })
               key={item.id}
               href={item.href}
               className={currentPage === item.id ? 'active' : ''}
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();          
                 setIsMobileMenuOpen(false);
                 if (item.id === "home") {
-                  navigate("/");      //navigate to the homepage
+                  navigate("/");             //will go to homepage
+                } else {
+                  navigate(`/${item.id}`);    //will go to other page
                 }
               }}
             >
