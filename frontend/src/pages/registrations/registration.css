@@ -20,7 +20,15 @@
 .registration-card label {
   display: block;
   margin-bottom: 0.5rem;
+  font-weight: 500;
 }
+
+.registration-card .required-star {
+  color: black; 
+  margin-left: 0.25rem;
+  font-weight: bold;
+}
+
 
 .registration-card input {
   width: 100%;
@@ -32,7 +40,14 @@
 }
 
 .registration-card label + input {
-  margin-top: 1rem;
+  margin-top: 0.10rem; 
+}
+
+.registration-card .input-hint {
+  display: block;
+  font-size: 1rem;
+  color: black;
+  margin-bottom: 1rem;
 }
 
 .registration-card .btn {

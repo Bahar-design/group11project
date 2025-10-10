@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 export default function Registration() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [adminID, setAdminID] = useState(""); 
   const [message, setMessage] = useState("");
 
   const handleRegister = async (e) => {
@@ -58,6 +59,16 @@ export default function Registration() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+
+            <label><span className="required-star">*</span>Admin ID </label>
+            <input
+              type="text"
+              placeholder="Enter Admin ID if applicable"
+              value={adminID}
+              onChange={(e) => setAdminID(e.target.value)}
+            />
+            <span className="input-hint">*Optional for volunteers</span>
+
 
             <button type="submit" className="btn">Register</button>
           </form>
