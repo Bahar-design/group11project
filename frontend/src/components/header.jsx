@@ -47,8 +47,11 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout })
                 setIsMobileMenuOpen(false);
                 if (item.id === "home") {
                   navigate("/");             //will go to homepage
+                } else if (item.id === "events") {
+                  navigate("/events");
                 } else {
-                  navigate(`/${item.id}`);    //will go to other page
+                  // volunteer, impact, about pages not done yet
+                  console.log(`${item.label} clicked (no page yet)`);
                 }
               }}
             >
