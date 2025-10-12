@@ -4,14 +4,13 @@
 let users = [
   { email: "amy@example.com", password: "1234" },
   { email: "bob@example.com", password: "abcd" },
-  { email: "carol@example.com", password: "pass" },
+  { email: "carol@example.com", password: "pass", adminID: "#ab" },
 ];
 
-// Register a new user
 function registerUser(req, res) {
-  const { email, password } = req.body;  
+  const { email, password, adminID } = req.body;
 
-  // Simple validation
+  // Validate email and password
   if (!email || !password) {
     return res.status(400).json({ message: "Please type email and password" });
   }
@@ -22,11 +21,20 @@ function registerUser(req, res) {
     return res.status(400).json({ message: "User already exists" });
   }
 
-  // Add new user
+  // Add new user (adminID is optional)
   const newUser = { email, password };
+  if (adminID && adminID.trim() !== "") {
+    newUser.adminID = adminID;
+  }
+
   users.push(newUser);
 
-  res.status(201).json({ message: "User registered successfully", user: newUser });
+  // Customize response message
+  const userTypeMessage = adminID && adminID.trim() !== ""
+    ? "Admin User registered successfully"
+    : "Volunteer registered successfully";
+
+  res.status(201).json({ message: userTypeMessage, user: newUser });
 }
 
 module.exports = { registerUser };

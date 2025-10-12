@@ -12,17 +12,16 @@ export default function Registration() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Frontend check: show error if email or password is empty
     if (!email || !password) {
       setMessage("Error: Enter an Email and Password");
-      return; 
-      }
+      return;
+    }
 
     try {
       const res = await fetch("http://localhost:4000/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, adminID }),  
       });
 
       const data = await res.json();
@@ -30,12 +29,13 @@ export default function Registration() {
       if (!res.ok) {
         setMessage(data.message || "Registration failed");
       } else {
-        setMessage("Registration successful!");
+        setMessage(data.message);                  // backend message 
       }
     } catch (err) {
       setMessage("Error connecting to backend");
     }
   };
+
 
   return (
     <Layout currentPage="register">

@@ -5,6 +5,7 @@ const cors = require('cors'); // add CORS
 const userProfileRouter = require('./routes/userProfile');
 const loginRoutes = require('./routes/loginRoutes'); // import login routes
 const registrationRouter = require("./routes/registrationRoutes");
+const notificationRoutes = require('./routes/notificationRoutes');
 
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.json());  // parse JSON request bodies
 app.use('/api/user-profile', userProfileRouter);
 app.use('/api/login', loginRoutes); // login endpoint
 app.use("/api/register", registrationRouter);       //for registration
+app.use('/api/notifications', notificationRoutes);
  
 // Error handler
 app.use((err, req, res, next) => {

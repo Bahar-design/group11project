@@ -13,7 +13,7 @@ const VolunteerProfile = ({ user }) => {
     { id: 'personal-info', label: 'Personal Info' },
     { id: 'skills-availability', label: 'Skills & Availability' },
     { id: 'volunteer-history', label: 'Volunteer History' },
-    { id: 'settings', label: 'Settings' }
+    { id: 'settings', label: 'Notifications' }
   ];
 
   const renderTabContent = () => {

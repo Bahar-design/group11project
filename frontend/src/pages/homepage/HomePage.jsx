@@ -3,6 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Layout from "../../components/layout.jsx";
 import logo from "../homepage/images/volunteer_1.png";
 import secondPic from "../homepage/images/volunteerRed.png";
+import { Link, useNavigate } from "react-router-dom";
+
 
 const features = [
   {
@@ -39,6 +41,8 @@ const features = [
 
 export default function HomePage({ isLoggedIn, onLogout }) {
   const [activeTab, setActiveTab] = useState("home");
+  const navigate = useNavigate();
+
   return (
     <Layout currentPage="home" isLoggedIn={isLoggedIn} onLogout={onLogout}>
       <div style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -83,8 +87,8 @@ export default function HomePage({ isLoggedIn, onLogout }) {
               Join Houston Hearts and make a difference in our community through smart, flexible, and impactful volunteering opportunities.
             </p>
             <div className="d-flex justify-content-center gap-3 flex-wrap">
-              <a
-                href="#volunteer"
+              <Link
+                to="/register"
                 className="btn btn-primary"
                 style={{
                   background: "linear-gradient(135deg, var(--primary-red), var(--accent-red))",
@@ -92,10 +96,11 @@ export default function HomePage({ isLoggedIn, onLogout }) {
                   padding: "1rem 2rem",
                   borderRadius: "12px",
                   fontWeight: 600,
+                  textDecoration: "none",
                 }}
               >
                 Join Us Today
-              </a>
+              </Link>
               <a
                 href="#about"
                 className="btn btn-secondary"
