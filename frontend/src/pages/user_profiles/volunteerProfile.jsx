@@ -6,8 +6,13 @@ import SkillsAvailability from './skillsAvailability.jsx';
 import VolunteerHistory from './volunteerHistory.jsx';
 import Settings from './settings.jsx';
 
+
 const VolunteerProfile = ({ user }) => {
   const [activeTab, setActiveTab] = useState('personal-info');
+
+  if (!user || !user.stats) {
+    return <div>Loading volunteer profile...</div>;
+  }
 
   const tabs = [
     { id: 'personal-info', label: 'Personal Info' },

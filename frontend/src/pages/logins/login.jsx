@@ -3,7 +3,7 @@ import Layout from "../../components/layout.jsx";
 import "./login.css";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Login({ onLogin, isLoggedIn }) {
+export default function Login({ onLogin, isLoggedIn, user }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -25,13 +25,32 @@ export default function Login({ onLogin, isLoggedIn }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+  const data = await res.json();
 
       if (!res.ok) {
         setMessage(data.message || "Login failed");
       } else {
-        onLogin(); // update login state
-        navigate("/user-profiles");
+        // Fetch full profile after login
+        const type = data.user?.type;
+        const email = data.user?.email;
+        if (!type || !email) {
+          setMessage("Login succeeded but user type or email missing.");
+          return;
+        }
+        try {
+          const profileRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user-profile?type=${type}`);
+          const profileData = await profileRes.json();
+          if (!profileRes.ok) {
+            setMessage("Login succeeded but failed to load profile.");
+            return;
+          }
+          // Merge login info (type, email) with profile
+          const userObj = { ...profileData, userType: type, email };
+          onLogin(userObj);
+          navigate("/user-profiles");
+        } catch (err) {
+          setMessage("Login succeeded but error loading profile.");
+        }
       }
     } catch (err) {
       setMessage("Error connecting to backend");
@@ -39,7 +58,7 @@ export default function Login({ onLogin, isLoggedIn }) {
   };
 
   return (
-    <Layout currentPage="login" isLoggedIn={isLoggedIn} onLogin={onLogin}>
+  <Layout currentPage="login" isLoggedIn={isLoggedIn} onLogin={onLogin} user={user}>
       <main className="login-main">
         <div className="login-card">
           <h2>Login</h2>

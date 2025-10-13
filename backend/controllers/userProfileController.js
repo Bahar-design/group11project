@@ -19,6 +19,12 @@ let volunteerProfile = {
   hasTransportation: true,
   primaryLocation: 'Sugar Land',
   userType: 'volunteer',
+  stats: {
+    familiesHelped: 127,
+    hoursVolunteered: 52,
+    averageRating: 4.9,
+    eventsJoined: 15
+  }
 };
 
 let adminProfile = {
@@ -36,6 +42,12 @@ let adminProfile = {
   emergencyContact: 'Regional Director - (713) 555-0001',
   regions: ['Sugar Land', 'Katy', 'Southwest Houston'],
   userType: 'admin',
+  stats: {
+    eventsManaged: 47,
+    volunteersCoordinated: 285,
+    familiesImpacted: 1850,
+    successRate: 98
+  }
 };
 
 

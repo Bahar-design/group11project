@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">10.52% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>19/19</span>
+                <span class='fraction'>2/19</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>7/7</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">13.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/15</span>
+                <span class='fraction'>2/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -101,25 +101,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
@@ -130,26 +130,26 @@ let notifications = [
   { id: 3, userId: 1, title: 'Reminder', text: 'Reminder to submit your volunteer report by this Friday.' },
 ];
 &nbsp;
-function getUserNotifications(req, res) {
-  const userId = parseInt(req.params.userId);
-  const userNotifications = notifications.filter(n =&gt; n.userId === userId);
-  res.status(200).json(userNotifications);
+function <span class="fstat-no" title="function not covered" >getUserNotifications(</span>req, res) {
+  const userId = <span class="cstat-no" title="statement not covered" >parseInt(req.params.userId);</span>
+  const userNotifications = <span class="cstat-no" title="statement not covered" >notifications.filter(<span class="fstat-no" title="function not covered" >n </span>=&gt; <span class="cstat-no" title="statement not covered" >n.userId === userId)</span>;</span>
+<span class="cstat-no" title="statement not covered" >  res.status(200).json(userNotifications);</span>
 }
 &nbsp;
-function deleteNotification(req, res) {
-  const { id } = req.params;
-  const idx = notifications.findIndex(n =&gt; n.id === parseInt(id));
-  if (idx === -1) return res.status(404).json({ message: 'Notification not found' });
-  const deleted = notifications.splice(idx, 1);
-  res.status(200).json({ message: 'Notification deleted', notification: deleted[0] });
+function <span class="fstat-no" title="function not covered" >deleteNotification(</span>req, res) {
+  const { id } = <span class="cstat-no" title="statement not covered" >req.params;</span>
+  const idx = <span class="cstat-no" title="statement not covered" >notifications.findIndex(<span class="fstat-no" title="function not covered" >n </span>=&gt; <span class="cstat-no" title="statement not covered" >n.id === parseInt(id))</span>;</span>
+<span class="cstat-no" title="statement not covered" >  if (idx === -1) <span class="cstat-no" title="statement not covered" >return res.status(404).json({ message: 'Notification not found' });</span></span>
+  const deleted = <span class="cstat-no" title="statement not covered" >notifications.splice(idx, 1);</span>
+<span class="cstat-no" title="statement not covered" >  res.status(200).json({ message: 'Notification deleted', notification: deleted[0] });</span>
 }
 &nbsp;
-function addNotification(req, res) {
-  const { userId, title, text } = req.body;
-  if (!userId || !title || !text) return res.status(400).json({ message: 'Missing fields' });
-  const newNotification = { id: notifications.length + 1, userId, title, text };
-  notifications.push(newNotification);
-  res.status(201).json({ message: 'Notification added', notification: newNotification });
+function <span class="fstat-no" title="function not covered" >addNotification(</span>req, res) {
+  const { userId, title, text } = <span class="cstat-no" title="statement not covered" >req.body;</span>
+<span class="cstat-no" title="statement not covered" >  if (!userId || !title || !text) <span class="cstat-no" title="statement not covered" >return res.status(400).json({ message: 'Missing fields' });</span></span>
+  const newNotification = <span class="cstat-no" title="statement not covered" >{ id: notifications.length + 1, userId, title, text };</span>
+<span class="cstat-no" title="statement not covered" >  notifications.push(newNotification);</span>
+<span class="cstat-no" title="statement not covered" >  res.status(201).json({ message: 'Notification added', notification: newNotification });</span>
 }
 &nbsp;
 module.exports = { getUserNotifications, deleteNotification, addNotification };
@@ -160,7 +160,7 @@ module.exports = { getUserNotifications, deleteNotification, addNotification };
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-13T16:37:52.620Z
+                at 2025-10-13T16:29:27.792Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

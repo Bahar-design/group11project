@@ -35,7 +35,7 @@ const initialEvents = [
   }
 ];
 
-export default function EventsPage() {
+export default function EventsPage({ isLoggedIn, user }) {
   const [events, setEvents] = useState(initialEvents);
   const [editingEventId, setEditingEventId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(true);
@@ -61,7 +61,7 @@ export default function EventsPage() {
   };
 
   return (
-    <Layout currentPage="events">
+  <Layout currentPage="events" user={user} isLoggedIn={isLoggedIn}>
       <div className="events-bg fade-in" style={{ minHeight: '100vh', width: '100%' }}>
         <div className="container" style={{ maxWidth: '1100px', margin: '0 auto', padding: '2.5rem 1rem' }}>
           <div className="events-hero-header">Event Management</div>
