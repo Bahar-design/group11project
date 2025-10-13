@@ -59,9 +59,9 @@ import './MatchMaking.css';
 //! SkillsAvailability moved to SkillsAvailability.jsx
 
 
-export default function MatchMaking() {
+export default function MatchMaking({ isLoggedIn, user }) {
   return (
-    <Layout currentPage="volunteer">
+  <Layout currentPage="volunteer" user={user} isLoggedIn={isLoggedIn}>
       <div className="min-h-screen bg-slate-50">
         <Hero />
         <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">

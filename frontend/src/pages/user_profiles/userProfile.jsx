@@ -6,14 +6,15 @@ import VolunteerProfile from './volunteerProfile.jsx';
 import './userProfile.css';
 import '../../../styling2/style.css';
 
-const UserProfiles = ({ user, onLogout }) => {
+const UserProfiles = ({ isLoggedIn, user, onLogout }) => {
   if (!user) return null;
   return (
     <Layout 
       currentPage="profile" 
-      isLoggedIn={true} 
+      isLoggedIn={isLoggedIn} 
       onLogout={onLogout}
       showHeader={true}
+      user={user}
     >
       <div className="app" style={{ background: 'var(--silver)', minHeight: '100vh' }}>
         <div className="container">

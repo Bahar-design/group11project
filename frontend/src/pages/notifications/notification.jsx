@@ -4,9 +4,9 @@ import React from "react";
 import Layout from "../../components/layout.jsx";
 import "./notifications.css";
 
-export default function Notifications() {
+export default function Notifications({ isLoggedIn, user }) {
   return (
-    <Layout currentPage="notifications">
+  <Layout currentPage="notifications" user={user} isLoggedIn={isLoggedIn}>
       <main className="notifications-container">
         <div className="notifications-card">
           <h2 style={{ color: "var(--primary-red)", marginBottom: "1.5rem" }}>

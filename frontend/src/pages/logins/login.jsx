@@ -3,7 +3,7 @@ import Layout from "../../components/layout.jsx";
 import "./login.css";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Login({ onLogin, isLoggedIn }) {
+export default function Login({ onLogin, isLoggedIn, user }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -58,7 +58,7 @@ export default function Login({ onLogin, isLoggedIn }) {
   };
 
   return (
-    <Layout currentPage="login" isLoggedIn={isLoggedIn} onLogin={onLogin}>
+  <Layout currentPage="login" isLoggedIn={isLoggedIn} onLogin={onLogin} user={user}>
       <main className="login-main">
         <div className="login-card">
           <h2>Login</h2>

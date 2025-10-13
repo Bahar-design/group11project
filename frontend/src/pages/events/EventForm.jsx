@@ -23,7 +23,14 @@ export default function EventForm({
   });
 
   useEffect(() => {
-    setForm(f => ({ ...f, ...initialData }));
+    // Only update form if initialData is different from current form
+    const isDifferent = Object.keys(initialData).some(
+      key => initialData[key] !== form[key]
+    );
+    if (isDifferent) {
+      setForm(f => ({ ...f, ...initialData }));
+    }
+    // eslint-disable-next-line
   }, [initialData]);
 
 

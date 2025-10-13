@@ -3,7 +3,7 @@ import Layout from "../../components/layout.jsx";
 import "./registration.css";
 import { Link } from "react-router-dom"; 
 
-export default function Registration() {
+export default function Registration({ isLoggedIn, user }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [adminID, setAdminID] = useState(""); 
@@ -38,7 +38,7 @@ export default function Registration() {
 
 
   return (
-    <Layout currentPage="register">
+  <Layout currentPage="register" user={user} isLoggedIn={isLoggedIn}>
       <main className="registration-main">
         <div className="registration-card">
           <h2>Register</h2>

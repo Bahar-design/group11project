@@ -8,6 +8,7 @@ function ProtectedRoute({ isLoggedIn, children }) {
   return children;
 }
 
+import Header from './components/header.jsx';
 import Login from './pages/logins/login';
 import Registration from './pages/registrations/registration';
 import Notifications from './pages/notifications/notification'; 
@@ -32,22 +33,22 @@ export default function App() {
     setIsLoggedIn(false);
   };
 
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} />} />
-        <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} />} />
-        <Route path="/register" element={<Registration />} />
-        <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} onLogout={handleLogout} />} />
-        <Route path="/user-profiles" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <UserProfiles user={user} onLogout={handleLogout} />
-          </ProtectedRoute>
-        } />
-        <Route path="/notifications" element={<Notifications isLoggedIn={isLoggedIn} onLogout={handleLogout} />} />
-        <Route path="/calendar" element={<Calendar isLoggedIn={isLoggedIn} onLogout={handleLogout} />} />
-        <Route path="/match-making" element={<MatchMaking isLoggedIn={isLoggedIn} onLogout={handleLogout} />} />
-      </Routes>
-    </Router>
-  );
+    return (
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
+          <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} user={user} />} />
+          <Route path="/register" element={<Registration isLoggedIn={isLoggedIn} user={user} />} />
+          <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} />} />
+          <Route path="/user-profiles" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <UserProfiles isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
+          } />
+          <Route path="/notifications" element={<Notifications isLoggedIn={isLoggedIn} user={user} />} />
+          <Route path="/calendar" element={<Calendar isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
+          <Route path="/match-making" element={<MatchMaking isLoggedIn={isLoggedIn} user={user} />} />
+        </Routes>
+      </Router>
+    );
 }
