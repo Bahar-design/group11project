@@ -2,10 +2,12 @@
 // main backend file
 const express = require('express');
 const cors = require('cors'); // add CORS
+
 const userProfileRouter = require('./routes/userProfile');
 const loginRoutes = require('./routes/loginRoutes'); // import login routes
 const registrationRouter = require("./routes/registrationRoutes");
 const notificationRoutes = require('./routes/notificationRoutes');
+const eventRoutes = require('./routes/eventRoutes');
 
 
 const app = express();
@@ -19,6 +21,7 @@ app.use('/api/user-profile', userProfileRouter);
 app.use('/api/login', loginRoutes); // login endpoint
 app.use("/api/register", registrationRouter);       //for registration
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/events', eventRoutes);
  
 // Error handler
 app.use((err, req, res, next) => {
