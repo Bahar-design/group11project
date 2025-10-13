@@ -5,23 +5,23 @@ const { login } = require('../controllers/loginController');
 const app = express();
 app.use(express.json());
 
-//Mock route for login
+// Mock route for login
 app.post('/api/login', login);
 
 describe('Login API', () => {
 
-  it('should login successfully with correct credentials', async () => {
+  it('POST /api/login logs in successfully with correct credentials', async () => {
     const res = await request(app)
       .post('/api/login')
-      .send({ email: 'amy@email.com', password: '1234' });
+      .send({ email: 'sarah.j@email.com', password: '1234' });
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('user');
-    expect(res.body.user.name).toBe('Amy');
-    expect(res.body.user.email).toBe('amy@email.com');
+    expect(res.body.user.name).toBe('Sarah Johnson');
+    expect(res.body.user.email).toBe('sarah.j@email.com');
   });
 
-  it('should fail login with wrong email', async () => {
+  it('POST /api/login fails with wrong email', async () => {
     const res = await request(app)
       .post('/api/login')
       .send({ email: 'wrong@email.com', password: '1234' });
@@ -30,31 +30,30 @@ describe('Login API', () => {
     expect(res.body.message).toBe('Invalid email or password');
   });
 
-  it('should fail login with wrong password', async () => {
+  it('POST /api/login fails with wrong password', async () => {
     const res = await request(app)
       .post('/api/login')
-      .send({ email: 'amy@email.com', password: 'wrongpass' });
+      .send({ email: 'sarah.j@email.com', password: 'wrongpass' });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.message).toBe('Invalid email or password');
   });
 
-  //for missing password scenario
-  it('should fail login if email or password is missing', async () => {
+  it('POST /api/login fails if email or password is missing', async () => {
+    // Missing password
     let res = await request(app)
       .post('/api/login')
-      .send({ email: 'amy@email.com' }); 
+      .send({ email: 'sarah.j@email.com' });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.message).toBe('Invalid email or password');
 
-    //for missing email scenario
+    // Missing email
     res = await request(app)
       .post('/api/login')
-      .send({ password: '1234' }); 
+      .send({ password: '1234' });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.message).toBe('Invalid email or password');
   });
-
 });
