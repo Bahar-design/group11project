@@ -1,8 +1,21 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useContext, createContext } from 'react';
 import axios from 'axios';
 
+// Context for global user info (name, initials)
+export const UserProfileContext = createContext();
+
+
+const getInitials = (name) => {
+  if (!name) return '';
+  const parts = name.trim().split(' ');
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() || '';
+  return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+};
+
 const AdminInfo = ({ user }) => {
-  const [formData, setFormData] = useState({
+  const { userProfile, setUserProfile } = useContext(UserProfileContext) || {};
+  const [formData, setFormData] = useState(userProfile || {
     name: '',
     email: '',
     phone: '',
@@ -21,18 +34,23 @@ const AdminInfo = ({ user }) => {
   const [success, setSuccess] = useState(false);
 
   // Fetch user profile from backend on mount
+  // On mount, fetch latest profile for this admin (by email if available)
   useEffect(() => {
     setLoading(true);
-    axios.get('/api/user-profile?type=admin')
+    let url = '/api/user-profile?type=admin';
+    if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
+    axios.get(url)
       .then(res => {
         setFormData(prev => ({ ...prev, ...res.data }));
+        if (setUserProfile) setUserProfile(res.data);
         setLoading(false);
       })
       .catch(err => {
         setError('Failed to load user profile');
         setLoading(false);
       });
-  }, []);
+    // eslint-disable-next-line
+  }, [user?.email]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,6 +58,10 @@ const AdminInfo = ({ user }) => {
       ...prev,
       [name]: value
     }));
+    // If name changes, update context/global
+    if (name === 'name' && setUserProfile) {
+      setUserProfile(prev => ({ ...prev, name: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -49,6 +71,7 @@ const AdminInfo = ({ user }) => {
     try {
       const res = await axios.post('/api/user-profile?type=admin', formData);
       setFormData(prev => ({ ...prev, ...res.data }));
+      if (setUserProfile) setUserProfile(res.data);
       setSuccess(true);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save profile');
@@ -64,6 +87,8 @@ const AdminInfo = ({ user }) => {
   ];
 
   if (loading) return <div>Loading...</div>;
+  // Show initials in big red circle above name
+  const initials = getInitials(formData.name);
   return (
     <div>
       {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
@@ -71,13 +96,23 @@ const AdminInfo = ({ user }) => {
       <div className="profile-grid">
         <div className="profile-card">
           <div className="profile-card-header">
-            <h3 className="profile-card-title">Administrator Profile</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: '50%', background: 'var(--primary-red)',
+                color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700
+              }}>{initials}</div>
+              <div>
+                <h3 className="profile-card-title" style={{ margin: 0 }}>{formData.name || 'Administrator Profile'}</h3>
+                <div style={{ color: 'var(--medium-silver)', fontSize: 14 }}>{formData.email}</div>
+              </div>
+            </div>
             <button className="btn-secondary edit-btn" type="button">
               Edit Profile
             </button>
           </div>
           <div className="profile-card-content">
             <form onSubmit={handleSubmit}>
+              {/* ...existing form fields... */}
               <div className="form-group">
                 <label>Full Name*</label>
                 <input
@@ -112,72 +147,72 @@ const AdminInfo = ({ user }) => {
                 />
               </div>
               <div className="form-group">
-              <label>Address Line 1*</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                name="address1"
-                value={formData.address1}
-                onChange={handleInputChange}
-                maxLength={100}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Address line 2</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                name="address2"
-                value={formData.address2}
-                onChange={handleInputChange}
-                maxLength={100}
-              />
-            </div>
-            <div className="form-group">
-              <label>City*</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                maxLength={100}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>State*</label>
-              <select
-                className="form-input"
-                name="state"
-                value={formData.state}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select State</option>
-                <option value="TX">Texas</option>
-                <option value="CA">California</option>
-                <option value="NY">New York</option>
-                <option value="FL">Florida</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Zip Code*</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                name="zipCode"
-                value={formData.zipCode}
-                onChange={handleInputChange}
-                minLength={5}
-                maxLength={9}
-                required
-              />
-            </div>
+                <label>Address Line 1*</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  name="address1"
+                  value={formData.address1}
+                  onChange={handleInputChange}
+                  maxLength={100}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Address line 2</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  name="address2"
+                  value={formData.address2}
+                  onChange={handleInputChange}
+                  maxLength={100}
+                />
+              </div>
+              <div className="form-group">
+                <label>City*</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  maxLength={100}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>State*</label>
+                <select
+                  className="form-input"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select State</option>
+                  <option value="TX">Texas</option>
+                  <option value="CA">California</option>
+                  <option value="NY">New York</option>
+                  <option value="FL">Florida</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Zip Code*</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  name="zipCode"
+                  value={formData.zipCode}
+                  onChange={handleInputChange}
+                  minLength={5}
+                  maxLength={9}
+                  required
+                />
+              </div>
               <div className="form-group">
                 <label>Administrator Level*</label>
-                <select 
+                <select
                   className="form-input"
                   name="adminLevel"
                   value={formData.adminLevel}
@@ -192,11 +227,11 @@ const AdminInfo = ({ user }) => {
               </div>
               <div className="form-group">
                 <label>Regions Managed</label>
-                <div style={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  gap: '0.5rem', 
-                  marginTop: '0.5rem' 
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                  marginTop: '0.5rem'
                 }}>
                   {regions.map((region, index) => (
                     <span
@@ -214,6 +249,7 @@ const AdminInfo = ({ user }) => {
                   ))}
                 </div>
               </div>
+              <button type="submit" className="btn-primary" style={{ marginTop: 16 }}>Save Profile</button>
             </form>
           </div>
         </div>

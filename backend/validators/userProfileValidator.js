@@ -1,9 +1,9 @@
 // Validation for user profile fields
 // Returns { error, value }
-function validateUserProfile(data) {
+
+function validateUserProfile(data, type = 'volunteer') {
   const errors = [];
   const value = {};
-
 
   // Required fields
   const requiredFields = [
@@ -17,20 +17,27 @@ function validateUserProfile(data) {
     }
   });
 
-  // Skills (multi-select, required, must be non-empty array of strings)
-  if (!Array.isArray(data.skills) || data.skills.length === 0) {
-    errors.push('At least one skill must be selected.');
-  } else if (!data.skills.every(s => typeof s === 'string' && s.trim().length > 0)) {
-    errors.push('All skills must be non-empty strings.');
-  } else {
-    value.skills = data.skills;
-  }
+  // Only require skills and availability for volunteers
+  if (type === 'volunteer') {
+    // Skills (multi-select, required, must be non-empty array of strings)
+    if (!Array.isArray(data.skills) || data.skills.length === 0) {
+      errors.push('At least one skill must be selected.');
+    } else if (!data.skills.every(s => typeof s === 'string' && s.trim().length > 0)) {
+      errors.push('All skills must be non-empty strings.');
+    } else {
+      value.skills = data.skills;
+    }
 
-  // Availability (multi-date, required, must be non-empty array)
-  if (!Array.isArray(data.availability) || data.availability.length === 0) {
-    errors.push('At least one available date must be selected.');
+    // Availability (multi-date, required, must be non-empty array)
+    if (!Array.isArray(data.availability) || data.availability.length === 0) {
+      errors.push('At least one available date must be selected.');
+    } else {
+      value.availability = data.availability;
+    }
   } else {
-    value.availability = data.availability;
+    // For admin, just copy if present
+    value.skills = Array.isArray(data.skills) ? data.skills : [];
+    value.availability = Array.isArray(data.availability) ? data.availability : [];
   }
 
   // Email format
@@ -61,9 +68,7 @@ function validateUserProfile(data) {
   value.startDate = data.startDate || '';
   value.emergencyContact = data.emergencyContact || '';
   value.regions = Array.isArray(data.regions) ? data.regions : [];
-  value.skills = Array.isArray(data.skills) ? data.skills : [];
   value.preferences = typeof data.preferences === 'string' ? data.preferences : '';
-  value.availability = Array.isArray(data.availability) ? data.availability : [];
   value.travelRadius = data.travelRadius || '';
   value.hasTransportation = typeof data.hasTransportation === 'boolean' ? data.hasTransportation : true;
   value.primaryLocation = data.primaryLocation || '';

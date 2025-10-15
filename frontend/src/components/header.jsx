@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { UserProfileContext } from '../pages/user_profiles/adminInfo';
 import { useNavigate } from "react-router-dom";   //for navigation through pages, installed with: npm install react-router-dom
 
 
 const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, user }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { userProfile } = useContext(UserProfileContext) || {};
+  // Helper to get initials from name
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0][0]?.toUpperCase() || 'U';
+    return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+  };
 
   // Only show Events for admin, Matchmaking for volunteer
   const navItems = [
@@ -101,7 +110,7 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
                   boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
                 }}
               >
-                {user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2) : 'U'}
+                {getInitials(userProfile?.name || user?.name)}
               </div>
               <span style={{ color: 'var(--primary-red, #e63946)', fontWeight: 600 }}>Profile</span>
             </button>

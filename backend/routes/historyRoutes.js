@@ -4,7 +4,7 @@ const {
   createVolunteerRecord,
   updateVolunteerRecord,
   deleteVolunteerRecord
-} = require('../controllers/volunteerHistoryController');
+} = require('../controllers/volunteerHistory');
 
 const router = express.Router();
 

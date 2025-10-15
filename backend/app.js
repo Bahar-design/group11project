@@ -8,7 +8,7 @@ const loginRoutes = require('./routes/loginRoutes'); // import login routes
 const registrationRouter = require("./routes/registrationRoutes");
 const notificationRoutes = require('./routes/notificationRoutes');
 const eventRoutes = require('./routes/eventRoutes');
-const volunteerHistory = require('./routes/historyRoutes');
+const historyRoutes = require('./routes/historyRoutes');
 
 
 const app = express();
