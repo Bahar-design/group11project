@@ -13,8 +13,12 @@ const AdminProfile = ({ user }) => {
     { id: 'admin-info', label: 'Admin Info' },
     { id: 'management-tools', label: 'Management Tools' },
     { id: 'analytics', label: 'Analytics Dashboard' },
+    { id: 'notifications', label: 'Notifications' },
     { id: 'admin-settings', label: 'Admin Settings' }
   ];
+
+  // Lazy load to avoid circular import
+  const AdminNotificationsTab = React.lazy(() => import('./adminNotificationsTab.jsx'));
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -24,6 +28,12 @@ const AdminProfile = ({ user }) => {
         return <ManagementTools user={user} />;
       case 'analytics':
         return <Analytics user={user} />;
+      case 'notifications':
+        return (
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <AdminNotificationsTab user={user} />
+          </React.Suspense>
+        );
       case 'admin-settings':
         return <AdminSettings user={user} />;
       default:
