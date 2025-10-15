@@ -8,6 +8,7 @@ const loginRoutes = require('./routes/loginRoutes'); // import login routes
 const registrationRouter = require("./routes/registrationRoutes");
 const notificationRoutes = require('./routes/notificationRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const volunteerHistory = require('./routes/historyRoutes');
 
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api/login', loginRoutes); // login endpoint
 app.use("/api/register", registrationRouter);       //for registration
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/history', historyRoutes);
  
 // Error handler
 app.use((err, req, res, next) => {
