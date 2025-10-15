@@ -5,6 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node app.js",
+    "dev": "nodemon app.js",
     "test": "jest --coverage"
   },
   "dependencies": {
