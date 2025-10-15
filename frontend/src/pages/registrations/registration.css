@@ -1,0 +1,66 @@
+.registration-main {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.registration-card {
+  width: 450px;
+  background: var(--white);
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-medium);
+}
+
+.registration-card h2 {
+  color: var(--primary-red);
+  margin-bottom: 1.5rem;
+}
+
+.registration-card label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.registration-card .required-star {
+  color: black; 
+  margin-left: 0.25rem;
+  font-weight: bold;
+}
+
+
+.registration-card input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--medium-silver);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.registration-card label + input {
+  margin-top: 0.10rem; 
+}
+
+.registration-card .input-hint {
+  display: block;
+  font-size: 1rem;
+  color: black;
+  margin-bottom: 1rem;
+}
+
+.registration-card .btn {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.registration-card p {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.registration-card a {
+  color: var(--primary-red);
+  font-weight: 500;
+}

@@ -2,30 +2,45 @@ import React, { useState, useRef, useEffect } from 'react';
 import Select from 'react-select';
 import DatePicker from 'react-multi-date-picker';
 import 'react-multi-date-picker/styles/colors/red.css';
+import axios from 'axios';
 
 const PersonalInfo = ({ user }) => {
   const [formData, setFormData] = useState({
-    name: user.name || "",
-    email: user.email || "",
-    phone: user.phone || "",
-    address1: user.address1 || "",
-    address2: user.address2 || "",
-    city: user.city || "",
-    state: user.state || "",
-    zipCode: user.zipCode || "",
-    emergencyContact: user.emergencyContact || "",
-    primaryLocation: user.primaryLocation || "Sugar Land",
-    skills: Array.isArray(user.skills) ? user.skills.map(String) : [],
-    preferences: user.preferences || "",
-    availability: Array.isArray(user.availability) ? user.availability : [],
-    travelRadius: user.travelRadius || "20 miles",
-    hasTransportation: user.hasTransportation !== undefined ? user.hasTransportation : true
+    name: '',
+    email: '',
+    phone: '',
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    emergencyContact: '',
+    primaryLocation: 'Sugar Land',
+    skills: [],
+    preferences: '',
+    availability: [],
+    travelRadius: '20 miles',
+    hasTransportation: true
   });
-  const [availability, setAvailability] = useState(
-    Array.isArray(user.availability)
-      ? user.availability.map(date => (date instanceof Date ? date : new Date(date)))
-      : []
-  );
+  const [availability, setAvailability] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  // Fetch user profile from backend on mount
+  useEffect(() => {
+    setLoading(true);
+    axios.get('/api/user-profile?type=volunteer')
+      .then(res => {
+        setFormData(prev => ({ ...prev, ...res.data }));
+        setAvailability(Array.isArray(res.data.availability) ? res.data.availability : []);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError('Failed to load user profile');
+        setLoading(false);
+      });
+  }, []);
   const calendarContainerRef = useRef(null);
 
   const handleInputChange = (e) => {
@@ -78,13 +93,22 @@ const PersonalInfo = ({ user }) => {
     return () => calendar.removeEventListener('click', handleDayClick);
   }, [calendarContainerRef, setAvailability]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(false);
     if (availability.length === 0) {
-      alert('Please select at least one available date.');
+      setError('Please select at least one available date.');
       return;
     }
-    console.log('Saving personal info:', formData);
+    const submitData = { ...formData, availability };
+    try {
+      const res = await axios.post('/api/user-profile?type=volunteer', submitData);
+      setFormData(prev => ({ ...prev, ...res.data }));
+      setSuccess(true);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save profile');
+    }
   };
 
   // Skill options for react-select
@@ -101,8 +125,11 @@ const PersonalInfo = ({ user }) => {
     { value: 'Adaptability & Problem Solving', label: 'Adaptability & Problem Solving' },
   ];
 
+  if (loading) return <div>Loading...</div>;
   return (
     <div className="profile-grid">
+      {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
+      {success && <div style={{ color: 'green', marginBottom: 10 }}>Profile saved!</div>}
       <div className="profile-card">
         <div className="profile-card-header">
           <h3 className="profile-card-title">Complete Your Volunteer Profile</h3>

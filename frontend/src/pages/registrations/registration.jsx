@@ -1,71 +1,86 @@
-//registration.jsx
-import React from "react";
-import NavBar from "../../components/NavBar.jsx"; // Use your central NavBar
-import Footer from "../../components/footer.jsx";
-import Header from "../../components/header.jsx";
+import React, { useState } from "react";
+import Layout from "../../components/layout.jsx";
+import "./registration.css";
+import { Link } from "react-router-dom"; 
 
-export default function Registration() {
+export default function Registration({ isLoggedIn, user }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [adminID, setAdminID] = useState(""); 
+  const [message, setMessage] = useState("");
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      setMessage("Error: Enter an Email and Password");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:4000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, adminID }),  
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.message || "Registration failed");
+      } else {
+        setMessage(data.message);                  // backend message 
+      }
+    } catch (err) {
+      setMessage("Error connecting to backend");
+    }
+  };
+
+
   return (
-    <div>
-      <Header />
+  <Layout currentPage="register" user={user} isLoggedIn={isLoggedIn}>
+      <main className="registration-main">
+        <div className="registration-card">
+          <h2>Register</h2>
 
-      <main style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
-        <div
-          style={{
-            width: "450px",
-            background: "var(--white)",
-            padding: "3rem",
-            borderRadius: "12px",
-            boxShadow: "var(--shadow-medium)",
-          }}
-        >
-          <h2 style={{ color: "var(--primary-red)", marginBottom: "1.5rem" }}>Register</h2>
+          <form onSubmit={handleRegister}>
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Email</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              border: "1px solid var(--medium-silver)",
-              borderRadius: "8px",
-              marginBottom: "1rem",
-              fontSize: "1rem",
-            }}
-          />
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          <label style={{ display: "block", marginBottom: "0.5rem", marginTop: "1rem" }}>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              border: "1px solid var(--medium-silver)",
-              borderRadius: "8px",
-              marginBottom: "1rem",
-              fontSize: "1rem",
-            }}
-          />
+            <label><span className="required-star">*</span>Admin ID </label>
+            <input
+              type="text"
+              placeholder="Enter Admin ID if applicable"
+              value={adminID}
+              onChange={(e) => setAdminID(e.target.value)}
+            />
+            <span className="input-hint">*Optional for volunteers</span>
 
-          <button
-            type="submit"
-            className="btn"
-            style={{ width: "100%", marginTop: "1rem" }}
-          >
-            Register
-          </button>
 
-          <p style={{ textAlign: "center", marginTop: "1rem" }}>
-            Already have an account?{" "}
-            <a href="#" style={{ color: "var(--primary-red)", fontWeight: 500 }}>
-              Sign In
-            </a>
+            <button type="submit" className="btn">Register</button>
+          </form>
+
+          {message && <p style={{ color: "var(--primary-red)", marginTop: "1rem" }}>{message}</p>}
+
+          <p>
+            Already have an account? <Link to="/login">Sign In</Link>
           </p>
         </div>
       </main>
-      <Footer />
-    </div>
+    </Layout>
   );
 }
+

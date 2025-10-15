@@ -9,7 +9,8 @@ const Layout = ({
   onLogin, 
   onLogout,
   showHeader = true,
-  showFooter = true
+  showFooter = true,
+  user
 }) => {
   return (
     <div className="layout">
@@ -19,13 +20,12 @@ const Layout = ({
           isLoggedIn={isLoggedIn}
           onLogin={onLogin}
           onLogout={onLogout}
+          user={user}
         />
       )}
-      
       <main className="main-content">
         {children}
       </main>
-      
       {showFooter && <Footer />}
     </div>
   );
