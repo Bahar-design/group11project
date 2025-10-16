@@ -62,7 +62,7 @@ describe('Volunteer History API', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.hoursServed).toBe(6);
   });
-
+ 
   it('DELETE /api/volunteer-history/:id deletes a record', async () => {
     // Create a record to delete
     const record = {

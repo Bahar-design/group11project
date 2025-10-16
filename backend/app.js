@@ -23,7 +23,7 @@ app.use('/api/login', loginRoutes); // login endpoint
 app.use("/api/register", registrationRouter);       //for registration
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/events', eventRoutes);
-app.use('/api/history', historyRoutes);
+app.use('/api/volunteer-history', historyRoutes);
  
 // Error handler
 app.use((err, req, res, next) => {
