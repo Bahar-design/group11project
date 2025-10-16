@@ -3,8 +3,6 @@ import ProfileHeader from './profileHeader.jsx';
 import ProfileTabs from './profileTabs.jsx';
 import AdminInfo from './adminInfo.jsx';
 import ManagementTools from './managementTools.jsx';
-import Analytics from './analytics.jsx';
-import AdminSettings from './adminSettings.jsx';
 
 const AdminProfile = ({ user }) => {
   const [activeTab, setActiveTab] = useState('admin-info');
@@ -12,9 +10,7 @@ const AdminProfile = ({ user }) => {
   const tabs = [
     { id: 'admin-info', label: 'Admin Info' },
     { id: 'management-tools', label: 'Management Tools' },
-    { id: 'analytics', label: 'Analytics Dashboard' },
     { id: 'notifications', label: 'Notifications' },
-    { id: 'admin-settings', label: 'Admin Settings' }
   ];
 
   // Lazy load to avoid circular import
@@ -26,16 +22,12 @@ const AdminProfile = ({ user }) => {
         return <AdminInfo user={user} />;
       case 'management-tools':
         return <ManagementTools user={user} />;
-      case 'analytics':
-        return <Analytics user={user} />;
       case 'notifications':
         return (
           <React.Suspense fallback={<div>Loading...</div>}>
             <AdminNotificationsTab user={user} />
           </React.Suspense>
         );
-      case 'admin-settings':
-        return <AdminSettings user={user} />;
       default:
         return <AdminInfo user={user} />;
     }

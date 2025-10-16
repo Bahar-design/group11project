@@ -9,20 +9,49 @@
 //!total match percentage
 
 // --- Simple data --------------------------------------------------
-    const event = {
-    name: "Community Tailor Drive",
-    location: "Houston",                 // <-- used also an event should only have one location
-    timeSlots: ["12pm-3pm"],             // future use
-    skillsNeeded: ["tailoring", "butchering", "cleaning"]          // future use
+  //   const event = {
+  //   name: "Community Tailor Drive",
+  //   location: "Houston",                 // <-- used also an event should only have one location
+  //   timeSlots: ["12pm-3pm"],             // future use
+  //   skillsNeeded: ["tailoring", "butchering", "cleaning"]          // future use
+  // };
+  
+  // const user = {
+  //   name: "Gabriel",
+  //   preferredLocations: ["Houston", "katy"],  // <-- used for matching now
+  //   preferredSlots: ["12pm-3pm", "3pm-6pm"],  // future use
+  //   skills: ["tailoring", "butchering", "cleaning"]       // future use
+  // };
+
+
+  // uncomment lines 28-32 for 
+  const user = {
+    preferredLocations: ["Houston", "Katy"],
+    preferredSlots: ["12pm-3pm", "3pm-6pm"],
+    skills: ["leadership", "tailoring", "logistics"]
   };
   
-  const user = {
-    name: "Gabriel",
-    preferredLocations: ["Houston", "katy"],  // <-- used for matching now
-    preferredSlots: ["12pm-3pm", "3pm-6pm"],  // future use
-    skills: ["tailoring", "butchering", "cleaning"]       // future use
-  };
-
+  const events = [
+    {
+      name: "Community Tailor Drive",
+      location: ["houston"],
+      timeSlots: ["12pm-3pm"],
+      skillsNeeded: ["tailoring", "leadership", "knitting"]
+    },
+    {
+      name: "Logistics Workshop",
+      location: ["Katy"],
+      timeSlots: ["9am-12pm"],
+      skillsNeeded: ["logistics", "leadership"]
+    },
+    {
+      name: "Art Fair",
+      location: ["Austin"],
+      timeSlots: ["3pm-6pm"],
+      skillsNeeded: ["painting"]
+    }
+  ];
+  
   // --- Location-only matcher ----------------------------------------
   const norm = s => String(s).trim().toLowerCase();
 
@@ -38,22 +67,12 @@
 
 
 
-
-
-
-
-
-
     //* now we implement the match making for the matchByTimeslot  
   function matchByTimeslot(user, event){
     const userTimes = new Set(user.preferredSlots.map(norm));
     const evTimes = norm(event.timeSlots);
     return userTimes.has(evTimes) ? 1 : 0;
   } 
-
-
-
-
 
 
 
@@ -117,5 +136,7 @@
   // let Final = totalMatchPercentage(user, event);
   // console.log(Final)
 
+  // const final = rankEventsByMatch(user, events)
+  // console.log(final)
 
   module.exports = { matchByLocation, matchByTimeslot, matchBySkills, totalMatchPercentage, rankEventsByMatch};

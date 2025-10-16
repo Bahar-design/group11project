@@ -10,7 +10,7 @@ export default function EventsPanel() {
         className=""
       >
         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-          {matchedEvents.map((e, i) => (
+          {matchedEvents.map( (e, i) => (
             <EventCard key={i} event={e} />
           ))}
         </div>
