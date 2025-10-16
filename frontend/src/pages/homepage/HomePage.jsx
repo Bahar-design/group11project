@@ -173,19 +173,6 @@ export default function HomePage({ isLoggedIn, onLogout, user }) {
         >
           <h3 className="mb-3">Ready to Make an Impact?</h3>
           <img className="secondPic" src= {secondPic} alt="volunteer"/>
-          <button
-            href="#volunteer"
-            className="btn btn-primary btn-lg"
-            style={{
-              background: "linear-gradient(135deg, var(--primary-red), var(--accent-red))",
-              color: "#fff",
-              padding: "1rem 2rem",
-              borderRadius: "12px",
-              fontWeight: 600,
-            }}
-          >
-            Join Us Today
-          </button>
         </div>
       </div>
     </Layout>

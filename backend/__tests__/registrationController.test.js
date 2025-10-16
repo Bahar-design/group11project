@@ -67,3 +67,14 @@ describe('Registration Controller', () => {
     expect(res.body).toHaveProperty('message', 'User already exists');
   });
 });
+
+it('should ignore empty adminID and register as volunteer', async () => {
+  const res = await request(app)
+    .post('/api/register')
+    .send({ email: 'edge@example.com', password: 'test', adminID: '   ' });
+
+  expect(res.statusCode).toBe(201);
+  expect(res.body.message).toBe('Volunteer registered successfully');
+  expect(res.body.user).not.toHaveProperty('adminID');
+});
+
