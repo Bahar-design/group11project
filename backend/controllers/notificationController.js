@@ -104,6 +104,26 @@ function addNotification(req, res) {
   res.status(201).json({ message: 'Notification added', notification: newNotification });
 }
 
+// GET /api/notifications/messages/admin/email/:email
+function getAdminInboxByEmail(req, res) {
+  const email = req.params.email;
+  const admins = getAdminsList();
+  const admin = admins.find(a => a.email === email);
+  if (!admin) return res.status(404).json({ message: 'Admin not found' });
+  const inbox = messages.filter(m => m.to.includes(admin.email));
+  res.status(200).json(inbox);
+}
+
+// GET /api/notifications/messages/volunteer/email/:email
+function getVolunteerInboxByEmail(req, res) {
+  const email = req.params.email;
+  const volunteers = getVolunteersList();
+  const volunteer = volunteers.find(v => v.email === email);
+  if (!volunteer) return res.status(404).json({ message: 'Volunteer not found' });
+  const inbox = messages.filter(m => m.to.includes(volunteer.email));
+  res.status(200).json(inbox);
+}
+
 module.exports = {
   getUserNotifications,
   deleteNotification,
@@ -111,5 +131,7 @@ module.exports = {
   getVolunteers,
   sendMessage,
   getAdminInbox,
-  getVolunteerInbox
+  getVolunteerInbox,
+  getAdminInboxByEmail,
+  getVolunteerInboxByEmail
 };

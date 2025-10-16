@@ -12,5 +12,8 @@ router.post('/', notificationController.addNotification);
 // Messaging
 router.post('/message', notificationController.sendMessage);
 router.get('/messages/admin/:adminId', notificationController.getAdminInbox);
+router.get('/messages/admin/email/:email', notificationController.getAdminInboxByEmail);
+router.get('/messages/volunteer/:volunteerId', notificationController.getVolunteerInbox);
+router.get('/messages/volunteer/email/:email', notificationController.getVolunteerInboxByEmail);
 
 module.exports = router;
