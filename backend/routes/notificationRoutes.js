@@ -5,6 +5,7 @@ const notificationController = require('../controllers/notificationController');
 
 // Notifications
 router.get('/volunteers', notificationController.getVolunteers); // must be before parameterized routes
+router.get('/admins', notificationController.getAdmins);
 router.get('/:userId', notificationController.getUserNotifications);
 router.delete('/:id', notificationController.deleteNotification);
 router.post('/', notificationController.addNotification);

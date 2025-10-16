@@ -1,3 +1,7 @@
+// GET /api/notifications/admins
+function getAdmins(req, res) {
+  res.status(200).json(getAdminsList());
+}
 // backend/controllers/notificationController.js
 let notifications = [
   { id: 1, userId: 1, title: 'New Event Assignments', text: 'You are assigned to the Clothing Drive on Sep 19, 2025.' },
@@ -129,6 +133,7 @@ module.exports = {
   deleteNotification,
   addNotification,
   getVolunteers,
+  getAdmins,
   sendMessage,
   getAdminInbox,
   getVolunteerInbox,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+
 // Fetch volunteers from backend
 const fetchVolunteers = async () => {
   const res = await fetch('http://localhost:4000/api/notifications/volunteers');
@@ -7,8 +8,16 @@ const fetchVolunteers = async () => {
   return await res.json();
 };
 
+// Fetch admins from backend
+const fetchAdmins = async () => {
+  const res = await fetch('http://localhost:4000/api/notifications/admins');
+  if (!res.ok) return [];
+  return await res.json();
+};
+
 const VolunteerNotifications = ({ user }) => {
   const [volunteers, setVolunteers] = useState([]);
+  const [admins, setAdmins] = useState([]);
   const [toEmails, setToEmails] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -26,8 +35,11 @@ const VolunteerNotifications = ({ user }) => {
 
   useEffect(() => {
     fetchVolunteers().then(setVolunteers);
+    fetchAdmins().then(setAdmins);
 
+    // Use volunteerId for notifications, but use email for inbox
     const volunteerId = user?.id || 1;
+    const volunteerEmail = user?.email;
 
     // Load notifications
     fetch(`http://localhost:4000/api/notifications/${volunteerId}`)
@@ -35,22 +47,34 @@ const VolunteerNotifications = ({ user }) => {
       .then(setNotifications)
       .catch(() => setNotifications([]));
 
-    // Load inbox messages
-    fetch(`http://localhost:4000/api/notifications/messages/volunteer/${volunteerId}`)
-      .then(res => res.json())
-      .then(setInbox)
-      .catch(() => setInbox([]));
+    // Load inbox messages by email (robust)
+    if (volunteerEmail) {
+      fetch(`http://localhost:4000/api/notifications/messages/volunteer/email/${encodeURIComponent(volunteerEmail)}`)
+        .then(res => res.json())
+        .then(setInbox)
+        .catch(() => setInbox([]));
+    } else {
+      setInbox([]);
+    }
 
     setLoading(false);
   }, [user]);
 
-  // Autocomplete logic
+  // Autocomplete logic (suggest admins and volunteers)
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInputValue(value);
     setShowSuggestions(true);
     if (value.length > 0) {
-      setSuggestions(volunteers.filter(v => v.email.toLowerCase().includes(value.toLowerCase()) && !toEmails.includes(v.email)));
+      // Combine admins and volunteers, filter unique emails, exclude self
+      const allUsers = [...volunteers, ...admins];
+      const seen = new Set();
+      const uniqueUsers = allUsers.filter(u => {
+        if (!u.email || seen.has(u.email) || u.email === user?.email) return false;
+        seen.add(u.email);
+        return true;
+      });
+      setSuggestions(uniqueUsers.filter(u => u.email.toLowerCase().includes(value.toLowerCase()) && !toEmails.includes(u.email)));
     } else setSuggestions([]);
   };
 
@@ -86,7 +110,10 @@ const VolunteerNotifications = ({ user }) => {
     setError(null);
     setSuccess(null);
 
-    if (!message || toEmails.length === 0) {
+    // Filter out self from recipients
+    const filteredToEmails = toEmails.filter(email => email !== user?.email);
+
+    if (!message || filteredToEmails.length === 0) {
       setError('Please provide recipients and a message.');
       setSending(false);
       return;
@@ -95,7 +122,7 @@ const VolunteerNotifications = ({ user }) => {
     fetch('http://localhost:4000/api/notifications/message', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: user.email, to: toEmails, message })
+      body: JSON.stringify({ from: user.email, to: filteredToEmails, message })
     })
       .then(res => res.json())
       .then(data => {
@@ -182,6 +209,15 @@ const VolunteerNotifications = ({ user }) => {
                     </button>
                   </span>
                 ))}
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="email-suggestions-list" style={{ position: 'absolute', zIndex: 10, background: '#fff', border: '1px solid #ccc', borderRadius: 4, margin: 0, padding: 0, listStyle: 'none', left: 0, right: 0 }}>
+                    {suggestions.map(u => (
+                      <li key={u.email} style={{ padding: '0.25rem 0.5rem', cursor: 'pointer' }} onClick={() => handleSuggestionClick(u.email)}>
+                        {u.email} <span style={{ color: '#888', fontSize: '0.95em' }}>({u.name})</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <input
                   type="text"
                   value={inputValue}
