@@ -26,6 +26,24 @@ const matchedEvents = [
       matchScore: 84,
       priority: "MEDIUM",
     },
+    {
+      title: "Winter Coat Sorting",
+      location: "Sugar Land Center",
+      time: "Dec 24, 2025 · 12–3pm",
+      volunteers: 44,
+      skills: ["Organization", "Attention to Detail"],
+      matchScore: 84,
+      priority: "MEDIUM",
+    },
+    {
+      title: "Winter Coat Sorting",
+      location: "Sugar Land Center",
+      time: "Dec 24, 2025 · 12–3pm",
+      volunteers: 44,
+      skills: ["Organization", "Attention to Detail"],
+      matchScore: 84,
+      priority: "MEDIUM",
+    },
 ];
 
 export default matchedEvents;

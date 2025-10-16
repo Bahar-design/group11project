@@ -3,38 +3,26 @@
 
 
 
-
-
 //! create it to were there is a specific order to the event cards! so only the proper events are listed that match the users 
 //!total match percentage
 
 // --- Simple data --------------------------------------------------
-    const event = {
+  const event = {
     name: "Community Tailor Drive",
-    location: "Houston",                 // <-- used also an event should only have one location
+    location: "Houston",                 // <-- used for matching now
     timeSlots: ["12pm-3pm"],             // future use
-    skillsNeeded: ["tailoring", "butchering", "cleaning"]          // future use
+    skillsNeeded: ["tailoring", "butchering"]          // future use
   };
   
   const user = {
     name: "Gabriel",
-    preferredLocations: ["Houston", "katy"],  // <-- used for matching now
+    preferredLocations: ["Houston","Katy"],  // <-- used for matching now
     preferredSlots: ["12pm-3pm", "3pm-6pm"],  // future use
-    skills: ["tailoring", "butchering", "cleaning"]       // future use
+    skills: ["leadership", "tailoring", "butchering", "cleaning", "business administration"]       // future use
   };
   
   // --- Location-only matcher ----------------------------------------
   const norm = s => String(s).trim().toLowerCase();
-
-
-
-
-
-
-
-
-
-
     //* this is the match making function for the evemt based on the location
 
   function matchByLocation(user, event) {
@@ -43,15 +31,6 @@
     return userLocs.has(evLoc) ? 1 : 0; // true = match, false = no match! need to implement returning of either 0 or 1 for percentage rating
   }
   
-
-
-
-
-
-
-
-
-
     //* now we implement the match making for the matchByTimeslot  
   function matchByTimeslot(user, event){
     const userTimes = new Set(user.preferredSlots.map(norm));
@@ -60,14 +39,29 @@
   } 
 
 
-
-
-
-
-
-
   //!possibly could have incorrect match making because the match making is done here with seeing if the user
   //! has a skill which is listed in the event
+  // function matchBySkills(user, event){
+  //   const userSkills = new Set(user.skills.map(norm));
+  //   const evSkills = event.skillsNeeded.map(norm);
+    
+  //   let skillsCount = 0;
+
+  //   for (const skill of evSkills){
+  //     if(userSkills.has(skill)){
+  //       skillsCount += 1;
+  //     }
+  //     else{
+  //       return 0;
+  //     }
+  //   }
+
+  //   let skillsMatchedPercentage = Number(skillsCount / userSkills.size).toFixed(2);
+    
+  //   return skillsMatchedPercentage;
+
+  // }
+
   function matchBySkills(user, event) {
     const evSkills = new Set(event.skillsNeeded.map(norm));
     const userSkills = user.skills.map(norm)
@@ -78,25 +72,29 @@
       if(evSkills.has(skill)){
         skillCount += 1;
       }
+      else{
+        return 0
+      }
     }
 
-    const  skillsMatchedPercentage = Number((skillCount/evSkills.size).toFixed(2));
+    let skillsMatchedPercentage = Number(skillsCount / evSkills.size).toFixed(2);
 
     return skillsMatchedPercentage;
 
   }
 
   function totalMatchPercentage(user,event) {
-    const locScore = matchByLocation(user, event);
-    const timeScore = matchByTimeslot(user, event);
-    const skillsScores = Number(matchBySkills(user,event));
-    const final = Number( ( ( ( locScore + timeScore + skillsScores ) / 3 ) * 100 ).toFixed(0) );
+    // let locScore = Number(matchByLocation(user, event));
+    let locScore = matchByLocation(user, event);
+    let timeScore = matchByTimeslot(user, event);
+    let skillsScores = Number(matchBySkills(user,event));
 
-    return final;
+    return Number( ( (locScore + timeScore + skillsScores) / 3.0) * 100).toFixed(2);
   }
 
-  // let Final = totalMatchPercentage(user, event);
-  // console.log(Final)
+  let final = totalMatchPercentage(user, event);
+
+  console.log(final)
 
 
-  module.exports = { matchByLocation, matchByTimeslot, matchBySkills, totalMatchPercentage};
+  module.exports = { matchByLocation, matchByTimeslot, matchBySkills};

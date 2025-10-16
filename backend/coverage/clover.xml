@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1760380801914" clover="3.2.0">
-  <project timestamp="1760380801915" name="All files">
-    <metrics statements="204" coveredstatements="192" conditionals="148" coveredconditionals="131" methods="24" coveredmethods="23" elements="376" coveredelements="346" complexity="0" loc="204" ncloc="204" packages="4" files="13" classes="13"/>
+<coverage generated="1760541193609" clover="3.2.0">
+  <project timestamp="1760541193609" name="All files">
+    <metrics statements="227" coveredstatements="215" conditionals="154" coveredconditionals="137" methods="29" coveredmethods="28" elements="410" coveredelements="380" complexity="0" loc="227" ncloc="227" packages="4" files="14" classes="14"/>
     <package name="backend">
       <metrics statements="22" coveredstatements="19" conditionals="8" coveredconditionals="3" methods="2" coveredmethods="1"/>
-      <file name="app.js" path="/home/tiffany/Documents/group11project/backend/app.js">
+      <file name="app.js" path="/Users/gabep/group11project/backend/app.js">
         <metrics statements="22" coveredstatements="19" conditionals="8" coveredconditionals="3" methods="2" coveredmethods="1"/>
         <line num="3" count="2" type="stmt"/>
         <line num="4" count="2" type="stmt"/>
@@ -32,7 +32,7 @@
     </package>
     <package name="backend.controllers">
       <metrics statements="81" coveredstatements="74" conditionals="43" coveredconditionals="36" methods="17" coveredmethods="17"/>
-      <file name="eventController.js" path="/home/tiffany/Documents/group11project/backend/controllers/eventController.js">
+      <file name="eventController.js" path="/Users/gabep/group11project/backend/controllers/eventController.js">
         <metrics statements="27" coveredstatements="23" conditionals="8" coveredconditionals="5" methods="6" coveredmethods="6"/>
         <line num="1" count="2" type="stmt"/>
         <line num="4" count="2" type="stmt"/>
@@ -62,7 +62,7 @@
         <line num="66" count="1" type="stmt"/>
         <line num="69" count="2" type="stmt"/>
       </file>
-      <file name="loginController.js" path="/home/tiffany/Documents/group11project/backend/controllers/loginController.js">
+      <file name="loginController.js" path="/Users/gabep/group11project/backend/controllers/loginController.js">
         <metrics statements="7" coveredstatements="7" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
         <line num="4" count="3" type="stmt"/>
         <line num="10" count="5" type="stmt"/>
@@ -72,7 +72,7 @@
         <line num="16" count="1" type="stmt"/>
         <line num="19" count="3" type="stmt"/>
       </file>
-      <file name="notificationController.js" path="/home/tiffany/Documents/group11project/backend/controllers/notificationController.js">
+      <file name="notificationController.js" path="/Users/gabep/group11project/backend/controllers/notificationController.js">
         <metrics statements="15" coveredstatements="15" conditionals="7" coveredconditionals="7" methods="5" coveredmethods="5"/>
         <line num="2" count="3" type="stmt"/>
         <line num="9" count="3" type="stmt"/>
@@ -90,7 +90,7 @@
         <line num="27" count="1" type="stmt"/>
         <line num="30" count="3" type="stmt"/>
       </file>
-      <file name="registrationController.js" path="/home/tiffany/Documents/group11project/backend/controllers/registrationController.js">
+      <file name="registrationController.js" path="/Users/gabep/group11project/backend/controllers/registrationController.js">
         <metrics statements="14" coveredstatements="14" conditionals="14" coveredconditionals="14" methods="2" coveredmethods="2"/>
         <line num="4" count="8" type="stmt"/>
         <line num="11" count="5" type="stmt"/>
@@ -107,7 +107,7 @@
         <line num="37" count="2" type="stmt"/>
         <line num="40" count="8" type="stmt"/>
       </file>
-      <file name="userProfileController.js" path="/home/tiffany/Documents/group11project/backend/controllers/userProfileController.js">
+      <file name="userProfileController.js" path="/Users/gabep/group11project/backend/controllers/userProfileController.js">
         <metrics statements="18" coveredstatements="15" conditionals="10" coveredconditionals="6" methods="2" coveredmethods="2"/>
         <line num="1" count="2" type="stmt"/>
         <line num="5" count="2" type="stmt"/>
@@ -131,7 +131,7 @@
     </package>
     <package name="backend.routes">
       <metrics statements="31" coveredstatements="31" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <file name="eventRoutes.js" path="/home/tiffany/Documents/group11project/backend/routes/eventRoutes.js">
+      <file name="eventRoutes.js" path="/Users/gabep/group11project/backend/routes/eventRoutes.js">
         <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="2" type="stmt"/>
         <line num="2" count="2" type="stmt"/>
@@ -142,7 +142,7 @@
         <line num="16" count="2" type="stmt"/>
         <line num="18" count="2" type="stmt"/>
       </file>
-      <file name="loginRoutes.js" path="/home/tiffany/Documents/group11project/backend/routes/loginRoutes.js">
+      <file name="loginRoutes.js" path="/Users/gabep/group11project/backend/routes/loginRoutes.js">
         <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="3" count="2" type="stmt"/>
         <line num="4" count="2" type="stmt"/>
@@ -150,7 +150,7 @@
         <line num="8" count="2" type="stmt"/>
         <line num="10" count="2" type="stmt"/>
       </file>
-      <file name="notificationRoutes.js" path="/home/tiffany/Documents/group11project/backend/routes/notificationRoutes.js">
+      <file name="notificationRoutes.js" path="/Users/gabep/group11project/backend/routes/notificationRoutes.js">
         <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="2" type="stmt"/>
         <line num="2" count="2" type="stmt"/>
@@ -160,7 +160,7 @@
         <line num="7" count="2" type="stmt"/>
         <line num="9" count="2" type="stmt"/>
       </file>
-      <file name="registrationRoutes.js" path="/home/tiffany/Documents/group11project/backend/routes/registrationRoutes.js">
+      <file name="registrationRoutes.js" path="/Users/gabep/group11project/backend/routes/registrationRoutes.js">
         <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="2" type="stmt"/>
         <line num="2" count="2" type="stmt"/>
@@ -168,7 +168,7 @@
         <line num="7" count="2" type="stmt"/>
         <line num="9" count="2" type="stmt"/>
       </file>
-      <file name="userProfile.js" path="/home/tiffany/Documents/group11project/backend/routes/userProfile.js">
+      <file name="userProfile.js" path="/Users/gabep/group11project/backend/routes/userProfile.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="2" type="stmt"/>
         <line num="2" count="2" type="stmt"/>
@@ -179,8 +179,8 @@
       </file>
     </package>
     <package name="backend.validators">
-      <metrics statements="70" coveredstatements="68" conditionals="97" coveredconditionals="92" methods="5" coveredmethods="5"/>
-      <file name="eventValidator.js" path="/home/tiffany/Documents/group11project/backend/validators/eventValidator.js">
+      <metrics statements="93" coveredstatements="91" conditionals="103" coveredconditionals="98" methods="10" coveredmethods="10"/>
+      <file name="eventValidator.js" path="/Users/gabep/group11project/backend/validators/eventValidator.js">
         <metrics statements="29" coveredstatements="28" conditionals="36" coveredconditionals="35" methods="2" coveredmethods="2"/>
         <line num="4" count="12" type="stmt"/>
         <line num="5" count="12" type="stmt"/>
@@ -212,7 +212,33 @@
         <line num="55" count="5" type="stmt"/>
         <line num="58" count="3" type="stmt"/>
       </file>
-      <file name="userProfileValidator.js" path="/home/tiffany/Documents/group11project/backend/validators/userProfileValidator.js">
+      <file name="matchByLocation.js" path="/Users/gabep/group11project/backend/validators/matchByLocation.js">
+        <metrics statements="23" coveredstatements="23" conditionals="6" coveredconditionals="6" methods="5" coveredmethods="5"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="27" count="79" type="stmt"/>
+        <line num="41" count="7" type="stmt"/>
+        <line num="42" count="7" type="stmt"/>
+        <line num="43" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="57" count="7" type="stmt"/>
+        <line num="58" count="7" type="stmt"/>
+        <line num="59" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="72" count="8" type="stmt"/>
+        <line num="73" count="8" type="stmt"/>
+        <line num="75" count="8" type="stmt"/>
+        <line num="77" count="8" type="stmt"/>
+        <line num="78" count="22" type="cond" truecount="2" falsecount="0"/>
+        <line num="79" count="15" type="stmt"/>
+        <line num="83" count="8" type="stmt"/>
+        <line num="85" count="8" type="stmt"/>
+        <line num="90" count="5" type="stmt"/>
+        <line num="91" count="5" type="stmt"/>
+        <line num="92" count="5" type="stmt"/>
+        <line num="93" count="5" type="stmt"/>
+        <line num="95" count="5" type="stmt"/>
+        <line num="102" count="1" type="stmt"/>
+      </file>
+      <file name="userProfileValidator.js" path="/Users/gabep/group11project/backend/validators/userProfileValidator.js">
         <metrics statements="41" coveredstatements="40" conditionals="61" coveredconditionals="57" methods="3" coveredmethods="3"/>
         <line num="4" count="11" type="stmt"/>
         <line num="5" count="11" type="stmt"/>
