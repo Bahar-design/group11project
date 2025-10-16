@@ -37,11 +37,15 @@ export default function EventCard({ event }) {
         </div>
   
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Chip>{event.matchScore}% Perfect Match</Chip>
-          <button className="rounded-xl bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-600">
-            Join the Drive
+          <Chip>{event.matchScore}% Perfect Match</Chip>  {/*this is were in the future we will insert the percentage! */}
+          {/* to add rounded corners added ! to overide parent or component library styling */}
+          <button className="!rounded-full bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-600">
+              Join the Drive!
           </button>
         </div>
       </div>
     );
   }
+
+
+  // bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-600
