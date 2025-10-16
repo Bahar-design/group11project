@@ -14,7 +14,7 @@ export default function EventCard({ event }) {
                 <div className="mt-10 flex flex-wrap items-center text-xs text-slate-500"> 
                     <div className="flex items-center gap-1">
                         <span className="i">📍</span>
-                        <span>{event.location}</span>
+                        <span>{event.location}</span> 
                     </div>
                     <div className="flex items-center gap-1">
                         <span className="i">🕒</span>
@@ -41,7 +41,7 @@ export default function EventCard({ event }) {
         </div>
   
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Chip>{event.matchScore}% Perfect Match</Chip>  {/*this is were in the future we will insert the percentage! */}
+          <Chip>{event.matchScore}% Perfect Match</Chip>  {/*this is were in the future we will insert the percentage! also the children object is the content wrapped inside of <Chip>*/}
           {/* to add rounded corners added ! to overide parent or component library styling */}
           <button
             onClick={ () => setJoined(!joined)}
