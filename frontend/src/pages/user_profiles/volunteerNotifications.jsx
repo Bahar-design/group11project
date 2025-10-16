@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Settings = ({ user }) => {
+const Notification = ({ user }) => {
   const [notifications, setNotifications] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -97,4 +97,4 @@ const Settings = ({ user }) => {
   );
 };
 
-export default Settings;
+export default Notification;

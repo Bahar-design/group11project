@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ProfileHeader from './profileHeader.jsx';
 import ProfileTabs from './profileTabs.jsx';
 import PersonalInfo from './personalInfo.jsx';
-import Settings from './settings.jsx';
+import Settings from './volunteerNotifications.jsx';
 
 
 const VolunteerProfile = ({ user }) => {

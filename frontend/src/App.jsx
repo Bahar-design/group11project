@@ -11,7 +11,6 @@ function ProtectedRoute({ isLoggedIn, children }) {
 import Header from './components/header.jsx';
 import Login from './pages/logins/login';
 import Registration from './pages/registrations/registration';
-import Notifications from './pages/notifications/notification'; 
 import Calendar from './pages/calendar/calendar';
 import MatchMaking from "./pages/volunterMatch/MatchMaking";
 import UserProfiles from "./pages/user_profiles/userProfile";
@@ -45,7 +44,6 @@ export default function App() {
               <UserProfiles isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
             </ProtectedRoute>
           } />
-          <Route path="/notifications" element={<Notifications isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/calendar" element={<Calendar isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
           <Route path="/match-making" element={<MatchMaking isLoggedIn={isLoggedIn} user={user} />} />
         </Routes>
