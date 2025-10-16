@@ -1,4 +1,4 @@
-const { matchByLocation, matchByTimeslot, matchBySkills, totalMatchPercentage} = require("../validators/matchByLocation");
+const { matchByLocation, matchByTimeslot, matchBySkills, totalMatchPercentage, rankEventsByMatch} = require("../controllers/matchMakingController.js");
 
 
 
@@ -205,6 +205,85 @@ describe("totalMatchPercentage", () => {
 
     expect(totalMatchPercentage(user, event)).toBe(78);
   });
+
+
+
+
+
+
+
+
+
+  
+  
+});
+
+
+
+
+//*TESTING FOR THE CORRECT RETURNED ARRAY OF EVENTS MATCHED TO THE USER
+describe("rankEventsByMatch", () => {
+
+  test("should have a correct hierarchy for events being listed that are matched for the user with the highest match being at the top and lowest at the bottom", () => {
+    const user = {
+      preferredLocations: ["Houston", "Katy"],
+      preferredSlots: ["12pm-3pm", "3pm-6pm"],
+      skills: ["leadership", "tailoring", "logistics"]
+    };
+    
+    const events = [
+      {
+        name: "Community Tailor Drive",
+        location: ["houston"],
+        timeSlots: ["12pm-3pm"],
+        skillsNeeded: ["tailoring", "leadership", "knitting"]
+      },
+      {
+        name: "Logistics Workshop",
+        location: ["Katy"],
+        timeSlots: ["9am-12pm"],
+        skillsNeeded: ["logistics", "leadership"]
+      },
+      {
+        name: "Art Fair",
+        location: ["Austin"],
+        timeSlots: ["3pm-6pm"],
+        skillsNeeded: ["painting"]
+      }
+    ];
+
+
+    //* expected array
+    const needArray = [
+      {
+        name: 'Community Tailor Drive',
+        location: [ 'houston' ],
+        timeSlots: [ '12pm-3pm' ],
+        skillsNeeded: [ 'tailoring', 'leadership', 'knitting' ],
+        matchPercentage: 89
+      },
+      {
+        name: 'Logistics Workshop',
+        location: [ 'Katy' ],
+        timeSlots: [ '9am-12pm' ],
+        skillsNeeded: [ 'logistics', 'leadership' ],
+        matchPercentage: 67
+      },
+      {
+        name: 'Art Fair',
+        location: [ 'Austin' ],
+        timeSlots: [ '3pm-6pm' ],
+        skillsNeeded: [ 'painting' ],
+        matchPercentage: 33
+      }
+    ]
+
+    expect(rankEventsByMatch(user, events)).toStrictEqual(needArray);
+
+
+
+  });
+
 
 
 });

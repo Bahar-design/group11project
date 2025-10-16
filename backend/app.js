@@ -9,6 +9,7 @@ const registrationRouter = require("./routes/registrationRoutes");
 const notificationRoutes = require('./routes/notificationRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const historyRoutes = require('./routes/historyRoutes');
+const calendarRoutes = require('./routes/calendarRoutes');
 
 
 const app = express();
@@ -23,7 +24,8 @@ app.use('/api/login', loginRoutes); // login endpoint
 app.use("/api/register", registrationRouter);       //for registration
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/events', eventRoutes);
-app.use('/api/history', historyRoutes);
+app.use('/api/volunteer-history', historyRoutes);
+app.use('/api/calendar', calendarRoutes);
  
 // Error handler
 app.use((err, req, res, next) => {

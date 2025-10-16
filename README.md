@@ -15,7 +15,7 @@ cd ~/Documents/group11project/backend$ node app.js
 You should see: Backend server running on port 4000
 
 
-Then open another termianl besides the first one, and navigate to the frontend folder:
+Then open another terminal besides the first one, and navigate to the frontend folder:
 
 ```bash
 cd ~/Documents/group11project/frontend/
