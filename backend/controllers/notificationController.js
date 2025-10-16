@@ -9,7 +9,6 @@ let notifications = [
 const { users } = require('./loginController');
 
 function getVolunteersList() {
-  // Only users with type 'volunteer'
   return users
     .map((u, idx) => ({ id: idx + 1, name: u.name, email: u.email }))
     .filter(u => {
@@ -31,6 +30,7 @@ function getAdminsList() {
 let messages = [
   // { id, from, to: [email], message, timestamp }
 ];
+
 // GET /api/notifications/volunteers
 function getVolunteers(req, res) {
   res.status(200).json(getVolunteersList());
@@ -39,7 +39,7 @@ function getVolunteers(req, res) {
 // POST /api/notifications/message
 function sendMessage(req, res) {
   const { from, to, message } = req.body;
-  // Validation
+
   if (!from || typeof from !== 'string' || !/^\S+@\S+\.\S+$/.test(from)) {
     return res.status(400).json({ message: 'Invalid or missing sender email.' });
   }
@@ -49,6 +49,7 @@ function sendMessage(req, res) {
   if (!message || typeof message !== 'string' || message.length < 1 || message.length > 1000) {
     return res.status(400).json({ message: 'Message must be 1-1000 characters.' });
   }
+
   const msg = {
     id: messages.length + 1,
     from,
@@ -62,7 +63,6 @@ function sendMessage(req, res) {
 
 // GET /api/notifications/messages/admin/:adminId
 function getAdminInbox(req, res) {
-  // For now, show all messages sent to the admin's email
   const adminId = parseInt(req.params.adminId);
   const admins = getAdminsList();
   const admin = admins.find(a => a.id === adminId);
@@ -71,6 +71,17 @@ function getAdminInbox(req, res) {
   res.status(200).json(inbox);
 }
 
+// GET /api/notifications/messages/volunteer/:volunteerId
+function getVolunteerInbox(req, res) {
+  const volunteerId = parseInt(req.params.volunteerId);
+  const volunteers = getVolunteersList();
+  const volunteer = volunteers.find(v => v.id === volunteerId);
+  if (!volunteer) return res.status(404).json({ message: 'Volunteer not found' });
+  const inbox = messages.filter(m => m.to.includes(volunteer.email));
+  res.status(200).json(inbox);
+}
+
+// User notifications
 function getUserNotifications(req, res) {
   const userId = parseInt(req.params.userId);
   const userNotifications = notifications.filter(n => n.userId === userId);
@@ -99,5 +110,6 @@ module.exports = {
   addNotification,
   getVolunteers,
   sendMessage,
-  getAdminInbox
+  getAdminInbox,
+  getVolunteerInbox
 };
