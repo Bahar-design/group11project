@@ -1,11 +1,21 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+// Context for global user info (name, initials)
+import { UserProfileContext } from './adminInfo';
 import Select from 'react-select';
 import DatePicker from 'react-multi-date-picker';
 import 'react-multi-date-picker/styles/colors/red.css';
 import axios from 'axios';
 
+const getInitials = (name) => {
+  if (!name) return '';
+  const parts = name.trim().split(' ');
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() || '';
+  return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+};
+
 const PersonalInfo = ({ user }) => {
-  const [formData, setFormData] = useState({
+  const { userProfile, setUserProfile } = useContext(UserProfileContext) || {};
+  const [formData, setFormData] = useState(userProfile || {
     name: '',
     email: '',
     phone: '',
@@ -30,23 +40,26 @@ const PersonalInfo = ({ user }) => {
   // Fetch user profile from backend on mount
   useEffect(() => {
     setLoading(true);
-    axios.get('/api/user-profile?type=volunteer')
+    let url = '/api/user-profile?type=volunteer';
+    if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
+    axios.get(url)
       .then(res => {
         setFormData(prev => ({ ...prev, ...res.data }));
         setAvailability(Array.isArray(res.data.availability) ? res.data.availability : []);
+        if (setUserProfile) setUserProfile(res.data);
         setLoading(false);
       })
       .catch(err => {
         setError('Failed to load user profile');
         setLoading(false);
       });
-  }, []);
+    // eslint-disable-next-line
+  }, [user?.email]);
   const calendarContainerRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked, multiple, options } = e.target;
     if (name === 'skills') {
-      // for multi-select, update both formData and preserve focus/selection
       const selected = Array.from(options).filter(o => o.selected).map(o => o.value);
       setFormData(prev => ({
         ...prev,
@@ -57,6 +70,10 @@ const PersonalInfo = ({ user }) => {
         ...prev,
         [name]: type === 'checkbox' ? checked : value
       }));
+      // If name changes, update context/global
+      if (name === 'name' && setUserProfile) {
+        setUserProfile(prev => ({ ...prev, name: value }));
+      }
     }
   };
 
@@ -105,6 +122,7 @@ const PersonalInfo = ({ user }) => {
     try {
       const res = await axios.post('/api/user-profile?type=volunteer', submitData);
       setFormData(prev => ({ ...prev, ...res.data }));
+      if (setUserProfile) setUserProfile(res.data);
       setSuccess(true);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save profile');
@@ -126,13 +144,24 @@ const PersonalInfo = ({ user }) => {
   ];
 
   if (loading) return <div>Loading...</div>;
+  // Show initials in big red circle above name
+  const initials = getInitials(formData.name);
   return (
     <div className="profile-grid">
       {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
       {success && <div style={{ color: 'green', marginBottom: 10 }}>Profile saved!</div>}
       <div className="profile-card">
         <div className="profile-card-header">
-          <h3 className="profile-card-title">Complete Your Volunteer Profile</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%', background: 'var(--primary-red)',
+              color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700
+            }}>{initials}</div>
+            <div>
+              <h3 className="profile-card-title" style={{ margin: 0 }}>{formData.name || 'Complete Your Volunteer Profile'}</h3>
+              <div style={{ color: 'var(--medium-silver)', fontSize: 14 }}>{formData.email}</div>
+            </div>
+          </div>
           <button className="btn-secondary edit-btn" type="button">Edit</button>
         </div>
         <div className="profile-card-content">

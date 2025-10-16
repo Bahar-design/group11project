@@ -63,7 +63,8 @@ function getUserProfile(req, res) {
 
 function updateUserProfile(req, res, next) {
   const type = req.query.type === 'admin' ? 'admin' : 'volunteer';
-  const { error, value } = validateUserProfile(req.body);
+  // Pass user type to validator
+  const { error, value } = validateUserProfile(req.body, type);
   if (error) {
     error.status = 400;
     return next(error);

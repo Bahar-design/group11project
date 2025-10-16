@@ -16,4 +16,4 @@ function login(req, res) {
   res.json({ user: { name: user.name, email: user.email, type: user.type } });
 }
 
-module.exports = { login };
+module.exports = { login, users };
