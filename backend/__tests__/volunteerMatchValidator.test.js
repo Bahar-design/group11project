@@ -113,7 +113,7 @@ describe("matchBySkills", () => {
 
 
 
-//*TESTING FOR TOTAL MATCH PERCENTAGE  FUNCTION
+//*TESTING FOR TOTAL MATCH PERCENTAGE`  FUNCTION
 describe("totalMatchPercentage", () => {
 
   test("should return 0 since there is no match", () => {
