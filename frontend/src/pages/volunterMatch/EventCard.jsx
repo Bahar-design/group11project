@@ -1,7 +1,11 @@
 import Chip from "./Chip";
+import { useState }from "react" 
 
 
 export default function EventCard({ event }) {
+  //* for onlick action 
+  const [joined, setJoined] = useState(false); 
+
     return (
       <div className="rounded-xl border border-slate-200 p-4 transition-colors hover:bg-red-400">
         <div className="mb-2 flex items-start justify-between gap-3">
@@ -36,16 +40,17 @@ export default function EventCard({ event }) {
           <span className="font-medium text-slate-700">Skills Needed:</span> {event.skills.join(", ")}
         </div>
   
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <Chip>{event.matchScore}% Perfect Match</Chip>  {/*this is were in the future we will insert the percentage! */}
           {/* to add rounded corners added ! to overide parent or component library styling */}
-          <button className="!rounded-full bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-600">
-              Join the Drive!
+          <button
+            onClick={ () => setJoined(!joined)}
+            className={`!rounded-full px-6 py-3 text-sm font-semibold text-white transition
+            ${ joined ? "bg-green-500 hover:bg-green-600" : "bg-rose-500 hover:bg-rose-600"}`}
+            >
+            {joined ? "Drive Joined!" : "Join The Drive!"}
           </button>
         </div>
       </div>
     );
   }
-
-
-  // bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-600
