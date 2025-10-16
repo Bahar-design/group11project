@@ -128,8 +128,9 @@ const VolunteerNotifications = ({ user }) => {
   return (
     <div className="volunteer-notifications-tab">
 
-      {/* === Send Message Section === */}
-      <section className="notifications-section"
+      {/* Send Message Section*/}
+      <section
+        className="notifications-section"
         style={{
           backgroundColor: '#fff6f6ff',
           padding: '0',
@@ -138,19 +139,30 @@ const VolunteerNotifications = ({ user }) => {
           marginBottom: '1rem'
         }}
       >
-        {/* Added header divide */}
-        <div style={{ backgroundColor: 'var(--accent-red)', padding: '0.5rem 1rem', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
-          <h3 style={{ color: '#b91c1c', margin: 0 }}>Send Message</h3>
+     
+        <div style={{ backgroundColor: '#ef4444', padding: '0.5rem 1rem', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+          <h3 style={{ color: '#ffffff', margin: 0, fontWeight: '800', fontSize: '1.25rem' }}>Send Message</h3>
         </div>
 
         <div style={{ padding: '1rem' }}>
           <form onSubmit={handleSend} autoComplete="off">
             <div style={{ position: 'relative', marginBottom: '1rem' }}>
               <label>To:</label>
-              <div className="email-chips-input" onClick={() => inputRef.current?.focus()}
-                style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', border: '2px solid #ccc', padding: '0.5rem', borderRadius: '8px' }}>
+              <div
+                className="email-chips-input"
+                onClick={() => inputRef.current?.focus()}
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                  border: '2px solid #ccc',
+                  padding: '0.5rem',
+                  borderRadius: '8px'
+                }}
+              >
                 {toEmails.map(email => (
-                  <span key={email}
+                  <span
+                    key={email}
                     style={{
                       backgroundColor: '#d1e7dd',
                       padding: '0.25rem 0.5rem',
@@ -158,13 +170,20 @@ const VolunteerNotifications = ({ user }) => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.25rem'
-                    }}>
+                    }}
+                  >
                     {email}
-                    <button type="button" style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}
-                      onClick={() => handleRemoveEmail(email)}>&times;</button>
+                    <button
+                      type="button"
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}
+                      onClick={() => handleRemoveEmail(email)}
+                    >
+                      &times;
+                    </button>
                   </span>
                 ))}
-                <input type="text"
+                <input
+                  type="text"
                   value={inputValue}
                   onChange={handleInputChange}
                   onKeyDown={handleInputKeyDown}
@@ -177,17 +196,27 @@ const VolunteerNotifications = ({ user }) => {
 
             <div style={{ marginBottom: '1rem' }}>
               <label>Message:</label>
-              <textarea value={message} onChange={e => setMessage(e.target.value)} rows={4}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '2px solid #ccc', background: 'white' }} required />
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '8px',
+                  border: '2px solid #ccc',
+                  background: 'white'
+                }}
+                required
+              />
             </div>
 
-           
             <button
               type="submit"
               onMouseDown={() => setActiveButton('send')}
               onMouseUp={() => setActiveButton(null)}
               style={{
-                backgroundColor: activeButton === 'send' ? '#b91c1c' : '#ef4444',
+                backgroundColor: activeButton === 'send' ? '#991b1b' : '#ef4444',
                 color: '#fff',
                 border: 'none',
                 padding: '0.5rem 1rem',
@@ -205,8 +234,9 @@ const VolunteerNotifications = ({ user }) => {
         </div>
       </section>
 
-      {/* === Notifications Section === */}
-      <section className="notifications-section"
+      {/*Notifications Section*/}
+      <section
+        className="notifications-section"
         style={{
           backgroundColor: '#fff6f6ff',
           padding: '0',
@@ -215,17 +245,20 @@ const VolunteerNotifications = ({ user }) => {
           marginBottom: '1rem'
         }}
       >
-       
-        <div style={{ backgroundColor: '#f0d6d6', padding: '0.5rem 1rem', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
-          <h3 style={{ color:'#b91c1c', margin: 0 }}>Notifications</h3>
+      
+        <div style={{ backgroundColor: '#ef4444', padding: '0.5rem 1rem', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+          <h3 style={{ color: '#ffffff', margin: 0, fontWeight: '800', fontSize: '1.25rem' }}>Notifications</h3>
         </div>
 
         <div style={{ padding: '1rem' }}>
-          {notifications.length === 0 ? <p>No notifications</p> :
+          {notifications.length === 0 ? (
+            <p>No notifications</p>
+          ) : (
             notifications.map(n => {
               const isExpanded = expandedId === n.id;
               return (
-                <div key={n.id}
+                <div
+                  key={n.id}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -241,13 +274,14 @@ const VolunteerNotifications = ({ user }) => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ fontWeight: 600 }}>{n.title}</div>
-                      {!isExpanded && <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{n.text}</div>}
+                      {!isExpanded && (
+                        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{n.text}</div>
+                      )}
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                     
                       <button
                         style={{
-                          backgroundColor: activeButton === `view-${n.id}` ? '#b91c1c' : '#ef4444',
+                          backgroundColor: activeButton === `view-${n.id}` ? '#991b1b' : '#ef4444',
                           color: '#fff',
                           border: 'none',
                           padding: '0.25rem 0.5rem',
@@ -263,7 +297,7 @@ const VolunteerNotifications = ({ user }) => {
 
                       <button
                         style={{
-                          backgroundColor: activeButton === `delete-${n.id}` ? '#b91c1c' : '#ef4444',
+                          backgroundColor: activeButton === `delete-${n.id}` ? '#991b1b' : '#ef4444',
                           color: '#fff',
                           border: 'none',
                           padding: '0.25rem 0.5rem',
@@ -286,12 +320,13 @@ const VolunteerNotifications = ({ user }) => {
                 </div>
               );
             })
-          }
+          )}
         </div>
       </section>
 
       {/*Inbox Section*/}
-      <section className="notifications-section"
+      <section
+        className="notifications-section"
         style={{
           backgroundColor: '#fff6f6ff',
           padding: '0',
@@ -299,23 +334,32 @@ const VolunteerNotifications = ({ user }) => {
           border: '2px solid #c78d8dff'
         }}
       >
-        {/* Added header divide */}
-        <div style={{ backgroundColor: '#f0d6d6', padding: '0.5rem 1rem', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
-          <h3 style={{ color: '#b91c1c', margin: 0 }}>Inbox</h3>
+       
+        <div style={{ backgroundColor: '#ef4444', padding: '0.5rem 1rem', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+          <h3 style={{ color: '#ffffff', margin: 0, fontWeight: '800', fontSize: '1.25rem' }}>Inbox</h3>
         </div>
 
         <div style={{ padding: '1rem' }}>
-          {inbox.length === 0 ? <p>No messages</p> :
+          {inbox.length === 0 ? (
+            <p>No messages</p>
+          ) : (
             inbox.map(m => (
-              <div key={m.id} style={{ backgroundColor: '#fff6f6ff', padding: '0.5rem', borderRadius: '8px', marginBottom: '0.5rem' }}>
+              <div
+                key={m.id}
+                style={{
+                  backgroundColor: '#fff6f6ff',
+                  padding: '0.5rem',
+                  borderRadius: '8px',
+                  marginBottom: '0.5rem'
+                }}
+              >
                 <div><strong>From:</strong> {m.from}</div>
                 <div>{m.message}</div>
               </div>
             ))
-          }
+          )}
         </div>
       </section>
-
     </div>
   );
 };
