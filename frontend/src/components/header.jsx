@@ -1,12 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { UserProfileContext } from '../pages/user_profiles/adminInfo';
-import { useNavigate } from "react-router-dom";   //for navigation through pages, installed with: npm install react-router-dom
-
+import { useNavigate } from "react-router-dom";   //for navigation through pages
 
 const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, user }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { userProfile } = useContext(UserProfileContext) || {};
+
   // Helper to get initials from name
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -15,7 +15,7 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
     return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
   };
 
-  // Only show Events for admin, Matchmaking for volunteer
+  // Only show Events for admin, Matchmaking for volunteer, Calendar for all logged-in users
   const navItems = [
     { id: 'home', label: 'Home', href: '#home' },
     ...(isLoggedIn && user?.userType === 'admin' ? [
@@ -23,6 +23,9 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
     ] : []),
     ...(isLoggedIn && user?.userType === 'volunteer' ? [
       { id: 'matchmaking', label: 'Volunteer Matchmaking', href: '#matchmaking' }
+    ] : []),
+    ...(isLoggedIn ? [
+      { id: 'calendar', label: 'Calendar', href: '#calendar' }
     ] : []),
     { id: 'impact', label: 'Impact', href: '#impact' },
     { id: 'about', label: 'About', href: '#about' }
@@ -34,7 +37,6 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
       navigate("/");
     } else {
       navigate("/login");
-      //onLogin && onLogin();
     }
   };
 
@@ -50,7 +52,17 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
           <span>Houston Hearts</span>
         </div>
         
-        <div className={`nav-links ${isMobileMenuOpen ? 'nav-links-mobile' : ''}`}>
+        {/* Updated nav-links styles to fix spacing and wrapping */}
+        <div
+          className={`nav-links ${isMobileMenuOpen ? 'nav-links-mobile' : ''}`}
+          style={{
+            display: 'flex',         // use flexbox for horizontal layout
+            gap: '1rem',             // consistent spacing between links
+            alignItems: 'center',    // vertically center links
+            flexWrap: 'nowrap',      // prevent wrapping
+            whiteSpace: 'nowrap',    // keep long labels on one line
+          }}
+        >
           {navItems.map((item) => (
             <a
               key={item.id}
@@ -63,10 +75,11 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
                   navigate("/");
                 } else if (item.id === "events") {
                   navigate("/events");
+                } else if (item.id === "calendar") {
+                  navigate("/calendar");
                 } else if (item.id === "matchmaking") {
                   navigate("/match-making");
                 } else {
-                  // impact, about pages not done yet
                   console.log(`${item.label} clicked (no page yet)`);
                 }
               }}
@@ -76,7 +89,7 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
           ))}
         </div>
 
-        <div className="nav-actions">
+        <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {isLoggedIn && user && (
             <button
               className="profile-icon-btn"
@@ -115,8 +128,17 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
               <span style={{ color: 'var(--primary-red, #e63946)', fontWeight: 600 }}>Profile</span>
             </button>
           )}
-          <button 
-            className="btn-login" 
+          {/* Fixed button width and padding for consistent Sign In / Sign Out */}
+          <button
+            className="btn-login"
+            style={{
+              padding: '0.5rem 1rem',   // consistent padding
+              minWidth: '80px',         // ensures Sign In / Sign Out same width
+              textAlign: 'center',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
             onClick={handleLoginClick}
           >
             {isLoggedIn ? 'Sign Out' : 'Sign In'}

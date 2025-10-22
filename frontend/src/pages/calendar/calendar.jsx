@@ -1,17 +1,18 @@
 // src/pages/calendar.jsx
 
 import React, { useState } from "react";
-import { Calendar as Calendars, momentLocalizer } from "react-big-calendar";  //library for event calendar
+import { Calendar as Calendars, momentLocalizer } from "react-big-calendar";  // library for event calendar
 import moment from "moment";
 import Footer from "../../components/footer.jsx";
 import Header from "../../components/header.jsx";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
 
-
 const localizer = momentLocalizer(moment);
 
-export default function MyCalendar() {
+export default function MyCalendar({ isLoggedIn, user, onLogout }) { 
+  // ✅ Change 1: Added props isLoggedIn, user, onLogout to receive login state from App.jsx
+
   const [events] = useState([
     {
       title: "Team Meeting",
@@ -27,12 +28,17 @@ export default function MyCalendar() {
 
   return (
     <div>
-      <Header />
+      <Header 
+        isLoggedIn={isLoggedIn} 
+        user={user} 
+        onLogout={onLogout} 
+        currentPage="calendar" 
+      />
+      
       <div
-      //for the size of the calendar
         style={{
-          height: "80vh",          
-          margin: "30px 60px 50px", 
+          height: "80vh",
+          margin: "30px 60px 50px",
         }}
       >
         <Calendars
@@ -43,10 +49,8 @@ export default function MyCalendar() {
           style={{ height: "100%", width: "100%" }}
         />
       </div>
+      
       <Footer />
     </div>
   );
 }
-
-
-
