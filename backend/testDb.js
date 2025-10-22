@@ -13,3 +13,6 @@ async function testConnection() {
 }
 
 testConnection();
+
+
+//to test the connection to the database, run `node testDb.js` in the backend directory
