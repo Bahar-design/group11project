@@ -1,9 +1,20 @@
 // backend/db.js
+require('dotenv').config();
+
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  connectionString: "postgresql://postgres:Project_group11@db.zhhqicqeeludwkapymei.supabase.co:5432/postgres",
-  ssl: { rejectUnauthorized: false } // required for Supabase
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-module.exports = pool;
+pool.connect()
+  .then(() => console.log('Connected to Azure PostgreSQL!'))
+  .catch(err => console.error('Connection error', err));
+
