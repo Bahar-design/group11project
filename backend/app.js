@@ -40,5 +40,22 @@ if (require.main === module) {
   });
 }
 
+// Health check route
+app.get('/api/health', async (req, res) => {
+  try {
+    // Simple query to test DB connection
+    const result = await pool.query('SELECT NOW()'); 
+    res.json({
+      status: 'Backend running!',
+      dbTime: result.rows[0].now
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'Backend running, but DB connection failed',
+      error: err.message
+    });
+  }
+});
+
 module.exports = app;
 
