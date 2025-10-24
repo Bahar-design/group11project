@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Layout from "../../components/layout.jsx";
+import API_BASE from '../../lib/apiBase';
 import "./login.css";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -9,13 +10,6 @@ export default function Login({ onLogin, isLoggedIn, user }) {
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
-
-  // Use hosted backend in production, localhost in dev
-  const API_BASE =
-  import.meta.env.VITE_API_BASE &&
-  !import.meta.env.DEV // DEV is true when running `npm run dev`
-    ? import.meta.env.VITE_API_BASE
-    : 'http://localhost:4000';
 
   console.log("Using API_BASE:", API_BASE);
 
@@ -29,7 +23,6 @@ export default function Login({ onLogin, isLoggedIn, user }) {
     }
 
     try {
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
       const res = await fetch(`${API_BASE}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

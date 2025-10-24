@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Layout from "../../components/layout.jsx";
+import API_BASE from '../../lib/apiBase';
 import "./registration.css";
 import { Link } from "react-router-dom"; 
 
@@ -18,8 +19,7 @@ export default function Registration({ isLoggedIn, user }) {
     }
 
     try {
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
-  const res = await fetch(`${API_BASE}/api/register`, {
+      const res = await fetch(`${API_BASE}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, adminID }),  

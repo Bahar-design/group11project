@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
-
-// Backend base URL (set at build time for deployed frontend)
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+import API_BASE from '../../lib/apiBase';
 
 // Fetch volunteers from backend
 const fetchVolunteers = async () => {
