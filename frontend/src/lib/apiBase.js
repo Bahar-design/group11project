@@ -9,4 +9,9 @@ const buildTime = typeof import.meta !== 'undefined' ? import.meta.env.VITE_API_
 
 const API_BASE = runtimeOverride || buildTime || '';
 
+// Helpful debug log in the browser so we can see which value was selected at runtime
+if (typeof window !== 'undefined' && typeof console !== 'undefined') {
+	console.info('Resolved API_BASE =', API_BASE || '[relative origin]');
+}
+
 export default API_BASE;

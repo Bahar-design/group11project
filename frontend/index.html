@@ -8,6 +8,11 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Runtime API base override so deployed site can point to a backend URL without rebuilding -->
+    <script>
+      // Change this value on the server (or via CI) if you need to point to a different backend.
+      window.__API_BASE__ = 'https://houstonhearts-backend-dfafgrc8aaemcmcq.westus-01.azurewebsites.net';
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
