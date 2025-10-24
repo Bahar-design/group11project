@@ -19,7 +19,8 @@ export default function Login({ onLogin, isLoggedIn, user }) {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/login`, {
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+      const res = await fetch(`${API_BASE}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -38,7 +39,7 @@ export default function Login({ onLogin, isLoggedIn, user }) {
           return;
         }
         try {
-          const profileRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user-profile?type=${type}`);
+          const profileRes = await fetch(`${API_BASE}/api/user-profile?type=${type}`);
           const profileData = await profileRes.json();
           if (!profileRes.ok) {
             setMessage("Login succeeded but failed to load profile.");

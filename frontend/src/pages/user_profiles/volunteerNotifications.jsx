@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 
+// Backend base URL (set at build time for deployed frontend)
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+
 // Fetch volunteers from backend
 const fetchVolunteers = async () => {
-  const res = await fetch('http://localhost:4000/api/notifications/volunteers');
+  const res = await fetch(`${API_BASE}/api/notifications/volunteers`);
   if (!res.ok) return [];
   return await res.json();
 };
 
 // Fetch admins from backend
 const fetchAdmins = async () => {
-  const res = await fetch('http://localhost:4000/api/notifications/admins');
+  const res = await fetch(`${API_BASE}/api/notifications/admins`);
   if (!res.ok) return [];
   return await res.json();
 };
@@ -42,14 +45,14 @@ const VolunteerNotifications = ({ user }) => {
     const volunteerEmail = user?.email;
 
     // Load notifications
-    fetch(`http://localhost:4000/api/notifications/${volunteerId}`)
+    fetch(`${API_BASE}/api/notifications/${volunteerId}`)
       .then(res => res.json())
       .then(setNotifications)
       .catch(() => setNotifications([]));
 
     // Load inbox messages by email (robust)
     if (volunteerEmail) {
-      fetch(`http://localhost:4000/api/notifications/messages/volunteer/email/${encodeURIComponent(volunteerEmail)}`)
+      fetch(`${API_BASE}/api/notifications/messages/volunteer/email/${encodeURIComponent(volunteerEmail)}`)
         .then(res => res.json())
         .then(setInbox)
         .catch(() => setInbox([]));
@@ -119,7 +122,7 @@ const VolunteerNotifications = ({ user }) => {
       return;
     }
 
-    fetch('http://localhost:4000/api/notifications/message', {
+  fetch(`${API_BASE}/api/notifications/message`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: user.email, to: filteredToEmails, message })
@@ -141,7 +144,7 @@ const VolunteerNotifications = ({ user }) => {
   const handleToggleView = (id) => setExpandedId(prev => (prev === id ? null : id));
 
   const handleDeleteNotification = (id) => {
-    fetch(`http://localhost:4000/api/notifications/${id}`, { method: 'DELETE' })
+  fetch(`${API_BASE}/api/notifications/${id}`, { method: 'DELETE' })
       .then(res => res.json())
       .then(() => {
         setNotifications(prev => prev.filter(n => n.id !== id));

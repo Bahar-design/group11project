@@ -18,7 +18,10 @@ const app = express();
 const pool = require('./db');
 
 // Middleware
-app.use(cors());          // allow cross-origin requests from frontend
+// Allow only the configured frontend origin in production. Fallback to '*' for local dev.
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
+console.log('Using FRONTEND_ORIGIN =', FRONTEND_ORIGIN);
+app.use(cors({ origin: FRONTEND_ORIGIN }));
 app.use(express.json());  // parse JSON request bodies
 
 // Routes
