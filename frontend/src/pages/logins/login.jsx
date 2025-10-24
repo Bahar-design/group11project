@@ -10,6 +10,16 @@ export default function Login({ onLogin, isLoggedIn, user }) {
 
   const navigate = useNavigate();
 
+  // Use hosted backend in production, localhost in dev
+  const API_BASE =
+  import.meta.env.VITE_API_BASE &&
+  !import.meta.env.DEV // DEV is true when running `npm run dev`
+    ? import.meta.env.VITE_API_BASE
+    : 'http://localhost:4000';
+
+  console.log("Using API_BASE:", API_BASE);
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
