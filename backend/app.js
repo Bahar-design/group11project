@@ -14,6 +14,9 @@ const calendarRoutes = require('./routes/calendarRoutes');
 
 const app = express();
 
+// DB pool used by the health route
+const pool = require('./db');
+
 // Middleware
 app.use(cors());          // allow cross-origin requests from frontend
 app.use(express.json());  // parse JSON request bodies
@@ -26,19 +29,6 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/volunteer-history', historyRoutes);
 app.use('/api/calendar', calendarRoutes);
- 
-// Error handler
-app.use((err, req, res, next) => {
-  res.status(err.status || 400).json({ error: err.message || 'Validation error' });
-});
-
-// Start server if this file is run directly
-if (require.main === module) {
-  const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => {
-    console.log(`Backend server running on port ${PORT}`);
-  });
-}
 
 // Health check route
 app.get('/api/health', async (req, res) => {
@@ -56,6 +46,19 @@ app.get('/api/health', async (req, res) => {
     });
   }
 });
+ 
+// Error handler
+app.use((err, req, res, next) => {
+  res.status(err.status || 400).json({ error: err.message || 'Validation error' });
+});
+
+// Start server if this file is run directly
+if (require.main === module) {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log(`Backend server running on port ${PORT}`);
+  });
+}
 
 module.exports = app;
 
