@@ -145,7 +145,7 @@ module.exports = {
 
 const pool = require('../db');
 
-// Get all notifications for a specific user by their ID
+// Get all notifications for a specific user by ID
 async function getUserNotifications(req, res) {
   const userId = parseInt(req.params.userId);
   try {
@@ -163,7 +163,6 @@ async function getUserNotifications(req, res) {
 // Add a new notification
 async function addNotification(req, res) {
   const { message_from, message_to, message_text } = req.body;
-
   if (!message_from || !message_to || !message_text) {
     return res.status(400).json({ message: 'Missing fields' });
   }
@@ -180,10 +179,9 @@ async function addNotification(req, res) {
   }
 }
 
-// Delete a notification by ID
+// Delete a notification
 async function deleteNotification(req, res) {
   const { id } = req.params;
-
   try {
     const result = await pool.query(
       'DELETE FROM notifications WHERE message_ID = $1 RETURNING *',
@@ -197,7 +195,7 @@ async function deleteNotification(req, res) {
   }
 }
 
-// Send a message (marks message_sent as true)
+// Mark message as sent
 async function sendMessage(req, res) {
   const { message_ID } = req.body;
   if (!message_ID) return res.status(400).json({ message: 'Missing message ID' });
@@ -215,7 +213,7 @@ async function sendMessage(req, res) {
   }
 }
 
-//get inbox by recipient ID?
+// Get inbox for a user
 async function getInboxByUser(req, res) {
   const userId = parseInt(req.params.userId);
   try {
@@ -237,3 +235,4 @@ module.exports = {
   sendMessage,
   getInboxByUser
 };
+
