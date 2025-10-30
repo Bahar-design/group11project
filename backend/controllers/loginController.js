@@ -54,20 +54,24 @@ async function login(req, res) {
       return res.json({ user: { id: user.user_id, email: user.user_email, type: user.user_type } });
     }
 
-    // If not found in DB, fall back to memory (tests expect this)
-    const local = users.find(u => u.email === email && u.password === password);
-    if (!local) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    // If not found in DB, allow in-memory fallback only during tests
+    if (process.env.NODE_ENV === 'test') {
+      const local = users.find(u => u.email === email && u.password === password);
+      if (!local) return res.status(401).json({ message: 'Invalid email or password' });
+      return res.json({ user: { name: local.name, email: local.email, type: local.type } });
     }
-    return res.json({ user: { name: local.name, email: local.email, type: local.type } });
+
+    // In production, don't fall back to memory: treat as unauthorized
+    return res.status(401).json({ message: 'Invalid email or password' });
   } catch (err) {
     console.error('Error during login:', err);
-    // On DB error, fallback to in-memory users
-    const local = users.find(u => u.email === email && u.password === password);
-    if (!local) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    // In test, allow in-memory fallback on DB error; in production, return 500
+    if (process.env.NODE_ENV === 'test') {
+      const local = users.find(u => u.email === email && u.password === password);
+      if (!local) return res.status(401).json({ message: 'Invalid email or password' });
+      return res.json({ user: { name: local.name, email: local.email, type: local.type } });
     }
-    return res.json({ user: { name: local.name, email: local.email, type: local.type } });
+    return res.status(500).json({ message: 'Server error during login' });
   }
 }
 

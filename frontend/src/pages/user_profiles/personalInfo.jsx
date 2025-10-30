@@ -123,7 +123,8 @@ const PersonalInfo = ({ user }) => {
     const submitData = { ...formData, availability };
     try {
       const base = API_BASE.replace(/\/$/, '');
-      const res = await axios.post(`${base}/api/user-profile?type=volunteer`, submitData);
+      const emailQuery = formData.email ? `&email=${encodeURIComponent(formData.email)}` : '';
+      const res = await axios.post(`${base}/api/user-profile?type=volunteer${emailQuery}`, submitData);
       setFormData(prev => ({ ...prev, ...res.data }));
       if (setUserProfile) setUserProfile(res.data);
       setSuccess(true);

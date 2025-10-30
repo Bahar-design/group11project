@@ -80,8 +80,33 @@ async function getUserProfile(req, res, next) {
       );
 
           if (vp.rows.length === 0) {
-            if (process.env.NODE_ENV === 'test') return res.json(volunteerProfileFallback);
-            return res.status(404).json({ message: 'Volunteer profile not found' });
+              // User exists but hasn't created a volunteer profile yet.
+              // Return a minimal, empty profile so frontend can render the profile page and allow creation.
+              const out = {
+                name: '',
+                email: email,
+                phone: '',
+                address1: '',
+                address2: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                emergencyContact: '',
+                skills: [],
+                preferences: '',
+                availability: [],
+                travelRadius: '',
+                hasTransportation: false,
+                primaryLocation: '',
+                userType: 'volunteer',
+                stats: {
+                  familiesHelped: 0,
+                  hoursVolunteered: 0,
+                  averageRating: 0,
+                  eventsJoined: 0
+                }
+              };
+              return res.json(out);
       }
 
       const profile = vp.rows[0];
@@ -135,8 +160,30 @@ async function getUserProfile(req, res, next) {
       );
 
           if (ap.rows.length === 0) {
-            if (process.env.NODE_ENV === 'test') return res.json(adminProfileFallback);
-            return res.status(404).json({ message: 'Admin profile not found' });
+              // No admin profile yet -- return minimal empty admin profile so the frontend can render a form
+              const out = {
+                name: '',
+                email: email,
+                phone: '',
+                address1: '',
+                address2: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                adminLevel: '',
+                department: '',
+                startDate: '',
+                emergencyContact: '',
+                regions: [],
+                userType: 'admin',
+                stats: {
+                  eventsManaged: 0,
+                  volunteersCoordinated: 0,
+                  familiesImpacted: 0,
+                  successRate: 0
+                }
+              };
+              return res.json(out);
       }
 
       const profile = ap.rows[0];
@@ -390,14 +437,19 @@ async function updateUserProfile(req, res, next) {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('DB error updating profile:', err);
-    // fallback: apply to the in-memory profile so the app can continue
-    if (type === 'admin') {
-      adminProfileFallback = { ...adminProfileFallback, ...value };
-      return res.json(adminProfileFallback);
-    } else {
-      volunteerProfileFallback = { ...volunteerProfileFallback, ...value };
-      return res.json(volunteerProfileFallback);
+    // In test environment, keep the in-memory fallback behavior to make tests stable.
+    if (process.env.NODE_ENV === 'test') {
+      if (type === 'admin') {
+        adminProfileFallback = { ...adminProfileFallback, ...value };
+        return res.json(adminProfileFallback);
+      } else {
+        volunteerProfileFallback = { ...volunteerProfileFallback, ...value };
+        return res.json(volunteerProfileFallback);
+      }
     }
+
+    // In production, don't silently accept an in-memory fallback. Surface a server error.
+    return res.status(500).json({ message: 'Server error updating profile' });
   } finally {
     client.release();
   }
