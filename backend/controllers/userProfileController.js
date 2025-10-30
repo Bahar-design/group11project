@@ -48,8 +48,11 @@ async function getUserProfile(req, res, next) {
   const email = req.query.email;
 
   if (!email) {
-    // no email: return fallback
-    return res.json(type === 'admin' ? adminProfileFallback : volunteerProfileFallback);
+    // In tests, allow fallback behavior. In production, require email so we always use DB.
+    if (process.env.NODE_ENV === 'test') {
+      return res.json(type === 'admin' ? adminProfileFallback : volunteerProfileFallback);
+    }
+    return res.status(400).json({ message: 'Email query parameter is required' });
   }
 
   try {
@@ -173,15 +176,20 @@ async function updateUserProfile(req, res, next) {
     return next(error);
   }
 
-  // If email not provided, update the in-memory fallback profile and return it
+  // If email not provided, allow fallback ONLY in tests. In production require email so DB is used.
   if (!email) {
-    if (type === 'admin') {
-      adminProfileFallback = { ...adminProfileFallback, ...value };
-      return res.json(adminProfileFallback);
-    } else {
-      volunteerProfileFallback = { ...volunteerProfileFallback, ...value };
-      return res.json(volunteerProfileFallback);
+    if (process.env.NODE_ENV === 'test') {
+      if (type === 'admin') {
+        adminProfileFallback = { ...adminProfileFallback, ...value };
+        return res.json(adminProfileFallback);
+      } else {
+        volunteerProfileFallback = { ...volunteerProfileFallback, ...value };
+        return res.json(volunteerProfileFallback);
+      }
     }
+    const e = new Error('Email query parameter is required to update profile');
+    e.status = 400;
+    return next(e);
   }
 
   const client = await pool.connect();

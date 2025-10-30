@@ -42,7 +42,7 @@ export default function Login({ onLogin, isLoggedIn, user }) {
           return;
         }
         try {
-          const profileRes = await fetch(`${API_BASE}/api/user-profile?type=${type}`);
+          const profileRes = await fetch(`${API_BASE}/api/user-profile?type=${type}&email=${encodeURIComponent(email)}`);
           const profileData = await profileRes.json();
           if (!profileRes.ok) {
             setMessage("Login succeeded but failed to load profile.");
