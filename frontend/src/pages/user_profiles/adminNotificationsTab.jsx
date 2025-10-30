@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+// Backend base URL
+import API_BASE from '../../lib/apiBase';
+
 // Fetch volunteers from backend
 const fetchVolunteers = async () => {
-  const res = await fetch('http://localhost:4000/api/notifications/volunteers');
+  const res = await fetch(`${API_BASE}/api/notifications/volunteers`);
   if (!res.ok) return [];
   return await res.json();
 };
@@ -30,11 +33,11 @@ const AdminNotificationsTab = ({ user }) => {
     if (user && user.type === 'admin') adminId = 2;
     else if (user && user.type === 'volunteer') adminId = 1;
     else adminId = 2; // fallback to admin
-    fetch(`http://localhost:4000/api/notifications/${adminId}`)
+    fetch(`${API_BASE}/api/notifications/${adminId}`)
       .then(res => res.json())
       .then(setNotifications)
       .catch(() => setNotifications([]));
-    fetch(`http://localhost:4000/api/notifications/messages/admin/${adminId}`)
+    fetch(`${API_BASE}/api/notifications/messages/admin/${adminId}`)
       .then(res => res.json())
       .then(setInbox)
       .catch(() => setInbox([]));
@@ -109,7 +112,7 @@ const AdminNotificationsTab = ({ user }) => {
       setSending(false);
       return;
     }
-    fetch('http://localhost:4000/api/notifications/message', {
+  fetch(`${API_BASE}/api/notifications/message`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: user.email, to: recipients, message })

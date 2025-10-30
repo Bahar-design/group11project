@@ -5,7 +5,9 @@ module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'http://localhost:4000',
+      // When running the dev server you can set VITE_API_BASE in your shell
+      // to proxy API calls to a remote backend. Otherwise default to localhost.
+      target: process.env.VITE_API_BASE || 'http://localhost:4000',
       changeOrigin: true,
     })
   );

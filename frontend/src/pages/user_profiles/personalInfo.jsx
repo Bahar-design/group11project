@@ -5,6 +5,7 @@ import Select from 'react-select';
 import DatePicker from 'react-multi-date-picker';
 import 'react-multi-date-picker/styles/colors/red.css';
 import axios from 'axios';
+import API_BASE from '../../lib/apiBase';
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -40,7 +41,8 @@ const PersonalInfo = ({ user }) => {
   // Fetch user profile from backend on mount
   useEffect(() => {
     setLoading(true);
-    let url = '/api/user-profile?type=volunteer';
+    const base = API_BASE.replace(/\/$/, '');
+    let url = `${base}/api/user-profile?type=volunteer`;
     if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
     axios.get(url)
       .then(res => {
@@ -120,7 +122,8 @@ const PersonalInfo = ({ user }) => {
     }
     const submitData = { ...formData, availability };
     try {
-      const res = await axios.post('/api/user-profile?type=volunteer', submitData);
+      const base = API_BASE.replace(/\/$/, '');
+      const res = await axios.post(`${base}/api/user-profile?type=volunteer`, submitData);
       setFormData(prev => ({ ...prev, ...res.data }));
       if (setUserProfile) setUserProfile(res.data);
       setSuccess(true);

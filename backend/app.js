@@ -14,8 +14,14 @@ const calendarRoutes = require('./routes/calendarRoutes');
 
 const app = express();
 
+// DB pool used by the health route
+const pool = require('./db');
+
 // Middleware
-app.use(cors());          // allow cross-origin requests from frontend
+// Allow only the configured frontend origin in production. Fallback to '*' for local dev.
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
+console.log('Using FRONTEND_ORIGIN =', FRONTEND_ORIGIN);
+app.use(cors({ origin: FRONTEND_ORIGIN }));
 app.use(express.json());  // parse JSON request bodies
 
 // Routes
@@ -26,6 +32,23 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/volunteer-history', historyRoutes);
 app.use('/api/calendar', calendarRoutes);
+
+// Health check route
+app.get('/api/health', async (req, res) => {
+  try {
+    // Simple query to test DB connection
+    const result = await pool.query('SELECT NOW()'); 
+    res.json({
+      status: 'Backend running!',
+      dbTime: result.rows[0].now
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'Backend running, but DB connection failed',
+      error: err.message
+    });
+  }
+});
  
 // Error handler
 app.use((err, req, res, next) => {

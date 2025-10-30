@@ -1,4 +1,4 @@
-// testDb.js  for testing database connection
+/*
 const pool = require('./db');
 
 async function testConnection() {
@@ -14,5 +14,5 @@ async function testConnection() {
 
 testConnection();
 
-
+*/
 //to test the connection to the database, run `node testDb.js` in the backend directory

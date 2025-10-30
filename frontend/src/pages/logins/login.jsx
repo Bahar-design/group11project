@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Layout from "../../components/layout.jsx";
+import API_BASE from '../../lib/apiBase';
 import "./login.css";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -10,6 +11,9 @@ export default function Login({ onLogin, isLoggedIn, user }) {
 
   const navigate = useNavigate();
 
+  // API_BASE is logged centrally in src/lib/apiBase.js
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -19,7 +23,7 @@ export default function Login({ onLogin, isLoggedIn, user }) {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/login`, {
+      const res = await fetch(`${API_BASE}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -38,7 +42,7 @@ export default function Login({ onLogin, isLoggedIn, user }) {
           return;
         }
         try {
-          const profileRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user-profile?type=${type}`);
+          const profileRes = await fetch(`${API_BASE}/api/user-profile?type=${type}`);
           const profileData = await profileRes.json();
           if (!profileRes.ok) {
             setMessage("Login succeeded but failed to load profile.");

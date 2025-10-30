@@ -75,11 +75,13 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
                   navigate("/");
                 } else if (item.id === "events") {
                   navigate("/events");
-                } else if (item.id === "calendar") {
+                } else if (item.id === "calendar") {    //*event handler that links pages on header bar when clicked
                   navigate("/calendar");
                 } else if (item.id === "matchmaking") {
                   navigate("/match-making");
-                } else {
+                } else if (item.id === "about") {
+                  navigate("/about");
+                }else {
                   console.log(`${item.label} clicked (no page yet)`);
                 }
               }}
