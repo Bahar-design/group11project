@@ -11,7 +11,7 @@ export default function Login({ onLogin, isLoggedIn, user }) {
 
   const navigate = useNavigate();
 
-  // API_BASE is logged centrally in src/lib/apiBase.js
+  console.log("Using API_BASE:", API_BASE);
 
 
   const handleLogin = async (e) => {
