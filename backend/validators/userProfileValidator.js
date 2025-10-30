@@ -57,7 +57,8 @@ function validateUserProfile(data, type = 'volunteer') {
   }
 
   // State
-  const allowedStates = ['TX', 'CA', 'NY', 'FL'];
+  // Only allow states present in the database. Currently only Texas (TX) is present.
+  const allowedStates = ['TX'];
   if (data.state && !allowedStates.includes(data.state)) {
     errors.push('State must be one of: ' + allowedStates.join(', '));
   }

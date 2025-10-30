@@ -195,11 +195,8 @@ const AdminInfo = ({ user }) => {
                   onChange={handleInputChange}
                   required
                 >
-                  <option value="">Select State</option>
-                  <option value="TX">Texas</option>
-                  <option value="CA">California</option>
-                  <option value="NY">New York</option>
-                  <option value="FL">Florida</option>
+                    <option value="">Select State</option>
+                    <option value="TX">Texas</option>
                 </select>
               </div>
               <div className="form-group">
