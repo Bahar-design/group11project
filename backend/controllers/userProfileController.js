@@ -217,7 +217,7 @@ async function getUserProfile(req, res, next) {
     // If types mismatch, return 400
     return res.status(400).json({ message: 'Requested profile type does not match user type' });
   } catch (err) {
-    console.error('DB error fetching profile:', err);
+    console.error('DB error fetching profile:', err.message || err, 'code=', err.code || 'n/a');
         if (process.env.NODE_ENV === 'test') {
           return res.json(type === 'admin' ? adminProfileFallback : volunteerProfileFallback);
         }
@@ -296,6 +296,17 @@ async function updateUserProfile(req, res, next) {
         RETURNING volunteer_id;
       `;
 
+      // Normalize availability to array of YYYY-MM-DD strings for Postgres date[]
+      const availabilityParam = Array.isArray(value.availability)
+        ? value.availability.map(d => {
+            if (!d) return null;
+            if (typeof d === 'string') return d.split('T')[0];
+            if (d instanceof Date) return d.toISOString().substring(0,10);
+            // fallback to string
+            return String(d).split('T')[0];
+          }).filter(Boolean)
+        : [];
+
       const vpRes = await client.query(upsertVP, [
         userId,
         value.name,
@@ -305,7 +316,7 @@ async function updateUserProfile(req, res, next) {
         value.state,
         value.zipCode,
         value.preferences || null,
-        value.availability || [],
+        availabilityParam,
         value.travelRadius || null,
         value.hasTransportation,
         value.emergencyContact || null
@@ -326,7 +337,14 @@ async function updateUserProfile(req, res, next) {
         for (const s of value.skills) {
           const sid = nameToId.get(s);
           if (sid) {
-            await client.query('INSERT INTO volunteer_skills (volunteer_id, skill_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [volunteerId, sid]);
+            try {
+              await client.query('INSERT INTO volunteer_skills (volunteer_id, skill_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [volunteerId, sid]);
+            } catch (skillErr) {
+              // Log and continue; don't fail the whole profile save because of one skill link
+              console.error('Failed to link skill', s, 'to volunteer', volunteerId, skillErr);
+            }
+          } else {
+            console.warn('Unknown skill name, skipping:', s);
           }
         }
       }
@@ -436,7 +454,7 @@ async function updateUserProfile(req, res, next) {
     return res.status(400).json({ message: 'Unknown profile type' });
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error('DB error updating profile:', err);
+    console.error('DB error updating profile:', err.message || err, 'code=', err.code || 'n/a');
     // In test environment, keep the in-memory fallback behavior to make tests stable.
     if (process.env.NODE_ENV === 'test') {
       if (type === 'admin') {
