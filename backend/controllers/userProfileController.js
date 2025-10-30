@@ -45,7 +45,12 @@ let adminProfileFallback = {
  */
 async function getUserProfile(req, res, next) {
   const type = req.query.type === 'admin' ? 'admin' : 'volunteer';
-  const email = req.query.email;
+  // Accept email from query param, or fallback to the request body (frontend may POST the email in the form)
+  let email = req.query.email;
+  if (!email && req.body && typeof req.body.email === 'string') {
+    email = req.body.email.trim();
+    console.log('updateUserProfile: using email from request body:', email);
+  }
 
   if (!email) {
     // In tests, allow fallback behavior. In production, require email so we always use DB.
@@ -232,7 +237,12 @@ async function getUserProfile(req, res, next) {
  */
 async function updateUserProfile(req, res, next) {
   const type = req.query.type === 'admin' ? 'admin' : 'volunteer';
-  const email = req.query.email;
+  // Accept email from query param, or fallback to the request body (frontend may post the email in the form)
+  let email = req.query.email;
+  if (!email && req.body && typeof req.body.email === 'string') {
+    email = req.body.email.trim();
+    console.log('updateUserProfile: using email from request body:', email);
+  }
 
   // Pass user type to validator
   const { error, value } = validateUserProfile(req.body, type);
@@ -279,8 +289,8 @@ async function updateUserProfile(req, res, next) {
     if (type === 'volunteer') {
       // Upsert VolunteerProfile (by user_id)
       const upsertVP = `
-        INSERT INTO volunteerprofile (user_id, full_name, address1, address2, city, state_code, zip_code, preferences, availability, travel_radius, has_transportation, emergency_contact)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+  INSERT INTO volunteerprofile (user_id, full_name, address1, address2, city, state_code, zip_code, preferences, availability, travel_radius, has_transportation, emergency_contact, phone, primary_location)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
         ON CONFLICT (user_id) DO UPDATE SET
           full_name = EXCLUDED.full_name,
           address1 = EXCLUDED.address1,
@@ -319,7 +329,9 @@ async function updateUserProfile(req, res, next) {
         availabilityParam,
         value.travelRadius || null,
         value.hasTransportation,
-        value.emergencyContact || null
+        value.emergencyContact || null,
+        value.phone || null,
+        value.primaryLocation || null
       ]);
 
       const volunteerId = vpRes.rows[0].volunteer_id;
@@ -370,7 +382,7 @@ async function updateUserProfile(req, res, next) {
         emergencyContact: value.emergencyContact || '',
         skills,
         preferences: value.preferences || '',
-        availability: value.availability || [],
+        availability: availabilityParam || [],
         travelRadius: value.travelRadius || '',
         hasTransportation: !!value.hasTransportation,
         primaryLocation: value.primaryLocation || '',
@@ -390,8 +402,8 @@ async function updateUserProfile(req, res, next) {
     // admin
     if (type === 'admin') {
       const upsertAP = `
-        INSERT INTO adminprofile (user_id, full_name, address1, address2, city, state_code, zip_code, admin_level, department, start_date, emergency_contact)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+  INSERT INTO adminprofile (user_id, full_name, address1, address2, city, state_code, zip_code, admin_level, department, start_date, emergency_contact, phone)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
         ON CONFLICT (user_id) DO UPDATE SET
           full_name = EXCLUDED.full_name,
           address1 = EXCLUDED.address1,
@@ -417,7 +429,8 @@ async function updateUserProfile(req, res, next) {
         value.adminLevel || null,
         value.department || null,
         value.startDate || null,
-        value.emergencyContact || null
+        value.emergencyContact || null,
+        value.phone || null
       ]);
 
       const adminId = apRes.rows[0].admin_id;
