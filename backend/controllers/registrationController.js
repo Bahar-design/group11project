@@ -41,18 +41,17 @@ module.exports = { registerUser };
 */
 
 // controllers/registrationController.js
-const pool = require('../db'); // your PostgreSQL connection
+const pool = require('../db'); // PostgreSQL connection
 
 async function registerUser(req, res) {
   const { email, password, type } = req.body;
 
-  //to check required fields
   if (!email || !password || !type) {
     return res.status(400).json({ message: "Email, password, and user type are required" });
   }
 
   try {
-    // check if user already exists
+    // Check if user already exists
     const existingUser = await pool.query(
       'SELECT * FROM user_table WHERE user_email = $1',
       [email]
@@ -61,13 +60,26 @@ async function registerUser(req, res) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    //SQL to add new user into user_table
+    // Insert user into user_table
     const result = await pool.query(
-      'INSERT INTO user_table (user_email, user_password, user_type) VALUES ($1, $2, $3) RETURNING user_ID',
+      'INSERT INTO user_table (user_email, user_password, user_type) VALUES ($1, $2, $3) RETURNING user_id',
       [email, password, type]
     );
 
     const newUserId = result.rows[0].user_id;
+
+    // Insert into corresponding table based on user_type
+    if (type.toLowerCase() === 'volunteer') {
+      await pool.query(
+        'INSERT INTO volunteerprofile (user_id) VALUES ($1)',
+        [newUserId]
+      );
+    } else if (type.toLowerCase() === 'admin') {
+      await pool.query(
+        'INSERT INTO adminprofile (user_id) VALUES ($1)',
+        [newUserId]
+      );
+    }
 
     res.status(201).json({
       message: `${type} registered successfully`,
@@ -81,3 +93,4 @@ async function registerUser(req, res) {
 }
 
 module.exports = { registerUser };
+
