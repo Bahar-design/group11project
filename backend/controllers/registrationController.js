@@ -39,7 +39,6 @@ function registerUser(req, res) {
 
 module.exports = { registerUser };
 */
-
 const pool = require('../db');
 
 async function registerUser(req, res) {
@@ -71,9 +70,6 @@ async function registerUser(req, res) {
 
     // Insert into appropriate profile table
     if (userType === 'admin') {
-      if (!admin_ID) {
-        return res.status(400).json({ message: "Admin ID is required for admins" });
-      }
       await pool.query(
         'INSERT INTO admin_profile (admin_ID, user_ID) VALUES ($1, $2)',
         [admin_ID, newUserId]
@@ -93,7 +89,6 @@ async function registerUser(req, res) {
       user: { id: newUserId, email, type: userType, admin_ID: admin_ID || null }
     });
 
-
   } catch (err) {
     console.error('Registration error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -101,5 +96,6 @@ async function registerUser(req, res) {
 }
 
 module.exports = { registerUser };
+
 
 
