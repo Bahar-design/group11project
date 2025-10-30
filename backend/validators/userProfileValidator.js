@@ -6,8 +6,9 @@ function validateUserProfile(data, type = 'volunteer') {
   const value = {};
 
   // Required fields
+  // Email is provided as a query parameter in our API; do not require it in the request body.
   const requiredFields = [
-    'name', 'email', 'phone', 'address1', 'city', 'state', 'zipCode'
+    'name', 'phone', 'address1', 'city', 'state', 'zipCode'
   ];
   requiredFields.forEach(field => {
     if (!data[field] || typeof data[field] !== 'string' || !data[field].trim()) {
