@@ -42,10 +42,10 @@ module.exports = { registerUser };
 const pool = require('../db');
 
 async function registerUser(req, res) {
-  const { email, password, admin_ID } = req.body;
+  const { email, password, admin_id } = req.body; // match column name
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });  
+    return res.status(400).json({ message: "Email and password are required" });
   }
 
   try {
@@ -59,7 +59,7 @@ async function registerUser(req, res) {
     }
 
     // Determine user type
-    const userType = admin_ID ? 'admin' : 'volunteer';
+    const userType = admin_id ? 'admin' : 'volunteer';
 
     // Insert user into user_table
     const userResult = await pool.query(
@@ -72,10 +72,9 @@ async function registerUser(req, res) {
     if (userType === 'admin') {
       await pool.query(
         'INSERT INTO adminprofile (admin_id, user_id) VALUES ($1, $2)',
-        [admin_ID, newUserId]
+        [admin_id, newUserId]
       );
     } else {
-      // Volunteer
       await pool.query(
         'INSERT INTO volunteerprofile (user_id) VALUES ($1)',
         [newUserId]
@@ -83,10 +82,10 @@ async function registerUser(req, res) {
     }
 
     res.status(201).json({
-      message: userType === 'admin' 
-              ? 'Admin registered successfully' 
-              : 'Volunteer registered successfully',
-      user: { id: newUserId, email, type: userType, admin_ID: admin_ID || null }
+      message: userType === 'admin'
+        ? 'Admin registered successfully'
+        : 'Volunteer registered successfully',
+      user: { id: newUserId, email, type: userType, admin_id: admin_id || null }
     });
 
   } catch (err) {

@@ -25,7 +25,7 @@ export default function Registration({ isLoggedIn, user, onLogin }) {
       const res = await fetch(`${API_BASE}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, admin_ID: adminID }),
+        body: JSON.stringify({ email, password, admin_id: adminID }),
       });
 
       const data = await res.json();
