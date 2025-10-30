@@ -45,7 +45,7 @@ async function registerUser(req, res) {
   const { email, password, admin_ID } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+    return res.status(400).json({ message: "Email and password are required" });  
   }
 
   try {
