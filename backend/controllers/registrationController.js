@@ -40,14 +40,13 @@ function registerUser(req, res) {
 module.exports = { registerUser };
 */
 
-// controllers/registrationController.js
-const pool = require('../db'); // PostgreSQL connection
+const pool = require('../db');
 
 async function registerUser(req, res) {
-  const { email, password, type } = req.body;
+  const { email, password, admin_ID } = req.body;
 
-  if (!email || !password || !type) {
-    return res.status(400).json({ message: "Email, password, and user type are required" });
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
   }
 
   try {
@@ -60,31 +59,40 @@ async function registerUser(req, res) {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // Determine user type
+    const userType = admin_ID ? 'admin' : 'volunteer';
+
     // Insert user into user_table
-    const result = await pool.query(
+    const userResult = await pool.query(
       'INSERT INTO user_table (user_email, user_password, user_type) VALUES ($1, $2, $3) RETURNING user_id',
-      [email, password, type]
+      [email, password, userType]
     );
+    const newUserId = userResult.rows[0].user_id;
 
-    const newUserId = result.rows[0].user_id;
-
-    // Insert into corresponding table based on user_type
-    if (type.toLowerCase() === 'volunteer') {
+    // Insert into appropriate profile table
+    if (userType === 'admin') {
+      if (!admin_ID) {
+        return res.status(400).json({ message: "Admin ID is required for admins" });
+      }
       await pool.query(
-        'INSERT INTO volunteerprofile (user_id) VALUES ($1)',
-        [newUserId]
+        'INSERT INTO admin_profile (admin_ID, user_ID) VALUES ($1, $2)',
+        [admin_ID, newUserId]
       );
-    } else if (type.toLowerCase() === 'admin') {
+    } else {
+      // Volunteer
       await pool.query(
-        'INSERT INTO adminprofile (user_id) VALUES ($1)',
+        'INSERT INTO volunteer_profile (user_ID) VALUES ($1)',
         [newUserId]
       );
     }
 
     res.status(201).json({
-      message: `${type} registered successfully`,
-      user: { id: newUserId, email, type }
+      message: userType === 'admin' 
+              ? 'Admin registered successfully' 
+              : 'Volunteer registered successfully',
+      user: { id: newUserId, email, type: userType, admin_ID: admin_ID || null }
     });
+
 
   } catch (err) {
     console.error('Registration error:', err);
@@ -93,4 +101,5 @@ async function registerUser(req, res) {
 }
 
 module.exports = { registerUser };
+
 
