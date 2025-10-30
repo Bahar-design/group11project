@@ -54,14 +54,28 @@ async function login(req, res) {
       return res.json({ user: { id: user.user_id, email: user.user_email, type: user.user_type } });
     }
 
-    // If not found in DB, allow in-memory fallback only during tests
-    if (process.env.NODE_ENV === 'test') {
-      const local = users.find(u => u.email === email && u.password === password);
-      if (!local) return res.status(401).json({ message: 'Invalid email or password' });
-      return res.json({ user: { name: local.name, email: local.email, type: local.type } });
+    // If not found in DB, check in-memory users. If a match is found, persist the user into the DB
+    // so subsequent profile GET will find the user and return an (empty) profile for first-time users.
+    const local = users.find(u => u.email === email && u.password === password);
+    if (local) {
+      try {
+        const insert = await pool.query(
+          'INSERT INTO user_table (user_email, user_password, user_type) VALUES ($1, $2, $3) RETURNING user_id, user_email, user_type',
+          [local.email, local.password, local.type]
+        );
+        const created = insert.rows[0];
+        return res.json({ user: { id: created.user_id, email: created.user_email, type: created.user_type } });
+      } catch (dbErr) {
+        console.error('Error inserting fallback user into DB:', dbErr);
+        // In test environment, allow fallback; in production surface error or deny login
+        if (process.env.NODE_ENV === 'test') {
+          return res.json({ user: { name: local.name, email: local.email, type: local.type } });
+        }
+        return res.status(500).json({ message: 'Server error during login' });
+      }
     }
 
-    // In production, don't fall back to memory: treat as unauthorized
+    // No match at all
     return res.status(401).json({ message: 'Invalid email or password' });
   } catch (err) {
     console.error('Error during login:', err);

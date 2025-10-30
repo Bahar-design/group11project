@@ -44,23 +44,23 @@ export default function Login({ onLogin, isLoggedIn, user }) {
         try {
           const profileRes = await fetch(`${API_BASE}/api/user-profile?type=${type}&email=${encodeURIComponent(email)}`);
           if (profileRes.status === 404) {
-            // No profile yet for this user — allow navigation with minimal info so they can create one
-            const userObj = { userType: type, email };
+            // No profile row yet for this user. Construct a minimal profile and continue so user can create it.
+            const userObj = { name: '', email, userType: type };
             onLogin(userObj);
             navigate('/user-profiles');
             return;
           }
           const profileData = await profileRes.json();
           if (!profileRes.ok) {
-            setMessage("Login succeeded but failed to load profile.");
+            setMessage('Login succeeded but failed to load profile.');
             return;
           }
           // Merge login info (type, email) with profile
           const userObj = { ...profileData, userType: type, email };
           onLogin(userObj);
-          navigate("/user-profiles");
+          navigate('/user-profiles');
         } catch (err) {
-          setMessage("Login succeeded but error loading profile.");
+          setMessage('Login succeeded but error loading profile.');
         }
       }
     } catch (err) {
