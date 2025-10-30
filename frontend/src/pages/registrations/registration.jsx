@@ -49,7 +49,7 @@ export default function Registration({ isLoggedIn, user, onLogin }) {
         return;
       }
 
-      //Fetch full profile like Login.jsx
+      //Fetch full profile
       try {
         const type = loginData.user?.type;
         const emailFromLogin = loginData.user?.email;
