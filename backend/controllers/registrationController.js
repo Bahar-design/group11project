@@ -1,5 +1,5 @@
 // controllers/registrationController.js
-
+/*
 // Hardcoded users for testing
 let users = [
   { email: "amy@example.com", password: "1234" },
@@ -35,6 +35,49 @@ function registerUser(req, res) {
     : "Volunteer registered successfully";
 
   res.status(201).json({ message: userTypeMessage, user: newUser });
+}
+
+module.exports = { registerUser };
+*/
+
+// controllers/registrationController.js
+const pool = require('../db'); // your PostgreSQL connection
+
+async function registerUser(req, res) {
+  const { email, password, type } = req.body;
+
+  //to check required fields
+  if (!email || !password || !type) {
+    return res.status(400).json({ message: "Email, password, and user type are required" });
+  }
+
+  try {
+    // check if user already exists
+    const existingUser = await pool.query(
+      'SELECT * FROM user_table WHERE user_email = $1',
+      [email]
+    );
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    //SQL to add new user into user_table
+    const result = await pool.query(
+      'INSERT INTO user_table (user_email, user_password, user_type) VALUES ($1, $2, $3) RETURNING user_ID',
+      [email, password, type]
+    );
+
+    const newUserId = result.rows[0].user_id;
+
+    res.status(201).json({
+      message: `${type} registered successfully`,
+      user: { id: newUserId, email, type }
+    });
+
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 }
 
 module.exports = { registerUser };
