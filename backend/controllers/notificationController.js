@@ -1,4 +1,5 @@
 // GET /api/notifications/admins
+/*
 function getAdmins(req, res) {
   res.status(200).json(getAdminsList());
 }
@@ -139,4 +140,100 @@ module.exports = {
   getVolunteerInbox,
   getAdminInboxByEmail,
   getVolunteerInboxByEmail
+};
+*/
+
+const pool = require('../db');
+
+// Get all notifications for a specific user by their ID
+async function getUserNotifications(req, res) {
+  const userId = parseInt(req.params.userId);
+  try {
+    const result = await pool.query(
+      'SELECT * FROM notifications WHERE message_to = $1 ORDER BY message_ID DESC',
+      [userId]
+    );
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error('Error fetching notifications:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Add a new notification
+async function addNotification(req, res) {
+  const { message_from, message_to, message_text } = req.body;
+
+  if (!message_from || !message_to || !message_text) {
+    return res.status(400).json({ message: 'Missing fields' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO notifications (message_from, message_to, message_text, message_sent) VALUES ($1, $2, $3, $4) RETURNING *',
+      [message_from, message_to, message_text, false]
+    );
+    res.status(201).json({ message: 'Notification added', notification: result.rows[0] });
+  } catch (err) {
+    console.error('Error adding notification:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Delete a notification by ID
+async function deleteNotification(req, res) {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      'DELETE FROM notifications WHERE message_ID = $1 RETURNING *',
+      [id]
+    );
+    if (!result.rows.length) return res.status(404).json({ message: 'Notification not found' });
+    res.status(200).json({ message: 'Notification deleted', notification: result.rows[0] });
+  } catch (err) {
+    console.error('Error deleting notification:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Send a message (marks message_sent as true)
+async function sendMessage(req, res) {
+  const { message_ID } = req.body;
+  if (!message_ID) return res.status(400).json({ message: 'Missing message ID' });
+
+  try {
+    const result = await pool.query(
+      'UPDATE notifications SET message_sent = true WHERE message_ID = $1 RETURNING *',
+      [message_ID]
+    );
+    if (!result.rows.length) return res.status(404).json({ message: 'Message not found' });
+    res.status(200).json({ message: 'Message sent', messageRow: result.rows[0] });
+  } catch (err) {
+    console.error('Error sending message:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+//get inbox by recipient ID?
+async function getInboxByUser(req, res) {
+  const userId = parseInt(req.params.userId);
+  try {
+    const result = await pool.query(
+      'SELECT * FROM notifications WHERE message_to = $1 ORDER BY message_ID DESC',
+      [userId]
+    );
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error('Error fetching inbox:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+module.exports = {
+  getUserNotifications,
+  addNotification,
+  deleteNotification,
+  sendMessage,
+  getInboxByUser
 };
