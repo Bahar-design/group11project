@@ -8,7 +8,7 @@ function validateUserProfile(data, type = 'volunteer') {
   // Required fields
   // Email is provided as a query parameter in our API; do not require it in the request body.
   const requiredFields = [
-    'name', 'phone', 'address1', 'city', 'state', 'zipCode'
+    'name', 'address1', 'city', 'state', 'zipCode'
   ];
   requiredFields.forEach(field => {
     if (!data[field] || typeof data[field] !== 'string' || !data[field].trim()) {
@@ -46,9 +46,14 @@ function validateUserProfile(data, type = 'volunteer') {
     errors.push('Invalid email format.');
   }
 
-  // Phone format (simple US)
+  // Phone format (simple US) — optional
   if (data.phone && !/^\d{3}-\d{3}-\d{4}$/.test(data.phone)) {
     errors.push('Phone must be in format 999-999-9999.');
+  } else if (data.phone) {
+    // copy normalized phone
+    value.phone = data.phone;
+  } else {
+    value.phone = '';
   }
 
   // State
@@ -72,7 +77,7 @@ function validateUserProfile(data, type = 'volunteer') {
   value.preferences = typeof data.preferences === 'string' ? data.preferences : '';
   value.travelRadius = data.travelRadius || '';
   value.hasTransportation = typeof data.hasTransportation === 'boolean' ? data.hasTransportation : true;
-  value.primaryLocation = data.primaryLocation || '';
+  value.primaryLocation = typeof data.primaryLocation === 'string' ? data.primaryLocation.trim() : '';
   value.userType = data.userType || '';
 
   if (errors.length > 0) {
