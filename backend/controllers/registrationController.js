@@ -71,13 +71,13 @@ async function registerUser(req, res) {
     // Insert into appropriate profile table
     if (userType === 'admin') {
       await pool.query(
-        'INSERT INTO admin_profile (admin_ID, user_ID) VALUES ($1, $2)',
+        'INSERT INTO adminprofile (admin_id, user_id) VALUES ($1, $2)',
         [admin_ID, newUserId]
       );
     } else {
       // Volunteer
       await pool.query(
-        'INSERT INTO volunteer_profile (user_ID) VALUES ($1)',
+        'INSERT INTO volunteerprofile (user_id) VALUES ($1)',
         [newUserId]
       );
     }
