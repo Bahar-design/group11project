@@ -40,19 +40,17 @@ function registerUser(req, res) {
 module.exports = { registerUser };
 */
 
-// controllers/registrationController.js
-const pool = require('../db'); // your PostgreSQL connection
+const pool = require('../db');
 
 async function registerUser(req, res) {
-  const { email, password, type } = req.body;
+  const { email, password, admin_ID } = req.body;
 
-  //to check required fields
-  if (!email || !password || !type) {
-    return res.status(400).json({ message: "Email, password, and user type are required" });
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
   }
 
   try {
-    // check if user already exists
+    // Check if user already exists
     const existingUser = await pool.query(
       'SELECT * FROM user_table WHERE user_email = $1',
       [email]
@@ -61,18 +59,40 @@ async function registerUser(req, res) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    //SQL to add new user into user_table
-    const result = await pool.query(
-      'INSERT INTO user_table (user_email, user_password, user_type) VALUES ($1, $2, $3) RETURNING user_ID',
-      [email, password, type]
-    );
+    // Determine user type
+    const userType = admin_ID ? 'admin' : 'volunteer';
 
-    const newUserId = result.rows[0].user_id;
+    // Insert user into user_table
+    const userResult = await pool.query(
+      'INSERT INTO user_table (user_email, user_password, user_type) VALUES ($1, $2, $3) RETURNING user_id',
+      [email, password, userType]
+    );
+    const newUserId = userResult.rows[0].user_id;
+
+    // Insert into appropriate profile table
+    if (userType === 'admin') {
+      if (!admin_ID) {
+        return res.status(400).json({ message: "Admin ID is required for admins" });
+      }
+      await pool.query(
+        'INSERT INTO admin_profile (admin_ID, user_ID) VALUES ($1, $2)',
+        [admin_ID, newUserId]
+      );
+    } else {
+      // Volunteer
+      await pool.query(
+        'INSERT INTO volunteer_profile (user_ID) VALUES ($1)',
+        [newUserId]
+      );
+    }
 
     res.status(201).json({
-      message: `${type} registered successfully`,
-      user: { id: newUserId, email, type }
+      message: userType === 'admin' 
+              ? 'Admin registered successfully' 
+              : 'Volunteer registered successfully',
+      user: { id: newUserId, email, type: userType, admin_ID: admin_ID || null }
     });
+
 
   } catch (err) {
     console.error('Registration error:', err);
@@ -81,3 +101,5 @@ async function registerUser(req, res) {
 }
 
 module.exports = { registerUser };
+
+

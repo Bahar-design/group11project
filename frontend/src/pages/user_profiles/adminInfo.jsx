@@ -37,7 +37,9 @@ const AdminInfo = ({ user }) => {
   // On mount, fetch latest profile for this admin (by email if available)
   useEffect(() => {
     setLoading(true);
-    let url = '/api/user-profile?type=admin';
+    const base = (window.__API_BASE__ || '') || '';
+    const apiBase = base.replace(/\/$/, '') || '';
+    let url = `${apiBase}/api/user-profile?type=admin`;
     if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
     axios.get(url)
       .then(res => {
@@ -69,7 +71,10 @@ const AdminInfo = ({ user }) => {
     setError(null);
     setSuccess(false);
     try {
-      const res = await axios.post('/api/user-profile?type=admin', formData);
+      const base = (window.__API_BASE__ || '') || '';
+      const apiBase = base.replace(/\/$/, '') || '';
+      const emailQuery = formData.email ? `&email=${encodeURIComponent(formData.email)}` : '';
+      const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
       setFormData(prev => ({ ...prev, ...res.data }));
       if (setUserProfile) setUserProfile(res.data);
       setSuccess(true);
