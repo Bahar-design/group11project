@@ -76,14 +76,17 @@ async function getUserProfile(req, res, next) {
       const profile = vp.rows[0];
 
       // fetch skills
-      const skillsRes = await pool.query(
-        `SELECT s.skill_name FROM skills s
-         JOIN volunteer_skills vs ON vs.skill_id = s.skill_id
-         WHERE vs.volunteer_id = $1`,
-        [profile.volunteer_id]
-      );
+        const skillsRes = await pool.query(
+          `SELECT s.skill_name FROM skills s JOIN volunteer_skills vs ON vs.skill_id = s.skill_id WHERE vs.volunteer_id = $1`,
+          [profile.volunteer_id]
+        );
 
-      const skills = skillsRes.rows.map(r => r.skill_name);
+        let skills = [];
+        if (skillsRes && Array.isArray(skillsRes.rows) && skillsRes.rows.length > 0) {
+          skills = skillsRes.rows.map(r => r.skill_name);
+        } else if (Array.isArray(value.skills) && value.skills.length > 0) {
+          skills = value.skills;
+        }
 
       const out = {
         name: profile.full_name,
@@ -314,14 +317,12 @@ async function updateUserProfile(req, res, next) {
       await client.query('DELETE FROM volunteer_skills WHERE volunteer_id = $1', [volunteerId]);
       if (Array.isArray(value.skills) && value.skills.length > 0) {
         // map skill names to ids
-        const skillRows = await client.query(
-          `SELECT skill_id, skill_name FROM skills WHERE skill_name = ANY($1::text[])`,
-          [value.skills]
-        );
-        const nameToId = new Map(skillRows.rows.map(r => [r.skill_name, r.skill_id]));
+        // Fetch all skills once and match case-insensitively
+        const skillRows = await client.query(`SELECT skill_id, skill_name FROM skills`);
+        const nameToId = new Map(skillRows.rows.map(r => [r.skill_name.toLowerCase(), r.skill_id]));
 
         for (const s of value.skills) {
-          const sid = nameToId.get(s);
+          const sid = nameToId.get(String(s).toLowerCase());
           if (sid) {
             try {
               await client.query('INSERT INTO volunteer_skills (volunteer_id, skill_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [volunteerId, sid]);
@@ -338,11 +339,16 @@ async function updateUserProfile(req, res, next) {
       await client.query('COMMIT');
 
       // return the newly stored profile
-      const skillsRes = await pool.query(
-        `SELECT s.skill_name FROM skills s JOIN volunteer_skills vs ON vs.skill_id = s.skill_id WHERE vs.volunteer_id = $1`,
-        [volunteerId]
-      );
-      const skills = skillsRes.rows.map(r => r.skill_name);
+        const skillsRes = await pool.query(
+          `SELECT s.skill_name FROM skills s JOIN volunteer_skills vs ON vs.skill_id = s.skill_id WHERE vs.volunteer_id = $1`,
+          [volunteerId]
+        );
+        let skills = [];
+        if (skillsRes && Array.isArray(skillsRes.rows) && skillsRes.rows.length > 0) {
+          skills = skillsRes.rows.map(r => r.skill_name);
+        } else if (Array.isArray(value.skills) && value.skills.length > 0) {
+          skills = value.skills;
+        }
 
       const out = {
         name: value.name,
@@ -372,8 +378,20 @@ async function updateUserProfile(req, res, next) {
 
     // admin
     if (type === 'admin') {
+    // Ensure admin_id exists (should have been created during registration)
+    const existingAdminRes = await client.query('SELECT admin_id, start_date FROM adminprofile WHERE user_id = $1', [userId]);
+    const existingAdmin = existingAdminRes.rows[0];
+    if (!existingAdmin || !existingAdmin.admin_id) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'Admin account not initialized. Please register as admin first (admin_id missing).' });
+    }
+
+    // Use existing admin_id and preserve start_date if present
+    const adminIdParam = existingAdmin.admin_id;
+    const existingStartDate = existingAdmin.start_date || null;
+
     const upsertAP = `
-  INSERT INTO adminprofile (user_id, full_name, phone, address1, address2, city, state_code, zip_code, admin_level, department, start_date, emergency_contact)
+  INSERT INTO adminprofile (admin_id, user_id, full_name, phone, address1, address2, city, state_code, zip_code, admin_level, start_date, emergency_contact)
   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
         ON CONFLICT (user_id) DO UPDATE SET
           full_name = EXCLUDED.full_name,
@@ -384,13 +402,13 @@ async function updateUserProfile(req, res, next) {
           state_code = EXCLUDED.state_code,
           zip_code = EXCLUDED.zip_code,
           admin_level = EXCLUDED.admin_level,
-          department = EXCLUDED.department,
           start_date = EXCLUDED.start_date,
           emergency_contact = EXCLUDED.emergency_contact
         RETURNING admin_id;
       `;
 
       const apRes = await client.query(upsertAP, [
+        adminIdParam,
         userId,
         value.name,
         value.phone || null,
@@ -400,8 +418,7 @@ async function updateUserProfile(req, res, next) {
         value.state,
         value.zipCode,
         value.adminLevel || null,
-        value.department || null,
-        value.startDate || null,
+        value.startDate || existingStartDate || null,
         value.emergencyContact || null
       ]);
 
