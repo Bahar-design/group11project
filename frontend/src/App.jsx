@@ -37,8 +37,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
           <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} user={user} />} />
-          <Route path="/register" element={<Registration isLoggedIn={isLoggedIn} user={user} onLogin={handleLogin} />} />
-
+          <Route path="/register" element={<Registration isLoggedIn={isLoggedIn} user={user} />} />
 
           <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/user-profiles" element={
