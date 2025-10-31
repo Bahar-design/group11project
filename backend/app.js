@@ -23,14 +23,7 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
 console.log('Using FRONTEND_ORIGIN =', FRONTEND_ORIGIN);
 
 
-//app.use(cors({ origin: FRONTEND_ORIGIN }));
-
-app.use(cors({
-  origin: [
-    'http://localhost:5173', // your local frontend
-    'https://yellow-meadow-0948aa01e.3.azurestaticapps.net' // erase later if needed?
-  ],
-}));
+app.use(cors({ origin: FRONTEND_ORIGIN }));
 
 
 
