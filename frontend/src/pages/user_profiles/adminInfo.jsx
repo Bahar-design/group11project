@@ -25,9 +25,8 @@ const AdminInfo = ({ user }) => {
     state: '',
     zipCode: '',
     adminLevel: 'Regional Administrator',
-    department: 'Southwest Regional Operations',
-    startDate: '2023-06-15',
-    emergencyContact: 'Regional Director - (713) 555-0001'
+    startDate: '',
+    emergencyContact: ''
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -256,56 +255,7 @@ const AdminInfo = ({ user }) => {
           </div>
         </div>
 
-        <div className="profile-card">
-          <div className="profile-card-header">
-            <h3 className="profile-card-title">Organization Details</h3>
-            <button className="btn-secondary edit-btn" type="button">
-              Update
-            </button>
-          </div>
-          <div className="profile-card-content">
-            <div className="form-group">
-              <label>Organization</label>
-              <input
-                type="text"
-                className="form-input"
-                value="Houston Hearts Clothing Drive"
-                readOnly
-                style={{ background: 'var(--medium-silver)' }}
-              />
-            </div>
-            <div className="form-group">
-              <label>Department</label>
-              <input
-                type="text"
-                className="form-input"
-                name="department"
-                value={formData.department}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Start Date</label>
-              <input
-                type="date"
-                className="form-input"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Emergency Contact</label>
-              <input
-                type="text"
-                className="form-input"
-                name="emergencyContact"
-                value={formData.emergencyContact}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-        </div>
+        {/* Organization/department card removed — simplified single admin form */}
       </div>
 
       <div style={{ marginTop: '2rem' }}>
