@@ -123,8 +123,30 @@ async function getUserProfile(req, res, next) {
       );
 
           if (ap.rows.length === 0) {
-    // No admin profile yet -- return a 404 so frontend knows profile must be created.
-    return res.status(404).json({ message: 'Admin profile not found' });
+    // No admin profile yet -- return an empty admin profile so frontend can render the creation UI.
+    const out = {
+      name: '',
+      email: email,
+      phone: '',
+      address1: '',
+      address2: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      adminLevel: '',
+      department: '',
+      startDate: '',
+      emergencyContact: '',
+      regions: [],
+      userType: 'admin',
+      stats: {
+        eventsManaged: 0,
+        volunteersCoordinated: 0,
+        familiesImpacted: 0,
+        successRate: 0
+      }
+    };
+    return res.json(out);
         }
 
       const profile = ap.rows[0];
@@ -228,11 +250,42 @@ async function updateUserProfile(req, res, next) {
       `;
 
       // Normalize availability to array of YYYY-MM-DD strings for Postgres date[]
+      // Normalize availability to array of YYYY-MM-DD strings for Postgres date[]
       const availabilityParam = Array.isArray(value.availability)
         ? value.availability.map(d => {
             if (!d) return null;
-            if (typeof d === 'string') return d.split('T')[0];
-            if (d instanceof Date) return d.toISOString().substring(0,10);
+            // Millisecond timestamp (number)
+            if (typeof d === 'number' && !Number.isNaN(d)) {
+              const dt = new Date(Number(d));
+              if (!Number.isNaN(dt.getTime())) return dt.toISOString().substring(0,10);
+              return null;
+            }
+            // Numeric string timestamp
+            if (typeof d === 'string' && /^\d{10,13}$/.test(d)) {
+              const dt = new Date(Number(d));
+              if (!Number.isNaN(dt.getTime())) return dt.toISOString().substring(0,10);
+            }
+            if (typeof d === 'string') {
+              // ISO string or YYYY-MM-DD
+              return d.split('T')[0];
+            }
+            if (d instanceof Date) {
+              return d.toISOString().substring(0,10);
+            }
+            // react-multi-date-picker DateObject support (year/month/day)
+            if (typeof d === 'object' && d.year && d.month && d.day) {
+              const month = String(d.month.number || d.month).padStart(2, '0');
+              const day = String(d.day).padStart(2, '0');
+              return `${d.year}-${month}-${day}`;
+            }
+            // DateObject with format method
+            if (d && typeof d.format === 'function') {
+              try {
+                return d.format('YYYY-MM-DD');
+              } catch (formatErr) {
+                // fall through
+              }
+            }
             // fallback to string
             return String(d).split('T')[0];
           }).filter(Boolean)
@@ -385,7 +438,8 @@ async function updateUserProfile(req, res, next) {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('DB error updating profile:', err.message || err, 'code=', err.code || 'n/a');
-    return res.status(500).json({ message: 'Server error updating profile' });
+    // Surface the DB error message to the client for debugging (safe for dev; consider hiding in prod)
+    return res.status(500).json({ message: 'Server error updating profile', error: err.message });
   } finally {
     client.release();
   }

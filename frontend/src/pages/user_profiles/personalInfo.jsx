@@ -195,14 +195,24 @@ const PersonalInfo = ({ user }) => {
       return null;
     }).filter(Boolean);
 
-    console.log('Final formatted availability:', formattedAvailability);
+    // Extra safety: convert any numeric timestamps (or numeric strings) to YYYY-MM-DD
+    const normalizedAvailability = formattedAvailability.map(d => {
+      if (!d) return null;
+      // numeric string or number
+      if (/^\d{10,13}$/.test(String(d))) {
+        const dt = new Date(Number(d));
+        if (!Number.isNaN(dt.getTime())) return dt.toISOString().substring(0,10);
+      }
+      return String(d).split('T')[0];
+    }).filter(Boolean);
 
-    if (formattedAvailability.length === 0) {
+    console.log('Final formatted availability:', formattedAvailability);
+    if (normalizedAvailability.length === 0) {
       setError('Could not format dates. Please try selecting dates again.');
       return;
     }
-    // Build the submit data with formatted dates
-  const submitData = { ...formData, availability: formattedAvailability };
+    // Build the submit data with normalized dates
+    const submitData = { ...formData, availability: normalizedAvailability };
 
     console.log('Submit data to send:', JSON.stringify(submitData, null, 2));
 
