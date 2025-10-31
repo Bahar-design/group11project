@@ -1,90 +1,160 @@
+// tests/notificationController.test.js
 const request = require('supertest');
 const express = require('express');
 const bodyParser = require('body-parser');
+
+//mock the database connection
+jest.mock('../db', () => ({
+  query: jest.fn(),
+}));
+
+const pool = require('../db');
 const notificationController = require('../controllers/notificationController');
 
-const { 
-  getUserNotifications, 
-  deleteNotification, 
-  addNotification 
+const {
+  getUserNotifications,
+  deleteNotification,
+  sendMessage,
+  getAllNotifications,
+  markMessageAsSent,
 } = notificationController;
 
 const app = express();
 app.use(bodyParser.json());
 
-app.get('/api/notifications/:userId', getUserNotifications);
+//Register test routes
+app.get('/api/notifications', getUserNotifications);
 app.delete('/api/notifications/:id', deleteNotification);
-app.post('/api/notifications', addNotification);
+app.post('/api/notifications/message', sendMessage);
+app.get('/api/notifications/all', getAllNotifications);
+app.patch('/api/notifications/sent/:id', markMessageAsSent);
 
-describe('Notification Controller Tests', () => {
+describe('Notification Controller Tests (DB Mocked)', () => {
   beforeEach(() => {
-    jest.resetModules();
-    const controller = require('../controllers/notificationController');
-    controller.notifications = [
-      { id: 1, userId: 1, title: 'New Event Assignments', text: 'You are assigned to the Clothing Drive on Sep 19, 2025.' },
-      { id: 2, userId: 1, title: 'Event Update', text: 'Event update: The Monday Madness donation event time has changed to 11:00 AM.' },
-      { id: 3, userId: 1, title: 'Reminder', text: 'Reminder to submit your volunteer report by this Friday.' },
-      { id: 4, userId: 2, title: 'Event C', text: 'Details for Event C' }
-    ];
+    jest.clearAllMocks();
+  });
+
+  //SUCCESS CASES
+  it('GET /api/notifications?email=test@example.com → returns notifications', async () => {
+    pool.query.mockResolvedValueOnce({
+      rows: [{ message_ID: 1, message_text: 'Hello!' }],
+    });
+
+    const res = await request(app).get('/api/notifications?email=test@example.com');
+
+    expect(res.statusCode).toBe(200);
+    expect(pool.query).toHaveBeenCalledWith(
+      'SELECT * FROM notifications WHERE message_to = $1 ORDER BY message_ID DESC',
+      ['test@example.com']
+    );
+    expect(res.body).toEqual([{ message_ID: 1, message_text: 'Hello!' }]);
+  });
+
+  it('POST /api/notifications/message → sends a message', async () => {
+    const mockNotification = { message_ID: 1, message_text: 'Hi', message_to: 'b@b.com' };
+    pool.query.mockResolvedValueOnce({ rows: [mockNotification] });
+
+    const res = await request(app)
+      .post('/api/notifications/message')
+      .send({ from: 'a@a.com', to: 'b@b.com', message: 'Hi' });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body.message).toBe('Message sent');
+    expect(res.body.notification).toEqual(mockNotification);
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO notifications'),
+      ['a@a.com', 'b@b.com', 'Hi']
+    );
+  });
+
+  it('DELETE /api/notifications/:id → deletes a notification', async () => {
+    pool.query.mockResolvedValueOnce({
+      rows: [{ message_ID: 10, message_text: 'deleted' }],
+    });
+
+    const res = await request(app).delete('/api/notifications/10');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe('Notification deleted');
+    expect(res.body.notification.message_ID).toBe(10);
+    expect(pool.query).toHaveBeenCalledWith(
+      'DELETE FROM notifications WHERE message_ID = $1 RETURNING *',
+      ['10']
+    );
+  });
+
+  it('PATCH /api/notifications/sent/:id → marks as sent', async () => {
+    pool.query.mockResolvedValueOnce({
+      rowCount: 1,
+      rows: [{ message_ID: 2, message_sent: true }],
+    });
+
+    const res = await request(app).patch('/api/notifications/sent/2');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe('Notification marked as sent');
+    expect(pool.query).toHaveBeenCalledWith(
+      'UPDATE notifications SET message_sent = TRUE WHERE message_ID = $1 RETURNING *',
+      ['2']
+    );
+  });
+
+  it('GET /api/notifications/all → fetches all notifications', async () => {
+    pool.query.mockResolvedValueOnce({
+      rows: [{ message_ID: 1 }, { message_ID: 2 }],
+    });
+
+    const res = await request(app).get('/api/notifications/all');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toBe(2);
+    expect(pool.query).toHaveBeenCalledWith(
+      'SELECT * FROM notifications ORDER BY message_ID DESC'
+    );
   });
 
  
-  it('GET /api/notifications/:userId should return notifications for user', async () => {
-    const res = await request(app).get('/api/notifications/1');
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveLength(3);
-    expect(res.body[0]).toHaveProperty('title', 'New Event Assignments');
+  it('GET /api/notifications → returns 400 if no email provided', async () => {
+    const res = await request(app).get('/api/notifications');
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe('Email is required');
   });
 
-
-  it('GET /api/notifications/:userId should return empty array if user has no notifications', async () => {
-    const res = await request(app).get('/api/notifications/999');
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual([]);
+  it('POST /api/notifications/message → returns 400 if missing fields', async () => {
+    const res = await request(app)
+      .post('/api/notifications/message')
+      .send({ from: '', message: '' });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toMatch(/Missing required fields/i);
   });
 
-
-  it('DELETE /api/notifications/:id should delete a notification', async () => {
-    const res = await request(app).delete('/api/notifications/2');
-    expect(res.statusCode).toBe(200);
-    expect(res.body.message).toBe('Notification deleted');
-    expect(res.body.notification).toHaveProperty('id', 2);
-
-    const confirmRes = await request(app).get('/api/notifications/1');
-    expect(confirmRes.body.find(n => n.id === 2)).toBeUndefined();
-  });
-
-
-  it('DELETE /api/notifications/:id should return 404 if notification not found', async () => {
+  it('DELETE /api/notifications/:id → returns 404 if notification not found', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
     const res = await request(app).delete('/api/notifications/999');
     expect(res.statusCode).toBe(404);
-    expect(res.body).toHaveProperty('message', 'Notification not found');
+    expect(res.body.message).toBe('Notification not found');
   });
 
-
-  it('POST /api/notifications should add a new notification', async () => {
-    const newNotif = { userId: 3, title: 'New Notice', text: 'Test Message' };
-    const res = await request(app).post('/api/notifications').send(newNotif);
-    expect(res.statusCode).toBe(201);
-    expect(res.body.message).toBe('Notification added');
-    expect(res.body.notification).toMatchObject(newNotif);
-
-    const check = await request(app).get('/api/notifications/3');
-    expect(check.body.find(n => n.title === 'New Notice')).toBeDefined();
-  });
-
-
-  it('POST /api/notifications should return 400 if missing fields', async () => {
-    const res = await request(app).post('/api/notifications').send({ title: 'Missing userId/text' });
-    expect(res.statusCode).toBe(400);
-    expect(res.body.message).toBe('Missing fields');
-  });
-
-
-  it('DELETE /api/notifications/:id should return 404 when deleting same ID twice', async () => {
-    await request(app).delete('/api/notifications/1'); 
-    const res = await request(app).delete('/api/notifications/1'); 
+  it('PATCH /api/notifications/sent/:id → returns 404 if message not found', async () => {
+    pool.query.mockResolvedValueOnce({ rowCount: 0, rows: [] });
+    const res = await request(app).patch('/api/notifications/sent/99');
     expect(res.statusCode).toBe(404);
     expect(res.body.message).toBe('Notification not found');
+  });
+
+  it('handles DB errors gracefully (getUserNotifications)', async () => {
+    pool.query.mockRejectedValueOnce(new Error('DB failure'));
+    const res = await request(app).get('/api/notifications?email=test@example.com');
+    expect(res.statusCode).toBe(500);
+    expect(res.body.message).toBe('Server error fetching notifications');
+  });
+
+  it('handles DB errors gracefully (sendMessage)', async () => {
+    pool.query.mockRejectedValueOnce(new Error('DB error'));
+    const res = await request(app)
+      .post('/api/notifications/message')
+      .send({ from: 'a@a.com', to: 'b@b.com', message: 'Hi' });
+    expect(res.statusCode).toBe(500);
+    expect(res.body.message).toBe('Server error sending message');
   });
 });

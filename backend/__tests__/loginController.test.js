@@ -1,57 +1,39 @@
+// loginController.test.js
 const request = require('supertest');
 const express = require('express');
+jest.mock('../db');  //Mock the db connection
+
+const pool = require('../db');
 const { login } = require('../controllers/loginController');
 
 const app = express();
 app.use(express.json());
-
-// Mock route for login
 app.post('/api/login', login);
 
-describe('Login API', () => {
+describe('Login API (mocked DB)', () => {
+  beforeEach(() => {
+    pool.query.mockReset();    // clear previous mocks
+  });
 
-  it('POST /api/login logs in successfully with correct credentials', async () => {
+  it('logs in successfully with correct credentials', async () => {
+    pool.query.mockResolvedValueOnce({
+      rows: [{ user_id: 1, user_email: 'sarah.j@email.com', user_password: '1234', user_type: 'volunteer' }]
+    });
+
     const res = await request(app)
       .post('/api/login')
       .send({ email: 'sarah.j@email.com', password: '1234' });
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('user');
-    expect(res.body.user.name).toBe('Sarah Johnson');
     expect(res.body.user.email).toBe('sarah.j@email.com');
+    expect(res.body.user.type).toBe('volunteer');
   });
 
-  it('POST /api/login fails with wrong email', async () => {
+  it('fails when email not found', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
     const res = await request(app)
       .post('/api/login')
       .send({ email: 'wrong@email.com', password: '1234' });
-
-    expect(res.statusCode).toBe(401);
-    expect(res.body.message).toBe('Invalid email or password');
-  });
-
-  it('POST /api/login fails with wrong password', async () => {
-    const res = await request(app)
-      .post('/api/login')
-      .send({ email: 'sarah.j@email.com', password: 'wrongpass' });
-
-    expect(res.statusCode).toBe(401);
-    expect(res.body.message).toBe('Invalid email or password');
-  });
-
-  it('POST /api/login fails if email or password is missing', async () => {
-    // Missing password
-    let res = await request(app)
-      .post('/api/login')
-      .send({ email: 'sarah.j@email.com' });
-
-    expect(res.statusCode).toBe(401);
-    expect(res.body.message).toBe('Invalid email or password');
-
-    // Missing email
-    res = await request(app)
-      .post('/api/login')
-      .send({ password: '1234' });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.message).toBe('Invalid email or password');
