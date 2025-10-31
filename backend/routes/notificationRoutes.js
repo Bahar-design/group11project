@@ -1,3 +1,4 @@
+/*
 const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notificationController');
@@ -18,3 +19,41 @@ router.get('/messages/volunteer/:volunteerId', notificationController.getVolunte
 router.get('/messages/volunteer/email/:email', notificationController.getVolunteerInboxByEmail);
 
 module.exports = router;
+*/
+
+const express = require('express');
+const router = express.Router();
+const notificationController = require('../controllers/notificationController');
+
+//Destructure after importing
+const {
+  getUserNotifications,
+  sendMessage,
+  deleteNotification,
+  getAllNotifications,
+  markMessageAsSent,
+  getVolunteers,
+  getAdmins
+} = notificationController;
+
+// Get volunteers list
+router.get('/volunteers', getVolunteers);
+router.get('/admins', getAdmins);
+
+// Get notifications for a user (?email=)
+router.get('/', getUserNotifications);
+
+// Admin can view all notifications
+router.get('/all', getAllNotifications);
+
+// Send a message
+router.post('/message', sendMessage);
+
+// Mark a message as sent (sets message_sent = true)
+router.patch('/sent/:id', markMessageAsSent);
+
+// Delete a specific notification
+router.delete('/:id', deleteNotification);
+
+module.exports = router;
+
