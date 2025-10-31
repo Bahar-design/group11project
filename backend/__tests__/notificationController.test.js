@@ -34,7 +34,7 @@ describe('Notification Controller Tests (DB Mocked)', () => {
     jest.clearAllMocks();
   });
 
-  //SUCCESS CASES
+  //success scenarios
   it('GET /api/notifications?email=test@example.com → returns notifications', async () => {
     pool.query.mockResolvedValueOnce({
       rows: [{ message_ID: 1, message_text: 'Hello!' }],

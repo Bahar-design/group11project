@@ -83,7 +83,8 @@ it('should ignore empty adminID and register as volunteer', async () => {
 // registrationController.test.js
 const request = require('supertest');
 const express = require('express');
-jest.mock('../db'); // mock database
+//need mock database
+jest.mock('../db');             
 const pool = require('../db');
 const { registerUser } = require('../controllers/registrationController');
 
