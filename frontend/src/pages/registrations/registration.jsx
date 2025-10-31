@@ -21,7 +21,7 @@ export default function Registration({ isLoggedIn, user, onLogin }) {
     }
 
     try {
-      //Register the user
+      // Register the user
       const res = await fetch(`${API_BASE}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,47 +35,14 @@ export default function Registration({ isLoggedIn, user, onLogin }) {
         return;
       }
 
-      //Automatically log in the user
-      const loginRes = await fetch(`${API_BASE}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      // Automatically log in the user with minimal info
+      const userObj = {
+        email: data.user.email,
+        userType: data.user.type, // 'admin' or 'volunteer'
+      };
 
-      const loginData = await loginRes.json();
-
-      if (!loginRes.ok) {
-        setMessage("Registered, but login failed: " + loginData.message);
-        return;
-      }
-
-      //Fetch full profile
-      try {
-        const type = loginData.user?.type;
-        const emailFromLogin = loginData.user?.email;
-
-        const profileRes = await fetch(`${API_BASE}/api/user-profile?type=${type}&email=${encodeURIComponent(emailFromLogin)}`);
-
-        if (profileRes.status === 404) {
-          const userObj = { name: '', email: emailFromLogin, userType: type };
-          onLogin(userObj);
-          navigate('/user-profiles');
-          return;
-        }
-
-        const profileData = await profileRes.json();
-        if (!profileRes.ok) {
-          setMessage('Login succeeded but failed to load profile.');
-          return;
-        }
-
-        const userObj = { ...profileData, userType: type, email: emailFromLogin };
-        onLogin(userObj);
-        navigate('/user-profiles');
-
-      } catch (err) {
-        setMessage('Login succeeded but error loading profile.');
-      }
+      onLogin(userObj);       
+      navigate('/user-profiles'); // Go to profile page
 
     } catch (err) {
       console.error(err);
