@@ -11,9 +11,6 @@ export default function Login({ onLogin, isLoggedIn, user }) {
 
   const navigate = useNavigate();
 
-  console.log("Using API_BASE:", API_BASE);
-
-
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -29,47 +26,30 @@ export default function Login({ onLogin, isLoggedIn, user }) {
         body: JSON.stringify({ email, password }),
       });
 
-  const data = await res.json();
+      const data = await res.json();
 
       if (!res.ok) {
         setMessage(data.message || "Login failed");
-      } else {
-        // Fetch full profile after login
-        const type = data.user?.type;
-        const email = data.user?.email;
-        if (!type || !email) {
-          setMessage("Login succeeded but user type or email missing.");
-          return;
-        }
-        try {
-          const profileRes = await fetch(`${API_BASE}/api/user-profile?type=${type}&email=${encodeURIComponent(email)}`);
-          if (profileRes.status === 404) {
-            // No profile row yet for this user. Construct a minimal profile and continue so user can create it.
-            const userObj = { name: '', email, userType: type };
-            onLogin(userObj);
-            navigate('/user-profiles');
-            return;
-          }
-          const profileData = await profileRes.json();
-          if (!profileRes.ok) {
-            setMessage('Login succeeded but failed to load profile.');
-            return;
-          }
-          // Merge login info (type, email) with profile
-          const userObj = { ...profileData, userType: type, email };
-          onLogin(userObj);
-          navigate('/user-profiles');
-        } catch (err) {
-          setMessage('Login succeeded but error loading profile.');
-        }
+        return;
       }
+
+      // Minimal info only, no profile fetch
+      const userObj = {
+        email: data.user.email,
+        userType: data.user.type,   // 'admin' or 'volunteer'
+      };
+
+      onLogin(userObj);
+      navigate('/user-profiles');
+
     } catch (err) {
+      console.error(err);
       setMessage("Error connecting to backend");
     }
   };
 
   return (
-  <Layout currentPage="login" isLoggedIn={isLoggedIn} onLogin={onLogin} user={user}>
+    <Layout currentPage="login" isLoggedIn={isLoggedIn} onLogin={onLogin} user={user}>
       <main className="login-main">
         <div className="login-card">
           <h2>Login</h2>
