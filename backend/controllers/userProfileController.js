@@ -1,43 +1,6 @@
 const { validateUserProfile } = require('../validators/userProfileValidator');
 const pool = require('../db');
 
-// Keep minimal hardcoded fallback profiles in case DB is unreachable
-let volunteerProfileFallback = {
-  name: 'Sarah Johnson',
-  email: 'sarah.j@email.com',
-  phone: '713-555-0123',
-  address1: '123 Main St',
-  address2: '',
-  city: 'Sugar Land',
-  state: 'TX',
-  zipCode: '77479',
-  emergencyContact: 'Mike Johnson - 713-555-0124',
-  skills: ['Tailoring & Alterations', 'Customer Service'],
-  preferences: '',
-  availability: ['2025-10-10', '2025-10-15'],
-  travelRadius: '20 miles',
-  hasTransportation: true,
-  primaryLocation: 'Sugar Land',
-  userType: 'volunteer'
-};
-
-let adminProfileFallback = {
-  name: 'Maria Delgado',
-  email: 'maria.d@houstonhearts.org',
-  phone: '713-555-0100',
-  address1: '456 Admin Ave',
-  address2: '',
-  city: 'Houston',
-  state: 'TX',
-  zipCode: '77001',
-  adminLevel: 'Regional Administrator',
-  department: 'Southwest Regional Operations',
-  startDate: '2023-06-15',
-  emergencyContact: 'Regional Director - (713) 555-0001',
-  regions: ['Sugar Land', 'Katy', 'Southwest Houston'],
-  userType: 'admin'
-};
-
 /**
  * GET /user-profile?type=volunteer|admin&email=...
  * If email provided, attempt to look up by user email -> user_table -> profile
@@ -45,13 +8,14 @@ let adminProfileFallback = {
  */
 async function getUserProfile(req, res, next) {
   const type = req.query.type === 'admin' ? 'admin' : 'volunteer';
-  const email = req.query.email;
+  // Accept email from query param, or fallback to the request body (frontend may POST the email in the form)
+  let email = req.query.email;
+  if (!email && req.body && typeof req.body.email === 'string') {
+    email = req.body.email.trim();
+    console.log('updateUserProfile: using email from request body:', email);
+  }
 
   if (!email) {
-    // In tests, allow fallback behavior. In production, require email so we always use DB.
-    if (process.env.NODE_ENV === 'test') {
-      return res.json(type === 'admin' ? adminProfileFallback : volunteerProfileFallback);
-    }
     return res.status(400).json({ message: 'Email query parameter is required' });
   }
 
@@ -71,7 +35,7 @@ async function getUserProfile(req, res, next) {
     if (user.user_type === 'volunteer' && type === 'volunteer') {
       // Join VolunteerProfile and skills
       const vp = await pool.query(
-        `SELECT vp.volunteer_id, vt.user_email, vp.full_name, vp.address1, vp.address2, vp.city, vp.state_code, vp.zip_code, vp.preferences, vp.availability, vp.travel_radius, vp.has_transportation, vp.emergency_contact
+        `SELECT vp.volunteer_id, vt.user_email, vp.full_name, vp.phone, vp.address1, vp.address2, vp.city, vp.state_code, vp.zip_code, vp.preferences, vp.availability, vp.travel_radius, vp.has_transportation, vp.emergency_contact, vp.primary_location
          FROM volunteerprofile vp
          JOIN user_table ut ON ut.user_id = vp.user_id
          JOIN user_table vt ON vt.user_id = ut.user_id
@@ -124,7 +88,7 @@ async function getUserProfile(req, res, next) {
       const out = {
         name: profile.full_name,
         email: email,
-        phone: '',
+        phone: profile.phone || '',
         address1: profile.address1,
         address2: profile.address2 || '',
         city: profile.city,
@@ -136,15 +100,14 @@ async function getUserProfile(req, res, next) {
         availability: profile.availability || [],
         travelRadius: profile.travel_radius || '',
         hasTransportation: !!profile.has_transportation,
-        primaryLocation: '',
-        userType: 'volunteer'
-          ,
-            stats: {
-              familiesHelped: 0,
-              hoursVolunteered: 0,
-              averageRating: 0,
-              eventsJoined: 0
-            }
+        primaryLocation: profile.primary_location || '',
+        userType: 'volunteer',
+        stats: {
+          familiesHelped: 0,
+          hoursVolunteered: 0,
+          averageRating: 0,
+          eventsJoined: 0
+        }
       };
 
       return res.json(out);
@@ -152,7 +115,7 @@ async function getUserProfile(req, res, next) {
 
     if (user.user_type === 'admin' && type === 'admin') {
       const ap = await pool.query(
-        `SELECT ap.admin_id, ut.user_email, ap.full_name, ap.address1, ap.address2, ap.city, ap.state_code, ap.zip_code, ap.admin_level, ap.department, ap.start_date, ap.emergency_contact
+        `SELECT ap.admin_id, ut.user_email, ap.full_name, ap.phone, ap.address1, ap.address2, ap.city, ap.state_code, ap.zip_code, ap.admin_level, ap.department, ap.start_date, ap.emergency_contact
          FROM adminprofile ap
          JOIN user_table ut ON ut.user_id = ap.user_id
          WHERE ap.user_id = $1`,
@@ -160,37 +123,15 @@ async function getUserProfile(req, res, next) {
       );
 
           if (ap.rows.length === 0) {
-              // No admin profile yet -- return minimal empty admin profile so the frontend can render a form
-              const out = {
-                name: '',
-                email: email,
-                phone: '',
-                address1: '',
-                address2: '',
-                city: '',
-                state: '',
-                zipCode: '',
-                adminLevel: '',
-                department: '',
-                startDate: '',
-                emergencyContact: '',
-                regions: [],
-                userType: 'admin',
-                stats: {
-                  eventsManaged: 0,
-                  volunteersCoordinated: 0,
-                  familiesImpacted: 0,
-                  successRate: 0
-                }
-              };
-              return res.json(out);
-      }
+    // No admin profile yet -- return a 404 so frontend knows profile must be created.
+    return res.status(404).json({ message: 'Admin profile not found' });
+        }
 
       const profile = ap.rows[0];
       const out = {
         name: profile.full_name,
         email: email,
-        phone: '',
+        phone: profile.phone || '',
         address1: profile.address1,
         address2: profile.address2 || '',
         city: profile.city,
@@ -201,14 +142,13 @@ async function getUserProfile(req, res, next) {
         startDate: profile.start_date ? profile.start_date.toISOString().substring(0,10) : '',
         emergencyContact: profile.emergency_contact || '',
         regions: [],
-        userType: 'admin'
-          ,
-            stats: {
-              eventsManaged: 0,
-              volunteersCoordinated: 0,
-              familiesImpacted: 0,
-              successRate: 0
-            }
+        userType: 'admin',
+        stats: {
+          eventsManaged: 0,
+          volunteersCoordinated: 0,
+          familiesImpacted: 0,
+          successRate: 0
+        }
       };
 
       return res.json(out);
@@ -218,9 +158,6 @@ async function getUserProfile(req, res, next) {
     return res.status(400).json({ message: 'Requested profile type does not match user type' });
   } catch (err) {
     console.error('DB error fetching profile:', err.message || err, 'code=', err.code || 'n/a');
-        if (process.env.NODE_ENV === 'test') {
-          return res.json(type === 'admin' ? adminProfileFallback : volunteerProfileFallback);
-        }
         return res.status(500).json({ message: 'Server error fetching profile' });
   }
 }
@@ -232,7 +169,12 @@ async function getUserProfile(req, res, next) {
  */
 async function updateUserProfile(req, res, next) {
   const type = req.query.type === 'admin' ? 'admin' : 'volunteer';
-  const email = req.query.email;
+  // Accept email from query param, or fallback to the request body (frontend may post the email in the form)
+  let email = req.query.email;
+  if (!email && req.body && typeof req.body.email === 'string') {
+    email = req.body.email.trim();
+    console.log('updateUserProfile: using email from request body:', email);
+  }
 
   // Pass user type to validator
   const { error, value } = validateUserProfile(req.body, type);
@@ -241,17 +183,8 @@ async function updateUserProfile(req, res, next) {
     return next(error);
   }
 
-  // If email not provided, allow fallback ONLY in tests. In production require email so DB is used.
+  // Require email so DB is always used as the source of truth.
   if (!email) {
-    if (process.env.NODE_ENV === 'test') {
-      if (type === 'admin') {
-        adminProfileFallback = { ...adminProfileFallback, ...value };
-        return res.json(adminProfileFallback);
-      } else {
-        volunteerProfileFallback = { ...volunteerProfileFallback, ...value };
-        return res.json(volunteerProfileFallback);
-      }
-    }
     const e = new Error('Email query parameter is required to update profile');
     e.status = 400;
     return next(e);
@@ -261,28 +194,25 @@ async function updateUserProfile(req, res, next) {
   try {
     await client.query('BEGIN');
 
-    // Get or create user in user_table
+    // Require that the associated user account already exists in user_table.
+    // Do NOT auto-create users here — user registration/login should create the user row.
     const userRes = await client.query('SELECT user_id FROM user_table WHERE user_email = $1', [email]);
-    let userId;
     if (userRes.rows.length === 0) {
-      const insertUser = await client.query(
-        'INSERT INTO user_table (user_email, user_type) VALUES ($1, $2) RETURNING user_id',
-        [email, type]
-      );
-      userId = insertUser.rows[0].user_id;
-    } else {
-      userId = userRes.rows[0].user_id;
-      // ensure user_type is correct
-      await client.query('UPDATE user_table SET user_type = $1 WHERE user_id = $2', [type, userId]);
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'User not found' });
     }
+    const userId = userRes.rows[0].user_id;
+    // ensure user_type is correct
+    await client.query('UPDATE user_table SET user_type = $1 WHERE user_id = $2', [type, userId]);
 
     if (type === 'volunteer') {
       // Upsert VolunteerProfile (by user_id)
-      const upsertVP = `
-        INSERT INTO volunteerprofile (user_id, full_name, address1, address2, city, state_code, zip_code, preferences, availability, travel_radius, has_transportation, emergency_contact)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+    const upsertVP = `
+  INSERT INTO volunteerprofile (user_id, full_name, phone, address1, address2, city, state_code, zip_code, preferences, availability, travel_radius, has_transportation, emergency_contact, primary_location)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
         ON CONFLICT (user_id) DO UPDATE SET
           full_name = EXCLUDED.full_name,
+          phone = EXCLUDED.phone,
           address1 = EXCLUDED.address1,
           address2 = EXCLUDED.address2,
           city = EXCLUDED.city,
@@ -292,7 +222,8 @@ async function updateUserProfile(req, res, next) {
           availability = EXCLUDED.availability,
           travel_radius = EXCLUDED.travel_radius,
           has_transportation = EXCLUDED.has_transportation,
-          emergency_contact = EXCLUDED.emergency_contact
+          emergency_contact = EXCLUDED.emergency_contact,
+          primary_location = EXCLUDED.primary_location
         RETURNING volunteer_id;
       `;
 
@@ -310,6 +241,7 @@ async function updateUserProfile(req, res, next) {
       const vpRes = await client.query(upsertVP, [
         userId,
         value.name,
+        value.phone || null,
         value.address1,
         value.address2 || null,
         value.city,
@@ -319,7 +251,8 @@ async function updateUserProfile(req, res, next) {
         availabilityParam,
         value.travelRadius || null,
         value.hasTransportation,
-        value.emergencyContact || null
+        value.emergencyContact || null,
+        value.primaryLocation || null
       ]);
 
       const volunteerId = vpRes.rows[0].volunteer_id;
@@ -361,7 +294,6 @@ async function updateUserProfile(req, res, next) {
       const out = {
         name: value.name,
         email,
-        phone: value.phone || '',
         address1: value.address1,
         address2: value.address2 || '',
         city: value.city,
@@ -370,18 +302,16 @@ async function updateUserProfile(req, res, next) {
         emergencyContact: value.emergencyContact || '',
         skills,
         preferences: value.preferences || '',
-        availability: value.availability || [],
+        availability: availabilityParam || [],
         travelRadius: value.travelRadius || '',
         hasTransportation: !!value.hasTransportation,
-        primaryLocation: value.primaryLocation || '',
-        userType: 'volunteer'
-          ,
-            stats: {
-              familiesHelped: 0,
-              hoursVolunteered: 0,
-              averageRating: 0,
-              eventsJoined: 0
-            }
+        userType: 'volunteer',
+        stats: {
+          familiesHelped: 0,
+          hoursVolunteered: 0,
+          averageRating: 0,
+          eventsJoined: 0
+        }
       };
 
       return res.json(out);
@@ -389,11 +319,12 @@ async function updateUserProfile(req, res, next) {
 
     // admin
     if (type === 'admin') {
-      const upsertAP = `
-        INSERT INTO adminprofile (user_id, full_name, address1, address2, city, state_code, zip_code, admin_level, department, start_date, emergency_contact)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+    const upsertAP = `
+  INSERT INTO adminprofile (user_id, full_name, phone, address1, address2, city, state_code, zip_code, admin_level, department, start_date, emergency_contact)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
         ON CONFLICT (user_id) DO UPDATE SET
           full_name = EXCLUDED.full_name,
+          phone = EXCLUDED.phone,
           address1 = EXCLUDED.address1,
           address2 = EXCLUDED.address2,
           city = EXCLUDED.city,
@@ -409,6 +340,7 @@ async function updateUserProfile(req, res, next) {
       const apRes = await client.query(upsertAP, [
         userId,
         value.name,
+        value.phone || null,
         value.address1,
         value.address2 || null,
         value.city,
@@ -426,7 +358,6 @@ async function updateUserProfile(req, res, next) {
       const out = {
         name: value.name,
         email,
-        phone: value.phone || '',
         address1: value.address1,
         address2: value.address2 || '',
         city: value.city,
@@ -437,14 +368,13 @@ async function updateUserProfile(req, res, next) {
         startDate: value.startDate || '',
         emergencyContact: value.emergencyContact || '',
         regions: value.regions || [],
-        userType: 'admin'
-          ,
-            stats: {
-              eventsManaged: 0,
-              volunteersCoordinated: 0,
-              familiesImpacted: 0,
-              successRate: 0
-            }
+        userType: 'admin',
+        stats: {
+          eventsManaged: 0,
+          volunteersCoordinated: 0,
+          familiesImpacted: 0,
+          successRate: 0
+        }
       };
 
       return res.json(out);
@@ -455,18 +385,6 @@ async function updateUserProfile(req, res, next) {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('DB error updating profile:', err.message || err, 'code=', err.code || 'n/a');
-    // In test environment, keep the in-memory fallback behavior to make tests stable.
-    if (process.env.NODE_ENV === 'test') {
-      if (type === 'admin') {
-        adminProfileFallback = { ...adminProfileFallback, ...value };
-        return res.json(adminProfileFallback);
-      } else {
-        volunteerProfileFallback = { ...volunteerProfileFallback, ...value };
-        return res.json(volunteerProfileFallback);
-      }
-    }
-
-    // In production, don't silently accept an in-memory fallback. Surface a server error.
     return res.status(500).json({ message: 'Server error updating profile' });
   } finally {
     client.release();
