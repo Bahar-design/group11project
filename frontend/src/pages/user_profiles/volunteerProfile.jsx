@@ -8,9 +8,11 @@ import Settings from './volunteerNotifications.jsx';
 const VolunteerProfile = ({ user }) => {
   const [activeTab, setActiveTab] = useState('personal-info');
 
-  if (!user || !user.stats) {
+  if (!user) {
     return <div>Loading volunteer profile...</div>;
   }
+
+  const stats = user?.stats || { familiesHelped: 0, hoursVolunteered: 0, averageRating: 0, eventsJoined: 0 };
 
   const tabs = [
     { id: 'personal-info', label: 'Personal Info' },
@@ -34,10 +36,10 @@ const VolunteerProfile = ({ user }) => {
         user={user}
         role="Dedicated Volunteer"
         stats={[
-          { number: user.stats.familiesHelped, label: 'Families Helped' },
-          { number: user.stats.hoursVolunteered, label: 'Hours Volunteered' },
-          { number: user.stats.averageRating, label: 'Average Rating' },
-          { number: user.stats.eventsJoined, label: 'Events Joined' }
+          { number: stats.familiesHelped ?? 0, label: 'Families Helped' },
+          { number: stats.hoursVolunteered ?? 0, label: 'Hours Volunteered' },
+          { number: stats.averageRating ?? 0, label: 'Average Rating' },
+          { number: stats.eventsJoined ?? 0, label: 'Events Joined' }
         ]}
       />
       

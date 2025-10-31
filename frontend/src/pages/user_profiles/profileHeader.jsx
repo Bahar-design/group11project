@@ -15,13 +15,13 @@ const ProfileHeader = ({ user, role, stats }) => {
     <div className="profile-header">
       <div className="profile-header-content">
         <div className="profile-avatar-large">{initials}</div>
-        <h1 className="profile-name">{user.name}</h1>
+        <h1 className="profile-name">{user?.name || ''}</h1>
         <p className="profile-role">{role}</p>
         <div className="profile-stats">
-          {stats.map((stat, index) => (
+          {(Array.isArray(stats) ? stats : []).map((stat, index) => (
             <div key={index} className="profile-stat">
-              <div className="profile-stat-number">{stat.number}</div>
-              <div className="profile-stat-label">{stat.label}</div>
+              <div className="profile-stat-number">{stat?.number ?? ''}</div>
+              <div className="profile-stat-label">{stat?.label ?? ''}</div>
             </div>
           ))}
         </div>

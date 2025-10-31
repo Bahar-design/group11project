@@ -1,4 +1,5 @@
 // GET /api/notifications/admins
+
 function getAdmins(req, res) {
   res.status(200).json(getAdminsList());
 }

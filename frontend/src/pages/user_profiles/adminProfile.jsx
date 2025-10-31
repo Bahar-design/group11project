@@ -33,16 +33,20 @@ const AdminProfile = ({ user }) => {
     }
   };
 
+  if (!user) return <div>Loading...</div>;
+
+  const stats = user?.stats || { eventsManaged: 0, volunteersCoordinated: 0, familiesImpacted: 0, successRate: 0 };
+
   return (
     <div className="profile-container">
       <ProfileHeader 
         user={user}
         role="⚡ Regional Administrator"
         stats={[
-          { number: user.stats.eventsManaged, label: 'Events Managed' },
-          { number: user.stats.volunteersCoordinated, label: 'Volunteers Coordinated' },
-          { number: user.stats.familiesImpacted, label: 'Families Impacted' },
-          { number: `${user.stats.successRate}%`, label: 'Success Rate' }
+          { number: stats.eventsManaged ?? 0, label: 'Events Managed' },
+          { number: stats.volunteersCoordinated ?? 0, label: 'Volunteers Coordinated' },
+          { number: stats.familiesImpacted ?? 0, label: 'Families Impacted' },
+          { number: `${stats.successRate ?? 0}%`, label: 'Success Rate' }
         ]}
       />
       
