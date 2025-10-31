@@ -23,7 +23,23 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
 console.log('Using FRONTEND_ORIGIN =', FRONTEND_ORIGIN);
 
 
-app.use(cors({ origin: FRONTEND_ORIGIN }));
+//app.use(cors({ origin: FRONTEND_ORIGIN }));    add back later
+
+const allowedOrigins = [
+  'http://localhost:5173', // local testing
+  'https://yellow-meadow-0948aa01e.3.azurestaticapps.net' // deployed frontend
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
 
 
 
