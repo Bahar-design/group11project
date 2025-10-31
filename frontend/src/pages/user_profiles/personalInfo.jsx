@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-// Context for global user info (name, initials)
 import { UserProfileContext } from './adminInfo';
 import Select from 'react-select';
 import DatePicker from 'react-multi-date-picker';
@@ -26,7 +25,7 @@ const PersonalInfo = ({ user }) => {
     state: '',
     zipCode: '',
     emergencyContact: '',
-    primaryLocation: 'Sugar Land',
+    primaryLocation: '',
     skills: [],
     preferences: '',
     availability: [],
@@ -36,6 +35,7 @@ const PersonalInfo = ({ user }) => {
   const [availability, setAvailability] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [serverErrorDetails, setServerErrorDetails] = useState(null);
   const [success, setSuccess] = useState(false);
 
   // Fetch user profile from backend on mount
@@ -44,18 +44,21 @@ const PersonalInfo = ({ user }) => {
     const base = API_BASE.replace(/\/$/, '');
     let url = `${base}/api/user-profile?type=volunteer`;
     if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
+    console.log('Fetching profile from:', url);
     axios.get(url)
       .then(res => {
+        console.log('Profile loaded:', res.data);
         setFormData(prev => ({ ...prev, ...res.data }));
         setAvailability(Array.isArray(res.data.availability) ? res.data.availability : []);
         if (setUserProfile) setUserProfile(res.data);
         setLoading(false);
       })
       .catch(err => {
+        console.error('Load profile error:', err);
         setError('Failed to load user profile');
         setLoading(false);
       });
-    // eslint-disable-next-line
+
   }, [user?.email]);
   const calendarContainerRef = useRef(null);
 
@@ -81,6 +84,7 @@ const PersonalInfo = ({ user }) => {
 
   // Update both local state and formData for multi-date picker
   const handleAvailabilityChange = (dates) => {
+    console.log('DatePicker onChange - Raw dates:', dates);
     setAvailability(dates);
     setFormData(f => ({ ...f, availability: dates }));
   };
@@ -115,12 +119,93 @@ const PersonalInfo = ({ user }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setServerErrorDetails(null);
     setSuccess(false);
-    if (availability.length === 0) {
+    console.log('Current formData:', formData);
+    console.log('Current availability state:', availability);
+    if (!availability || availability.length === 0) {
       setError('Please select at least one available date.');
       return;
     }
-    const submitData = { ...formData, availability };
+    // Basic client-side validation to catch obvious problems before posting
+    if (!formData.name || formData.name.trim().length === 0) {
+      setError('Full name is required');
+      return;
+    }
+    if (!formData.address1 || formData.address1.trim().length === 0) {
+      setError('Address Line 1 is required');
+      return;
+    }
+    if (!formData.city || formData.city.trim().length === 0) {
+      setError('City is required');
+      return;
+    }
+    if (!formData.state || formData.state.length !== 2) {
+      setError('Please select a valid 2-letter state');
+      return;
+    }
+    if (!formData.zipCode || String(formData.zipCode).trim().length < 5) {
+      setError('Zip Code must be at least 5 characters');
+      return;
+    }
+    // Validate travelRadius against allowed values in DB constraint
+    const allowedRadii = ['20 miles','30 miles','40 miles','50 miles'];
+    if (formData.travelRadius && !allowedRadii.includes(formData.travelRadius)) {
+      setError('Travel radius must be one of: ' + allowedRadii.join(', '));
+      return;
+    }
+    // Convert DatePicker dates to YYYY-MM-DD strings
+    const formattedAvailability = availability.map(date => {
+      console.log('Processing date:', date, 'Type:', typeof date);
+
+      // Handle react-multi-date-picker DateObject
+      if (date && typeof date === 'object') {
+        // If it has a format method (DatePicker DateObject)
+        if (typeof date.format === 'function') {
+          const formatted = date.format('YYYY-MM-DD');
+          console.log('Formatted using date.format():', formatted);
+          return formatted;
+        }
+
+        // If it's a regular Date object
+        if (date instanceof Date) {
+          const formatted = date.toISOString().substring(0, 10);
+          console.log('Formatted Date object:', formatted);
+          return formatted;
+        }
+
+        // If it has year/month/day properties (DateObject structure)
+        if (date.year && date.month && date.day) {
+          const month = String(date.month.number || date.month).padStart(2, '0');
+          const day = String(date.day).padStart(2, '0');
+          const formatted = `${date.year}-${month}-${day}`;
+          console.log('Formatted from properties:', formatted);
+          return formatted;
+        }
+      }
+
+      // If already a string
+      if (typeof date === 'string') {
+        const formatted = date.split('T')[0];
+        console.log('Already string, cleaned:', formatted);
+        return formatted;
+      }
+
+      console.warn('Unknown date format:', date);
+      return null;
+    }).filter(Boolean);
+
+    console.log('Final formatted availability:', formattedAvailability);
+
+    if (formattedAvailability.length === 0) {
+      setError('Could not format dates. Please try selecting dates again.');
+      return;
+    }
+    // Build the submit data with formatted dates
+  const submitData = { ...formData, availability: formattedAvailability };
+
+    console.log('Submit data to send:', JSON.stringify(submitData, null, 2));
+
     try {
       const base = API_BASE.replace(/\/$/, '');
       const emailQuery = formData.email ? `&email=${encodeURIComponent(formData.email)}` : '';
@@ -129,7 +214,22 @@ const PersonalInfo = ({ user }) => {
       if (setUserProfile) setUserProfile(res.data);
       setSuccess(true);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to save profile');
+      // Capture and display more detailed server error info to help debugging
+      console.error('Error response.data:', err.response?.data);
+      console.error('Error status:', err.response?.status);
+      console.error('Error headers:', err.response?.headers);
+      console.error('Error message:', err.message);
+      console.error('Full error object:', err);
+
+      // Prefer structured server message when available
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to save profile';
+      setError(errorMsg);
+      setServerErrorDetails({
+        status: err.response?.status || null,
+        data: err.response?.data || null,
+        headers: err.response?.headers || null,
+        message: err.message
+      });
     }
   };
 
@@ -371,32 +471,13 @@ const PersonalInfo = ({ user }) => {
             </div>
             <button className="btn-primary" type="submit">Save Profile</button>
           </form>
-        </div>
-      </div>
-      <div className="achievements-card">
-        <div className="profile-card">
-          <div className="profile-card-header">
-            <h3 className="profile-card-title">Achievements & Recognition</h3>
-          </div>
-          <div className="profile-card-content">
-            <div className="achievements-grid">
-              <div className="achievement-item">
-                <div className="achievement-icon">🌟</div>
-                <div className="achievement-title">Top Volunteer</div>
-                <div className="achievement-desc">Most hours in Q4 2025</div>
-              </div>
-              <div className="achievement-item">
-                <div className="achievement-icon">❤️</div>
-                <div className="achievement-title">Community Hero</div>
-                <div className="achievement-desc">100+ families helped</div>
-              </div>
-              <div className="achievement-item">
-                <div className="achievement-icon">⭐</div>
-                <div className="achievement-title">Perfect Rating</div>
-                <div className="achievement-desc">5.0 average rating</div>
-              </div>
+          {serverErrorDetails && (
+            <div style={{ marginTop: 12, background: '#fee', padding: 10, border: '1px solid #f88' }}>
+              <strong>Server error:</strong>
+              <div>Status: {serverErrorDetails.status ?? 'unknown'}</div>
+              <div style={{ whiteSpace: 'pre-wrap', marginTop: 6 }}>{JSON.stringify(serverErrorDetails.data || serverErrorDetails.message, null, 2)}</div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
