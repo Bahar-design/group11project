@@ -157,4 +157,6 @@ describe('Notification Controller Tests (DB Mocked)', () => {
     expect(res.statusCode).toBe(500);
     expect(res.body.message).toBe('Server error sending message');
   });
+
 });
+
