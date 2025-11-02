@@ -72,13 +72,17 @@ const AdminInfo = ({ user }) => {
     try {
       const base = (window.__API_BASE__ || '') || '';
       const apiBase = base.replace(/\/$/, '') || '';
-      const emailQuery = formData.email ? `&email=${encodeURIComponent(formData.email)}` : '';
+      // Ensure email is passed as query param (backend expects it)
+      const emailToUse = formData.email || user?.email;
+      const emailQuery = emailToUse ? `&email=${encodeURIComponent(emailToUse)}` : '';
       const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
       setFormData(prev => ({ ...prev, ...res.data }));
       if (setUserProfile) setUserProfile(res.data);
       setSuccess(true);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to save profile');
+      // Show structured message if available
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to save profile';
+      setError(msg);
     }
   };
 
@@ -226,29 +230,29 @@ const AdminInfo = ({ user }) => {
                   <option value="Super Administrator">Super Administrator</option>
                 </select>
               </div>
+              {/* department input - stored in DB as character varying */}
               <div className="form-group">
-                <label>Regions Managed</label>
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '0.5rem',
-                  marginTop: '0.5rem'
-                }}>
-                  {regions.map((region, index) => (
-                    <span
-                      key={index}
-                      style={{
-                        background: 'var(--primary-red)',
-                        color: 'white',
-                        padding: '0.25rem 0.75rem',
-                        borderRadius: '12px',
-                        fontSize: '0.875rem'
-                      }}
-                    >
-                      {region}
-                    </span>
-                  ))}
-                </div>
+                <label>Department</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  name="department"
+                  value={formData.department || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              {/* start date should be shown but not editable - comes from DB registration */}
+              <div className="form-group">
+                <label>Start Date</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  name="startDate"
+                  value={formData.startDate || ''}
+                  onChange={handleInputChange}
+                  readOnly
+                />
               </div>
               <button type="submit" className="btn-primary" style={{ marginTop: 16 }}>Save Profile</button>
             </form>

@@ -13,14 +13,14 @@ const UserProfiles = ({ isLoggedIn, user, onLogout }) => {
   const [userProfile, setUserProfile] = useState(user || {});
 
   return (
-    <Layout 
-      currentPage="profile" 
-      isLoggedIn={isLoggedIn} 
-      onLogout={onLogout}
-      showHeader={true}
-      user={user}
-    >
-      <UserProfileContext.Provider value={{ userProfile, setUserProfile }}>
+    <UserProfileContext.Provider value={{ userProfile, setUserProfile }}>
+      <Layout 
+        currentPage="profile" 
+        isLoggedIn={isLoggedIn} 
+        onLogout={onLogout}
+        showHeader={true}
+        user={user}
+      >
         <div className="app" style={{ background: 'var(--silver)', minHeight: '100vh' }}>
           <div className="container">
             {/* Profile Component */}
@@ -31,8 +31,8 @@ const UserProfiles = ({ isLoggedIn, user, onLogout }) => {
             )}
           </div>
         </div>
-      </UserProfileContext.Provider>
-    </Layout>
+      </Layout>
+    </UserProfileContext.Provider>
   );
 };
 

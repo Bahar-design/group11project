@@ -391,8 +391,8 @@ async function updateUserProfile(req, res, next) {
     const existingStartDate = existingAdmin.start_date || null;
 
     const upsertAP = `
-  INSERT INTO adminprofile (admin_id, user_id, full_name, phone, address1, address2, city, state_code, zip_code, admin_level, start_date, emergency_contact)
-  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+  INSERT INTO adminprofile (admin_id, user_id, full_name, phone, address1, address2, city, state_code, zip_code, admin_level, department, start_date, emergency_contact)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
         ON CONFLICT (user_id) DO UPDATE SET
           full_name = EXCLUDED.full_name,
           phone = EXCLUDED.phone,
@@ -402,6 +402,7 @@ async function updateUserProfile(req, res, next) {
           state_code = EXCLUDED.state_code,
           zip_code = EXCLUDED.zip_code,
           admin_level = EXCLUDED.admin_level,
+          department = EXCLUDED.department,
           start_date = EXCLUDED.start_date,
           emergency_contact = EXCLUDED.emergency_contact
         RETURNING admin_id;
@@ -418,6 +419,7 @@ async function updateUserProfile(req, res, next) {
         value.state,
         value.zipCode,
         value.adminLevel || null,
+        value.department || null,
         value.startDate || existingStartDate || null,
         value.emergencyContact || null
       ]);
@@ -435,7 +437,7 @@ async function updateUserProfile(req, res, next) {
         zipCode: value.zipCode,
         adminLevel: value.adminLevel || '',
         department: value.department || '',
-        startDate: value.startDate || '',
+        startDate: value.startDate || existingStartDate || '',
         emergencyContact: value.emergencyContact || '',
         regions: value.regions || [],
         userType: 'admin',
