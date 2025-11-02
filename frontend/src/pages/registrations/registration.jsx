@@ -43,14 +43,26 @@ export default function Registration({ isLoggedIn, user, onLogin }) {
           return;
         }
 
-      // Automatically log in the user with minimal info
-      const userObj = {
-        email: data.user.email,
-        userType: data.user.type, // 'admin' or 'volunteer'
-      };
-
-      onLogin(userObj);       
-      navigate('/user-profiles'); // Go to profile page
+      // Automatically log in the user with minimal info if onLogin handler provided
+      if (data && data.user) {
+        const userObj = {
+          email: data.user.email,
+          userType: data.user.type, // 'admin' or 'volunteer'
+        };
+        if (typeof onLogin === 'function') {
+          try {
+            onLogin(userObj);
+          } catch (err) {
+            console.error('onLogin handler threw:', err);
+          }
+        }
+        // Ensure React state from onLogin is applied before navigating so
+        // the user-profiles page receives the updated `user` prop.
+        Promise.resolve().then(() => navigate('/user-profiles'));
+      } else {
+        console.warn('Registration: no user object returned from API', data);
+        navigate('/user-profiles'); // still navigate but user may be empty
+      }
 
     } catch (err) {
       console.error('Registration network error:', err);

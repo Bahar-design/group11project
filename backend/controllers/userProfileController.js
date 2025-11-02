@@ -95,8 +95,9 @@ async function getUserProfile(req, res, next) {
         let skills = [];
         if (skillsRes && Array.isArray(skillsRes.rows) && skillsRes.rows.length > 0) {
           skills = skillsRes.rows.map(r => r.skill_name);
-        } else if (Array.isArray(value.skills) && value.skills.length > 0) {
-          skills = value.skills;
+        } else {
+          // fallback to empty skills array if DB returned none
+          skills = [];
         }
 
       const out = {

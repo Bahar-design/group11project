@@ -48,7 +48,9 @@ export default function Login({ onLogin, isLoggedIn, user }) {
       };
 
       onLogin(userObj);
-      navigate('/user-profiles');
+      // Delay navigation slightly to ensure parent state updates propagate
+      // and the UserProfiles component gets the `user` prop.
+      Promise.resolve().then(() => navigate('/user-profiles'));
 
     } catch (err) {
       console.error('Login network error:', err);
