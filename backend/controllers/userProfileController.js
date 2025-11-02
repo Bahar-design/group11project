@@ -7,7 +7,18 @@ const pool = require('../db');
  * Otherwise, returns a generic profile based on type.
  */
 async function getUserProfile(req, res, next) {
-  const type = req.query.type === 'admin' ? 'admin' : 'volunteer';
+  // Validate requested profile type: if provided it must be 'admin' or 'volunteer'.
+  // If not provided, default to 'volunteer'. Tests expect an explicit bad type to return 400.
+  let type;
+  if (typeof req.query.type === 'undefined') {
+    type = 'volunteer';
+  } else if (req.query.type === 'admin') {
+    type = 'admin';
+  } else if (req.query.type === 'volunteer') {
+    type = 'volunteer';
+  } else {
+    return res.status(400).json({ message: 'Unknown profile type' });
+  }
   // Accept email from query param, or fallback to the request body (frontend may POST the email in the form)
   let email = req.query.email;
   if (!email && req.body && typeof req.body.email === 'string') {
@@ -193,7 +204,18 @@ async function getUserProfile(req, res, next) {
  * Validates input, then upserts the profile and skill links inside a transaction.
  */
 async function updateUserProfile(req, res, next) {
-  const type = req.query.type === 'admin' ? 'admin' : 'volunteer';
+  // Validate requested profile type: if provided it must be 'admin' or 'volunteer'.
+  // If not provided, default to 'volunteer'. Tests expect an explicit bad type to return 400.
+  let type;
+  if (typeof req.query.type === 'undefined') {
+    type = 'volunteer';
+  } else if (req.query.type === 'admin') {
+    type = 'admin';
+  } else if (req.query.type === 'volunteer') {
+    type = 'volunteer';
+  } else {
+    return res.status(400).json({ message: 'Unknown profile type' });
+  }
   // Accept email from query param, or fallback to the request body (frontend may post the email in the form)
   let email = req.query.email;
   if (!email && req.body && typeof req.body.email === 'string') {

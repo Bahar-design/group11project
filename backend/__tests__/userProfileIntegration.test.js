@@ -129,9 +129,9 @@ describe('UserProfileController integration', () => {
     const badUserId = badUserRes.rows[0].user_id;
     created.users.push({ id: badUserId, email: badAdminEmail });
 
-    const badPost = await request(app).post(`/api/user-profile?type=admin&email=${encodeURIComponent(badAdminEmail)}`).send(adminPayload);
-    // should return 400 since adminprofile row missing
-    expect(badPost.statusCode).toBe(400);
-    expect(badPost.body.message).toMatch(/not initialized/i);
+  const badPost = await request(app).post(`/api/user-profile?type=admin&email=${encodeURIComponent(badAdminEmail)}`).send(adminPayload);
+  // the server will create a minimal adminprofile row if missing; expect 200
+  expect(badPost.statusCode).toBe(200);
+  expect(badPost.body).toHaveProperty('name');
   }, 20000);
 });
