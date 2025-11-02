@@ -26,10 +26,18 @@ export default function Login({ onLogin, isLoggedIn, user }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        console.error('Login: failed to parse JSON response', parseErr);
+        setMessage(`Login failed: unexpected response (status ${res.status})`);
+        return;
+      }
 
       if (!res.ok) {
-        setMessage(data.message || "Login failed");
+        console.error('Login failed:', res.status, data);
+        setMessage(data.message || `Login failed (status ${res.status})`);
         return;
       }
 
@@ -43,8 +51,8 @@ export default function Login({ onLogin, isLoggedIn, user }) {
       navigate('/user-profiles');
 
     } catch (err) {
-      console.error(err);
-      setMessage("Error connecting to backend");
+      console.error('Login network error:', err);
+      setMessage(`Network error: ${err.message || 'Could not reach server'}`);
     }
   };
 

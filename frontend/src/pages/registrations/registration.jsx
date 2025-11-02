@@ -28,12 +28,20 @@ export default function Registration({ isLoggedIn, user, onLogin }) {
         body: JSON.stringify({ email, password, admin_id: adminID }),
       });
 
-      const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch (parseErr) {
+          console.error('Registration: failed to parse JSON response', parseErr);
+          setMessage(`Registration failed: unexpected response (status ${res.status})`);
+          return;
+        }
 
-      if (!res.ok) {
-        setMessage(data.message || "Registration failed");
-        return;
-      }
+        if (!res.ok) {
+          console.error('Registration failed:', res.status, data);
+          setMessage(data.message || `Registration failed (status ${res.status})`);
+          return;
+        }
 
       // Automatically log in the user with minimal info
       const userObj = {
@@ -45,8 +53,8 @@ export default function Registration({ isLoggedIn, user, onLogin }) {
       navigate('/user-profiles'); // Go to profile page
 
     } catch (err) {
-      console.error(err);
-      setMessage("Error connecting to backend");
+      console.error('Registration network error:', err);
+      setMessage(`Network error: ${err.message || 'Could not reach server'}`);
     }
   };
 
