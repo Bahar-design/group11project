@@ -42,8 +42,13 @@ const AdminInfo = ({ user }) => {
     if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
     axios.get(url)
       .then(res => {
-        setFormData(prev => ({ ...prev, ...res.data }));
-        if (setUserProfile) setUserProfile(res.data);
+        const data = { ...res.data };
+        // normalize startDate to YYYY-MM-DD for <input type="date"> value
+        if (data.startDate) {
+          data.startDate = String(data.startDate).split('T')[0];
+        }
+        setFormData(prev => ({ ...prev, ...data }));
+        if (setUserProfile) setUserProfile(data);
         setLoading(false);
       })
       .catch(err => {
@@ -59,10 +64,6 @@ const AdminInfo = ({ user }) => {
       ...prev,
       [name]: value
     }));
-    // If name changes, update context/global
-    if (name === 'name' && setUserProfile) {
-      setUserProfile(prev => ({ ...prev, name: value }));
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -77,7 +78,15 @@ const AdminInfo = ({ user }) => {
       const emailQuery = emailToUse ? `&email=${encodeURIComponent(emailToUse)}` : '';
       const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
       setFormData(prev => ({ ...prev, ...res.data }));
-      if (setUserProfile) setUserProfile(res.data);
+      // Update global profile only after successful save
+      if (setUserProfile) {
+        setUserProfile(res.data);
+        try {
+          localStorage.setItem('hh_userProfile', JSON.stringify(res.data));
+        } catch (err) {
+          // ignore localStorage errors
+        }
+      }
       setSuccess(true);
     } catch (err) {
       // Show structured message if available
@@ -230,7 +239,6 @@ const AdminInfo = ({ user }) => {
                   <option value="Super Administrator">Super Administrator</option>
                 </select>
               </div>
-              {/* department input - stored in DB as character varying */}
               <div className="form-group">
                 <label>Department</label>
                 <input
