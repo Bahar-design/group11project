@@ -378,12 +378,23 @@ async function updateUserProfile(req, res, next) {
 
     // admin
     if (type === 'admin') {
-    // Ensure admin_id exists (should have been created during registration)
-    const existingAdminRes = await client.query('SELECT admin_id, start_date FROM adminprofile WHERE user_id = $1', [userId]);
-    const existingAdmin = existingAdminRes.rows[0];
+    // Ensure adminprofile exists (should normally be created during registration)
+    let existingAdminRes = await client.query('SELECT admin_id, start_date FROM adminprofile WHERE user_id = $1', [userId]);
+    let existingAdmin = existingAdminRes.rows[0];
     if (!existingAdmin || !existingAdmin.admin_id) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ message: 'Admin account not initialized. Please register as admin first (admin_id missing).' });
+      // Admin profile row is missing. Create a default adminprofile using userId as admin_id
+      // This keeps behavior working even if registration didn't create the adminprofile row.
+      try {
+        await client.query('INSERT INTO adminprofile (admin_id, user_id) VALUES ($1, $2)', [userId, userId]);
+      } catch (createErr) {
+        // If insertion fails (e.g., admin_id conflict), return helpful error
+        await client.query('ROLLBACK');
+        console.error('Failed to create missing adminprofile row:', createErr.message || createErr);
+        return res.status(500).json({ message: 'Server error initializing admin profile', error: createErr.message });
+      }
+      // re-read the created row
+      existingAdminRes = await client.query('SELECT admin_id, start_date FROM adminprofile WHERE user_id = $1', [userId]);
+      existingAdmin = existingAdminRes.rows[0];
     }
 
     // Use existing admin_id and preserve start_date if present

@@ -6,6 +6,12 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { userProfile } = useContext(UserProfileContext) || {};
+  // Load cached saved profile as a fallback so initials persist when navigating
+  let savedProfile = null;
+  try {
+    const s = localStorage.getItem('hh_userProfile');
+    if (s) savedProfile = JSON.parse(s);
+  } catch (e) {}
 
   // Helper to get initials from name
   const getInitials = (name) => {
@@ -125,7 +131,7 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
                   boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
                 }}
               >
-                {getInitials(userProfile?.name || user?.name)}
+                {getInitials((userProfile && userProfile.name) || (savedProfile && savedProfile.name) || user?.name)}
               </div>
               <span style={{ color: 'var(--primary-red, #e63946)', fontWeight: 600 }}>Profile</span>
             </button>

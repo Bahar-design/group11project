@@ -75,10 +75,6 @@ const PersonalInfo = ({ user }) => {
         ...prev,
         [name]: type === 'checkbox' ? checked : value
       }));
-      // If name changes, update context/global
-      if (name === 'name' && setUserProfile) {
-        setUserProfile(prev => ({ ...prev, name: value }));
-      }
     }
   };
 
@@ -221,7 +217,10 @@ const PersonalInfo = ({ user }) => {
       const emailQuery = formData.email ? `&email=${encodeURIComponent(formData.email)}` : '';
       const res = await axios.post(`${base}/api/user-profile?type=volunteer${emailQuery}`, submitData);
       setFormData(prev => ({ ...prev, ...res.data }));
-      if (setUserProfile) setUserProfile(res.data);
+      if (setUserProfile) {
+        setUserProfile(res.data);
+        try { localStorage.setItem('hh_userProfile', JSON.stringify(res.data)); } catch (err) {}
+      }
       setSuccess(true);
     } catch (err) {
       // Capture and display more detailed server error info to help debugging
