@@ -1,4 +1,4 @@
-import React from "react";
+
 import { useNavigate } from "react-router-dom";
 import Layout from '../../components/layout.jsx';
 import AdminProfile from './adminProfile.jsx';
