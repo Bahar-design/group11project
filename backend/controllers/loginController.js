@@ -66,7 +66,6 @@ module.exports = { login, users };
     }
   }
 
-  module.exports = { login };
 // Export a small in-memory users list for tests that import it directly
 const users = [
   { name: 'Sarah Johnson', email: 'sarah.j@email.com', password: '1234', type: 'volunteer' },

@@ -246,7 +246,7 @@ const ManagementTools = ({ user }) => {
                   <Select
                     isMulti
                     options={skillOptions}
-                    value={skillOptions.filter(option => eventForm.requiredSkills.includes(option.value))}
+                    value={skillOptions.filter(option => Array.isArray(eventForm.requiredSkills) && eventForm.requiredSkills.includes(option.value))}
                     onChange={selected => handleEventFormChange('requiredSkills', selected ? selected.map(option => option.value) : [])}
                     className="react-select-container"
                     classNamePrefix="react-select"
@@ -342,7 +342,7 @@ const ManagementTools = ({ user }) => {
               {quickActions.map((action) => (
                 <button
                   key={action.id}
-                  className={`${action.id.includes('create') || action.id.includes('send') ? 'btn-primary' : 'btn-secondary'} quick-action-btn ${loading[action.id] ? 'quick-action-btn-loading' : ''}`}
+                  className={`${(typeof action.id === 'string' && (action.id.includes('create') || action.id.includes('send'))) ? 'btn-primary' : 'btn-secondary'} quick-action-btn ${loading[action.id] ? 'quick-action-btn-loading' : ''}`}
                   style={{ 
                     opacity: loading[action.id] ? 0.7 : 1,
                     cursor: loading[action.id] ? 'not-allowed' : 'pointer'

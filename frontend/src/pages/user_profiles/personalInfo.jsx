@@ -421,7 +421,7 @@ const PersonalInfo = ({ user }) => {
                 isMulti
                 name="skills"
                 options={skillOptions}
-                value={skillOptions.filter(option => formData.skills.includes(option.value))}
+                value={skillOptions.filter(option => Array.isArray(formData.skills) && formData.skills.includes(option.value))}
                 onChange={selected => setFormData(prev => ({
                   ...prev,
                   skills: selected ? selected.map(option => option.value) : []
