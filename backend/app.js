@@ -18,17 +18,15 @@ const app = express();
 const pool = require('./db');
 
 // Middleware
-// Allow only the configured frontend origin in production. Fallback to '*' for local dev.
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
-console.log('Using FRONTEND_ORIGIN =', FRONTEND_ORIGIN);
+// Allow only the configured frontend origin(s) in production
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '';
 
-
-//app.use(cors({ origin: FRONTEND_ORIGIN }));    add back later
-
-const allowedOrigins = [
-  'http://localhost:5173', // local testing
-  'https://yellow-meadow-0948aa01e.3.azurestaticapps.net' // deployed frontend
-];
+// Build the allowed origins list. FRONTEND_ORIGIN can be a single origin or a comma-separated list.
+const allowedOrigins = ['http://localhost:5173']; // keep local dev origin
+if (FRONTEND_ORIGIN) {
+  const parts = FRONTEND_ORIGIN.split(',').map(s => s.trim()).filter(Boolean);
+  parts.forEach(p => allowedOrigins.push(p));
+}
 
 app.use(cors({
   origin: function (origin, callback) {
