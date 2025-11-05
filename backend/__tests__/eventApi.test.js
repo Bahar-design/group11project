@@ -72,4 +72,21 @@ describe('Event API', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.name).toBe('To Delete');
   });
+
+  it('GET /api/events/:id/volunteers returns volunteer list (may be empty)', async () => {
+    // create event first
+    const event = {
+      name: 'Vol Test',
+      description: 'desc',
+      location: 'loc',
+      requiredSkills: ['Sewing'],
+      urgency: 'Low',
+      date: '2025-12-01'
+    };
+    const createRes = await request(app).post('/api/events').send(event);
+    const id = createRes.body.id;
+    const res = await request(app).get(`/api/events/${id}/volunteers`);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
 });

@@ -122,6 +122,21 @@ describe('notificationController - unit tests', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
+  test('deleteNotification handles DB error', async () => {
+    pool.query.mockRejectedValueOnce(new Error('DB delete failed'));
+    const [req, res] = mockReqRes({ params: { id: '9' } });
+    await notif.deleteNotification(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+
+  test('getVolunteers returns empty array when DB returns none', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+    const [req, res] = mockReqRes();
+    await notif.getVolunteers(req, res);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.any(Array));
+  });
+
   // ------------------- getAdminInbox -------------------
   test('getAdminInbox invalid id', async () => {
     const [req, res] = mockReqRes({ params: { adminId: 'abc' } });
