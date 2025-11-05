@@ -10,7 +10,15 @@ import '../../../styling2/style.css';
 
 const UserProfiles = ({ isLoggedIn, user, onLogout }) => {
   if (!user) return null;
-  const [userProfile, setUserProfile] = useState(user || {});
+  // Initialize profile from localStorage if available, otherwise use passed user
+  let initialProfile = user || {};
+  try {
+    const saved = localStorage.getItem('hh_userProfile');
+    if (saved) initialProfile = { ...initialProfile, ...JSON.parse(saved) };
+  } catch (e) {
+    // ignore parse errors
+  }
+  const [userProfile, setUserProfile] = useState(initialProfile);
 
   return (
     <UserProfileContext.Provider value={{ userProfile, setUserProfile }}>

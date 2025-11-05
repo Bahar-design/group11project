@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import axios from 'axios';
+import API_BASE from '../../lib/apiBase';
 
 // Context for global user info (name, initials)
 export const UserProfileContext = createContext();
@@ -36,9 +37,8 @@ const AdminInfo = ({ user }) => {
   // On mount, fetch latest profile for this admin (by email if available)
   useEffect(() => {
     setLoading(true);
-    const base = (window.__API_BASE__ || '') || '';
-    const apiBase = base.replace(/\/$/, '') || '';
-    let url = `${apiBase}/api/user-profile?type=admin`;
+  const apiBase = API_BASE.replace(/\/$/, '') || '';
+  let url = `${apiBase}/api/user-profile?type=admin`;
     if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
     axios.get(url)
       .then(res => {
@@ -49,6 +49,11 @@ const AdminInfo = ({ user }) => {
         }
         setFormData(prev => ({ ...prev, ...data }));
         if (setUserProfile) setUserProfile(data);
+        try {
+          localStorage.setItem('hh_userProfile', JSON.stringify(data));
+        } catch (err) {
+          // ignore localStorage errors
+        }
         setLoading(false);
       })
       .catch(err => {
@@ -71,12 +76,11 @@ const AdminInfo = ({ user }) => {
     setError(null);
     setSuccess(false);
     try {
-      const base = (window.__API_BASE__ || '') || '';
-      const apiBase = base.replace(/\/$/, '') || '';
+  const apiBase = API_BASE.replace(/\/$/, '') || '';
       // Ensure email is passed as query param (backend expects it)
       const emailToUse = formData.email || user?.email;
       const emailQuery = emailToUse ? `&email=${encodeURIComponent(emailToUse)}` : '';
-      const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
+  const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
       setFormData(prev => ({ ...prev, ...res.data }));
       // Update global profile only after successful save
       if (setUserProfile) {
