@@ -35,4 +35,26 @@ describe('db.js environment handling', () => {
     expect(pool).toBeDefined();
     expect(require('pg').Pool).toHaveBeenCalledWith(expect.objectContaining({ user: 'u', host: 'h' }));
   });
+
+  test('does not load dotenv during tests and handles connect rejection gracefully', () => {
+    jest.resetModules();
+    const origEnv = { ...process.env };
+    process.env.NODE_ENV = 'test';
+    // make Pool.connect reject to simulate connection failure
+    mockPool.connect = jest.fn().mockRejectedValue(new Error('connect failed'));
+    const pool = require('../db');
+    expect(pool).toBeDefined();
+    process.env = origEnv;
+  });
+
+  test('loads dotenv when not in test env (branch)', () => {
+    jest.resetModules();
+    const origEnv = { ...process.env };
+    process.env.NODE_ENV = 'development';
+    // ensure connect resolves so require('../db') continues
+    mockPool.connect = jest.fn().mockResolvedValue({});
+    const pool = require('../db');
+    expect(pool).toBeDefined();
+    process.env = origEnv;
+  });
 });

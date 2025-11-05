@@ -1,60 +1,91 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import EventForm from './EventForm';
 import Layout from '../../components/layout.jsx';
 import './events.css';
 
-// Dummy events data (copy from managementTools.jsx)
-const initialEvents = [
-  {
-    id: 1,
-    name: 'Holiday Drive',
-    description: 'Annual holiday event to distribute gifts and food.',
-    location: 'Downtown Houston',
-    requiredSkills: ['Organization & Sorting', 'Customer Service'],
-    urgency: 'High',
-    date: '2025-12-23',
-    volunteers: [
-      { name: 'James Miller', hours: 5 },
-      { name: 'Sarah Lee', hours: 4 }
-    ],
-    status: '6/12 volunteers signed up'
-  },
-  {
-    id: 2,
-    name: 'Food Bank Support',
-    description: 'Help sort and distribute food donations.',
-    location: 'Sugar Land',
-    requiredSkills: ['Organization & Sorting'],
-    urgency: 'Medium',
-    date: '2025-10-15',
-    volunteers: [
-      { name: 'Alex Kim', hours: 3 }
-    ],
-    status: '3/8 volunteers signed up'
-  }
-];
+// Events page uses backend API
 
 export default function EventsPage({ isLoggedIn, user }) {
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState([]);
   const [editingEventId, setEditingEventId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(true);
   // For simplicity, no validation errors
   const [formErrors, setFormErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [openVolunteers, setOpenVolunteers] = useState({});
 
-  const handleCreate = (data) => {
-    setEvents(evts => [
-      ...evts,
-      { ...data, id: Date.now(), volunteers: [], status: '0/10 volunteers signed up' }
-    ]);
-    setShowCreateForm(false);
-    setTimeout(() => setShowCreateForm(true), 500); // Reset form
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  async function loadEvents() {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/events');
+      const data = await res.json();
+      setEvents(data);
+    } catch (err) {
+      console.error('Failed to load events', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleCreate = async (data) => {
+    // data: { name, description, location, requiredSkills, urgency, date }
+    try {
+      const res = await fetch('/api/events', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error('Create failed');
+      const created = await res.json();
+      // reload events to reflect DB
+      await loadEvents();
+      setShowCreateForm(false);
+      setTimeout(() => setShowCreateForm(true), 500);
+    } catch (err) {
+      console.error('create event error', err);
+      setFormErrors({ submit: 'Failed to create event' });
+    }
   };
 
-  const handleEdit = (id, data) => {
-    setEvents(evts => evts.map(e => e.id === id ? { ...e, ...data } : e));
-    setEditingEventId(null);
+  const handleEdit = async (id, data) => {
+    try {
+      const res = await fetch(`/api/events/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      if (!res.ok) throw new Error('Update failed');
+      await loadEvents();
+      setEditingEventId(null);
+    } catch (err) {
+      console.error('update event error', err);
+      setFormErrors({ submit: 'Failed to update event' });
+    }
   };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this event?')) return;
+    try {
+      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
+      await loadEvents();
+    } catch (err) {
+      console.error('delete event error', err);
+    }
+  };
+
+  async function toggleVolunteers(eventId) {
+    // If already loaded, just toggle visibility
+    if (openVolunteers[eventId]) {
+      setOpenVolunteers(s => ({ ...s, [eventId]: !s[eventId] }));
+      return;
+    }
+    try {
+      const res = await fetch(`/api/events/${eventId}/volunteers`);
+      const list = await res.json();
+      setEvents(evts => evts.map(e => e.id === eventId ? { ...e, volunteersList: list, volunteers: list.length } : e));
+      setOpenVolunteers(s => ({ ...s, [eventId]: true }));
+    } catch (err) {
+      console.error('failed to load volunteers', err);
+    }
+  }
 
   const handlePrintReport = (event) => {
     window.print(); // For now, just print the page
@@ -82,6 +113,7 @@ export default function EventsPage({ isLoggedIn, user }) {
 
           {/* Existing Events Section */}
           <div className="events-section-header" style={{ marginTop: '3rem', marginBottom: '2rem' }}>Existing Events</div>
+          {loading && <div>Loading events...</div>}
           {events.map(event => (
             <div className="event-card fade-in" key={event.id}>
               <div className="event-card-title">{event.name}</div>
@@ -90,12 +122,27 @@ export default function EventsPage({ isLoggedIn, user }) {
                 <div style={{ marginBottom: '0.3em' }}><strong>Location:</strong> {event.location}</div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Date:</strong> {event.date}</div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Urgency:</strong> <span style={{ color: 'var(--primary-red)', fontWeight: 500 }}>{event.urgency}</span></div>
-                <div style={{ marginBottom: '0.3em' }}><strong>Skills:</strong> {event.requiredSkills.map(skill => <span className="skill-chip" key={skill}>{skill}</span>)}</div>
-                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {event.status}</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Skills:</strong> {(event.requiredSkills || []).map(skill => <span className="skill-chip" key={skill}>{skill}</span>)}</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {event.volunteers} volunteers signed up</div>
+                {event.volunteersList && event.volunteersList.length > 0 && (
+                  <div style={{ marginTop: '0.5em' }}>
+                    <button className="btn-secondary" onClick={() => toggleVolunteers(event.id)}>
+                      {openVolunteers[event.id] ? 'Hide volunteers' : `Show ${event.volunteers} volunteers`}
+                    </button>
+                    {openVolunteers[event.id] && (
+                      <div style={{ marginTop: '0.5em' }}>
+                        <select size={Math.min(6, event.volunteersList.length)} style={{ width: '100%' }}>
+                          {event.volunteersList.map((v, i) => <option key={i}>{v.name}</option>)}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="event-card-actions">
                 <button className="btn-secondary" style={{ border: '1.5px solid var(--primary-red)', color: 'var(--primary-red)', background: 'var(--white)', fontWeight: 600 }} onClick={() => setEditingEventId(event.id)}>Manage</button>
-                <button className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--primary-red), var(--accent-red))', border: 'none', fontWeight: 600 }} onClick={() => handlePrintReport(event)}>Print Report</button>
+                <button className="btn-danger" style={{ marginLeft: '0.5rem' }} onClick={() => handleDelete(event.id)}>Delete</button>
+                <button className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--primary-red), var(--accent-red))', border: 'none', fontWeight: 600, marginLeft: '0.5rem' }} onClick={() => handlePrintReport(event)}>Print Report</button>
               </div>
               {/* Edit Form (inline, not popup) */}
               {editingEventId === event.id && (

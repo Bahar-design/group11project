@@ -1,5 +1,8 @@
 // backend/db.js
-require('dotenv').config();
+// Load .env only during non-test runs so unit tests can control process.env
+if (process.env.NODE_ENV !== 'test') {
+  require('dotenv').config();
+}
 
 const { Pool } = require('pg');
 

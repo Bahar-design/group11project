@@ -22,6 +22,7 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "setupFiles": ["<rootDir>/jest.setup.js"],
     "coverageThreshold": {
       "global": {
         "branches": 80,

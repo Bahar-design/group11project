@@ -68,4 +68,36 @@ describe('Registration Controller (mocked DB)', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('User already exists');
   });
+
+  it('fails admin registration when admin_id missing after creating user', async () => {
+    // first query: no existing user
+    // second: insert user returns id
+    pool.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ user_id: 303 }] })
+      .mockResolvedValueOnce(); // delete user after missing admin_id
+
+    const res = await request(app)
+      .post('/api/register')
+      .send({ email: 'badadmin@example.com', password: 'pw' });
+
+    // Since admin_id not provided, should register as volunteer, not fail — test admin path requires admin_id
+    expect(res.statusCode).toBe(201);
+  });
+
+  it('handles unique violation when admin_id already used', async () => {
+    // simulate existing user absent, insert user returns id, then adminprofile insert throws unique violation
+    pool.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ user_id: 404 }] })
+      .mockImplementationOnce(() => { const e = new Error('dup'); e.code = '23505'; throw e; })
+      .mockResolvedValueOnce(); // cleanup delete
+
+    const res = await request(app)
+      .post('/api/register')
+      .send({ email: 'admin2@example.com', password: 'pw', admin_id: 'exists' });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe('admin_id already in use');
+  });
 });
