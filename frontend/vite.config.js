@@ -20,4 +20,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_BASE || 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  }
 })
