@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import EventForm from './EventForm';
+import API_BASE from '../../lib/apiBase';
 import Layout from '../../components/layout.jsx';
 import './events.css';
 
@@ -22,7 +23,7 @@ export default function EventsPage({ isLoggedIn, user }) {
   async function loadEvents() {
     setLoading(true);
     try {
-      const res = await fetch('/api/events');
+      const res = await fetch(`${API_BASE}/api/events`);
       const data = await res.json();
       setEvents(data);
     } catch (err) {
@@ -35,7 +36,7 @@ export default function EventsPage({ isLoggedIn, user }) {
   const handleCreate = async (data) => {
     // data: { name, description, location, requiredSkills, urgency, date }
     try {
-      const res = await fetch('/api/events', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  const res = await fetch(`${API_BASE}/api/events`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       if (!res.ok) throw new Error('Create failed');
       const created = await res.json();
       // reload events to reflect DB
@@ -50,7 +51,7 @@ export default function EventsPage({ isLoggedIn, user }) {
 
   const handleEdit = async (id, data) => {
     try {
-      const res = await fetch(`/api/events/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      const res = await fetch(`${API_BASE}/api/events/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       if (!res.ok) throw new Error('Update failed');
       await loadEvents();
       setEditingEventId(null);
@@ -63,7 +64,7 @@ export default function EventsPage({ isLoggedIn, user }) {
   const handleDelete = async (id) => {
     if (!confirm('Delete this event?')) return;
     try {
-      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/api/events/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
       await loadEvents();
     } catch (err) {
@@ -78,7 +79,7 @@ export default function EventsPage({ isLoggedIn, user }) {
       return;
     }
     try {
-      const res = await fetch(`/api/events/${eventId}/volunteers`);
+  const res = await fetch(`${API_BASE}/api/events/${eventId}/volunteers`);
       const list = await res.json();
       setEvents(evts => evts.map(e => e.id === eventId ? { ...e, volunteersList: list, volunteers: list.length } : e));
       setOpenVolunteers(s => ({ ...s, [eventId]: true }));
