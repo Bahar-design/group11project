@@ -162,7 +162,13 @@
 }
 
 .table-scroll {
-  overflow-x: auto;
+  /* allow both horizontal and vertical scrolling, hide scrollbars for clean UI */
+  overflow: auto;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.table-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 
 .no-data-message {
