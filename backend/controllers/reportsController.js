@@ -100,8 +100,32 @@ async function getEventManagement(filters = {}) {
   }));
 }
 
+async function getSkills(eventId = null) {
+  // If eventId provided, return skills required for that event; otherwise return all skills
+  if (eventId) {
+    const sql = `
+      SELECT s.skill_id, s.skill_name
+      FROM event_skills es
+      JOIN skills s ON es.skill_id = s.skill_id
+      WHERE es.event_id = $1
+      ORDER BY s.skill_name ASC
+    `;
+    const { rows } = await pool.query(sql, [eventId]);
+    return rows;
+  }
+
+  const sql = `
+    SELECT skill_id, skill_name
+    FROM skills
+    ORDER BY skill_name ASC
+  `;
+  const { rows } = await pool.query(sql);
+  return rows;
+}
+
 module.exports = {
   getVolunteerParticipation,
   getVolunteerHistory,
-  getEventManagement
+  getEventManagement, 
+  getSkills
 };

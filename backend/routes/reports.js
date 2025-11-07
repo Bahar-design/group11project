@@ -53,4 +53,15 @@ router.get('/event-management', async (req, res, next) => {
   }
 });
 
+// GET skills (optionally for an event: ?eventId=123)
+router.get('/skills', async (req, res, next) => {
+  try {
+    const eventId = req.query.eventId || null;
+    const rows = await reports.getSkills(eventId);
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
