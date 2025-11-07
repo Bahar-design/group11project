@@ -10,7 +10,11 @@ function buildFilterClauses(filters, params) {
     params.push(filters.location);
     clauses.push('vp.city = $' + params.length);
   }
-  if (filters.skill && filters.skill !== 'all') {
+  // accept either skillName (legacy) or skillId (preferred)
+  if (filters.skillId && filters.skillId !== 'all') {
+    params.push(Number(filters.skillId));
+    clauses.push('s.skill_id = $' + params.length);
+  } else if (filters.skill && filters.skill !== 'all') {
     params.push(filters.skill);
     clauses.push('s.skill_name = $' + params.length);
   }
@@ -58,7 +62,7 @@ async function getVolunteerHistory(filters = {}) {
   const where = buildFilterClauses(filters, params);
 
   const sql = `
-    SELECT vp.volunteer_id, vp.full_name, vp.email, ed.event_id, ed.event_name, ed.location, ed.event_date, vh.hours_worked, vh.signup_date, vh.notes
+    SELECT vp.volunteer_id, vp.full_name, vp.email, ed.event_id, ed.event_name, ed.location, ed.event_date, ed.urgency, vh.hours_worked, vh.signup_date, vh.notes
     FROM volunteer_history vh
     JOIN volunteerprofile vp ON vh.volunteer_id = vp.volunteer_id
     JOIN eventdetails ed ON vh.event_id = ed.event_id
@@ -67,9 +71,14 @@ async function getVolunteerHistory(filters = {}) {
   `;
 
   const { rows } = await pool.query(sql, params);
+  const URGENCY_MAP_REVERSE = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Critical' };
   return rows.map(r => ({
     ...r,
-    hours_worked: r.hours_worked ? Number(r.hours_worked) : 0
+    hours_worked: r.hours_worked ? Number(r.hours_worked) : 0,
+    // normalize dates to ISO date-only string when present
+    event_date: r.event_date ? (new Date(r.event_date)).toISOString().slice(0,10) : null,
+    signup_date: r.signup_date ? (new Date(r.signup_date)).toISOString().slice(0,10) : null,
+    urgency: URGENCY_MAP_REVERSE[r.urgency] || r.urgency
   }));
 }
 
@@ -92,11 +101,15 @@ async function getEventManagement(filters = {}) {
   `;
 
   const { rows } = await pool.query(sql, params);
+  // Map urgency numeric -> label using existing mapping where possible
+  const URGENCY_MAP_REVERSE = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Critical' };
   return rows.map(r => ({
     ...r,
     total_volunteers: Number(r.total_volunteers || 0),
     total_hours: Number(r.total_hours || 0),
-    required_skills: r.required_skills || []
+    required_skills: r.required_skills || [],
+    event_date: r.event_date ? (new Date(r.event_date)).toISOString().slice(0,10) : null,
+    urgency: URGENCY_MAP_REVERSE[r.urgency] || r.urgency
   }));
 }
 

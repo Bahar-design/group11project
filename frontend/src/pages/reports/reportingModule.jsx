@@ -4,7 +4,7 @@ import './reportingModule.css';
 import API_BASE from '../../lib/apiBase';
 import Layout from '../../components/layout.jsx';
 
-const ReportingModule = () => {
+const ReportingModule = ({ isLoggedIn, user }) => {
   const [reportType, setReportType] = useState('volunteer-participation');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -27,7 +27,8 @@ const ReportingModule = () => {
   const filters = {
     search: searchTerm,
     location: selectedLocation,
-    skill: selectedSkill,
+    skill: selectedSkill && typeof selectedSkill === 'string' ? selectedSkill : null,
+    skillId: selectedSkill && typeof selectedSkill === 'object' ? selectedSkill.skill_id : null,
     startDate: dateRange.start,
     endDate: dateRange.end
   };
@@ -72,7 +73,7 @@ const ReportingModule = () => {
         if (!res.ok) return;
         const json = await res.json();
         if (!mounted) return;
-        const list = ['all', ...json.map(s => s.skill_name)];
+        const list = [{ skill_id: 'all', skill_name: 'All Skills' }, ...json];
         setSkills(list);
       } catch (err) {
         // leave default
@@ -320,7 +321,7 @@ const ReportingModule = () => {
   };
 
   return (
-    <Layout currentPage="events" user={user} isLoggedIn={isLoggedIn}>
+    <Layout currentPage="reports" user={user} isLoggedIn={isLoggedIn}>
       <div className="reporting-container">
         <div className="reporting-wrapper">
             <h1 className="reporting-title">
@@ -408,13 +409,17 @@ const ReportingModule = () => {
                 <div className="filter-group">
                     <label>Skill</label>
                     <select
-                    value={selectedSkill}
-                    onChange={(e) => setSelectedSkill(e.target.value)}
-                    className="filter-input"
+                      value={selectedSkill && (selectedSkill.skill_id || selectedSkill)}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        const found = skills.find(s => String(s.skill_id) === String(id));
+                        setSelectedSkill(found || id);
+                      }}
+                      className="filter-input"
                     >
-                        {skills.map(skill => (
-                        <option key={skill} value={skill}>{skill === 'all' ? 'All Skills' : skill}</option>
-                        ))}
+                      {skills.map(skill => (
+                        <option key={skill.skill_id} value={skill.skill_id}>{skill.skill_name}</option>
+                      ))}
                     </select>
                 </div>
                 </div>
