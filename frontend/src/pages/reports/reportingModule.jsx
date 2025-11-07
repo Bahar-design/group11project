@@ -320,152 +320,154 @@ const ReportingModule = () => {
   };
 
   return (
-    <div className="reporting-container">
-      <div className="reporting-wrapper">
-        <h1 className="reporting-title">
-          📊 Reporting Dashboard
-        </h1>
-        
-        <p className="reporting-subtitle">
-          Generate comprehensive reports on volunteer activities and event management
-        </p>
-
-        <div className="reporting-card">
-          <h3 className="reporting-section-title">
-            <FileText size={24} />
-            Select Report Type
-          </h3>
-          
-          <div className="report-type-grid">
-            {reportTypes.map(report => (
-              <div
-                key={report.id}
-                onClick={() => setReportType(report.id)}
-                className={`report-type-card ${reportType === report.id ? 'active' : ''}`}
-              >
-                <div className="report-type-icon">{report.icon}</div>
-                <h4 className="report-type-name">{report.title}</h4>
-                <p className="report-type-desc">{report.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="filters-section">
-            <h4 className="filters-title">
-              <Filter size={20} />
-              Filters & Search
-            </h4>
+    <Layout currentPage="events" user={user} isLoggedIn={isLoggedIn}>
+      <div className="reporting-container">
+        <div className="reporting-wrapper">
+            <h1 className="reporting-title">
+            📊 Reporting Dashboard
+            </h1>
             
-            <div className="filters-grid">
-              <div className="filter-group">
-                <label>
-                  <Search size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                  Search
-                </label>
-                <input
-                  type="text"
-                  placeholder="Search name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="filter-input"
-                />
-              </div>
+            <p className="reporting-subtitle">
+            Generate comprehensive reports on volunteer activities and event management
+            </p>
 
-              <div className="filter-group">
-                <label>Start Date</label>
-                <input
-                  type="date"
-                  value={dateRange.start}
-                  onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                  className="filter-input"
-                />
-              </div>
-
-              <div className="filter-group">
-                <label>End Date</label>
-                <input
-                  type="date"
-                  value={dateRange.end}
-                  onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                  className="filter-input"
-                />
-              </div>
-
-              <div className="filter-group">
-                <label>Location</label>
-                  <select
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="filter-input"
-                  >
-                    {locations.map(loc => (
-                      <option key={loc} value={loc}>{loc === 'all' ? 'All Locations' : loc}</option>
-                    ))}
-                  </select>
-              </div>
-
-              <div className="filter-group">
-                <label>Skill</label>
-                <select
-                  value={selectedSkill}
-                  onChange={(e) => setSelectedSkill(e.target.value)}
-                  className="filter-input"
+            <div className="reporting-card">
+            <h3 className="reporting-section-title">
+                <FileText size={24} />
+                Select Report Type
+            </h3>
+            
+            <div className="report-type-grid">
+                {reportTypes.map(report => (
+                <div
+                    key={report.id}
+                    onClick={() => setReportType(report.id)}
+                    className={`report-type-card ${reportType === report.id ? 'active' : ''}`}
                 >
-                    {skills.map(skill => (
-                      <option key={skill} value={skill}>{skill === 'all' ? 'All Skills' : skill}</option>
-                    ))}
-                </select>
-              </div>
+                    <div className="report-type-icon">{report.icon}</div>
+                    <h4 className="report-type-name">{report.title}</h4>
+                    <p className="report-type-desc">{report.desc}</p>
+                </div>
+                ))}
             </div>
 
-            <div className="filter-actions">
-              <button
-                onClick={clearFilters}
-                className="clear-filters-btn"
-              >
-                Clear Filters
-              </button>
+            <div className="filters-section">
+                <h4 className="filters-title">
+                <Filter size={20} />
+                Filters & Search
+                </h4>
+                
+                <div className="filters-grid">
+                <div className="filter-group">
+                    <label>
+                    <Search size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                    Search
+                    </label>
+                    <input
+                    type="text"
+                    placeholder="Search name or email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="filter-input"
+                    />
+                </div>
+
+                <div className="filter-group">
+                    <label>Start Date</label>
+                    <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                    className="filter-input"
+                    />
+                </div>
+
+                <div className="filter-group">
+                    <label>End Date</label>
+                    <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                    className="filter-input"
+                    />
+                </div>
+
+                <div className="filter-group">
+                    <label>Location</label>
+                    <select
+                        value={selectedLocation}
+                        onChange={(e) => setSelectedLocation(e.target.value)}
+                        className="filter-input"
+                    >
+                        {locations.map(loc => (
+                        <option key={loc} value={loc}>{loc === 'all' ? 'All Locations' : loc}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="filter-group">
+                    <label>Skill</label>
+                    <select
+                    value={selectedSkill}
+                    onChange={(e) => setSelectedSkill(e.target.value)}
+                    className="filter-input"
+                    >
+                        {skills.map(skill => (
+                        <option key={skill} value={skill}>{skill === 'all' ? 'All Skills' : skill}</option>
+                        ))}
+                    </select>
+                </div>
+                </div>
+
+                <div className="filter-actions">
+                <button
+                    onClick={clearFilters}
+                    className="clear-filters-btn"
+                >
+                    Clear Filters
+                </button>
+                </div>
             </div>
-          </div>
 
-          {/* Report Data Table */}
-          <div ref={reportRef} className="report-table-container">
-            {renderReportTable()}
-          </div>
+            {/* Report Data Table */}
+            <div ref={reportRef} className="report-table-container">
+                {renderReportTable()}
+            </div>
 
-          <div className="export-actions">
-            <button
-              onClick={exportToCSV}
-              disabled={loading}
-              className="export-btn export-csv"
-            >
-              <Download size={20} />
-              {loading ? 'Generating...' : 'Export to CSV'}
-            </button>
+            <div className="export-actions">
+                <button
+                onClick={exportToCSV}
+                disabled={loading}
+                className="export-btn export-csv"
+                >
+                <Download size={20} />
+                {loading ? 'Generating...' : 'Export to CSV'}
+                </button>
 
-            <button
-              onClick={exportToPDF}
-              disabled={loading}
-              className="export-btn export-pdf"
-            >
-              <FileText size={20} />
-              {loading ? 'Generating...' : 'Export to PDF'}
-            </button>
-          </div>
-        </div>
+                <button
+                onClick={exportToPDF}
+                disabled={loading}
+                className="export-btn export-pdf"
+                >
+                <FileText size={20} />
+                {loading ? 'Generating...' : 'Export to PDF'}
+                </button>
+            </div>
+            </div>
 
-        <div className="help-section">
-          <h4 className="help-title">💡 How to Use</h4>
-          <ul className="help-list">
-            <li><strong>Select a report type</strong> to view different aspects of volunteer activities</li>
-            <li><strong>Use filters</strong> to narrow down results by date range, location, skills, or search terms</li>
-            <li><strong>Preview the data</strong> in the table below before exporting</li>
-            <li><strong>Export to CSV</strong> for data analysis in Excel or Google Sheets</li>
-            <li><strong>Export to PDF</strong> for professional reports and presentations</li>
-          </ul>
+            <div className="help-section">
+            <h4 className="help-title">💡 How to Use</h4>
+            <ul className="help-list">
+                <li><strong>Select a report type</strong> to view different aspects of volunteer activities</li>
+                <li><strong>Use filters</strong> to narrow down results by date range, location, skills, or search terms</li>
+                <li><strong>Preview the data</strong> in the table below before exporting</li>
+                <li><strong>Export to CSV</strong> for data analysis in Excel or Google Sheets</li>
+                <li><strong>Export to PDF</strong> for professional reports and presentations</li>
+            </ul>
+            </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
