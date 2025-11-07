@@ -52,6 +52,9 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/volunteer-history', historyRoutes);
 app.use('/api/calendar', calendarRoutes);
+// Reports endpoints
+const reportsRouter = require('./routes/reports');
+app.use('/api/reports', reportsRouter);
 
 // Health check route
 app.get('/api/health', async (req, res) => {

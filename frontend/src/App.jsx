@@ -16,6 +16,7 @@ import MatchMaking from "./pages/volunterMatch/MatchMaking";
 import UserProfiles from "./pages/user_profiles/userProfile";
 import HomePage from './pages/homepage/HomePage';
 import EventsPage from './pages/events/Events';
+import ReportingModule from './pages/reports/reportingModule';
 
 import './App.css';
 
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/register" element={<Registration isLoggedIn={isLoggedIn} user={user} onLogin={handleLogin} />} />
 
           <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} />} />
+          <Route path="/reports" element={<ReportingModule isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/user-profiles" element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
               <UserProfiles isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
