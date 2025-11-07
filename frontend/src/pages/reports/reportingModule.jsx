@@ -41,8 +41,10 @@ const ReportingModule = ({ isLoggedIn, user }) => {
     setError(null);
     try {
       const params = new URLSearchParams();
-      Object.entries(filters).forEach(([k,v]) => { if (v) params.append(k, v); });
-      const res = await fetch(`${API_BASE}/api/reports/${type}?${params.toString()}`);
+      Object.entries(filters).forEach(([k,v]) => { if (v !== null && v !== undefined && v !== '') params.append(k, v); });
+      const headers = {};
+      if (user && user.userType) headers['x-user-type'] = user.userType;
+      const res = await fetch(`${API_BASE}/api/reports/${type}?${params.toString()}`, { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setData(json);
