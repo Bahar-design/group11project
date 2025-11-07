@@ -1,6 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FileText, Download, Filter, Search } from 'lucide-react';
-// removed local reportingService mock; will call backend endpoints
 import './reportingModule.css';
 import API_BASE from '../../lib/apiBase';
 import Layout from '../../components/layout.jsx';
@@ -20,6 +19,10 @@ const ReportingModule = () => {
     { id: 'event-management', icon: '📅', title: 'Event Management', desc: 'Overview of all events and their details' },
     { id: 'event-volunteers', icon: '🤝', title: 'Event Volunteer Assignments', desc: 'Detailed list of volunteer assignments per event' }
   ];
+
+  // Fetchable lists
+  const [locations, setLocations] = useState(['all']);
+  const [skills, setSkills] = useState(['all']);
 
   const filters = {
     search: searchTerm,
@@ -59,6 +62,24 @@ const ReportingModule = () => {
     }
     fetchReport(reportType);
   }, [reportType, searchTerm, selectedLocation, selectedSkill, dateRange.start, dateRange.end]);
+
+  // load skills from backend
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/reports/skills`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!mounted) return;
+        const list = ['all', ...json.map(s => s.skill_name)];
+        setSkills(list);
+      } catch (err) {
+        // leave default
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const renderReportTable = () => {
   const filteredVolunteers = data || [];
@@ -135,7 +156,7 @@ const ReportingModule = () => {
                 </tbody>
               </table>
             </div>
-            {filteredVolunteers.flatMap(v => v.events).length === 0 && (
+            { (filteredVolunteers.length === 0) && (
               <p className="no-data-message">No volunteer history found matching the selected filters.</p>
             )}
           </div>
@@ -209,7 +230,7 @@ const ReportingModule = () => {
                 </tbody>
               </table>
             </div>
-            {filteredEvents.flatMap(e => e.volunteers_assigned).length === 0 && (
+            {((filteredEvents.flatMap(e => e.volunteers_assigned || [])).length === 0) && (
               <p className="no-data-message">No volunteer assignments found matching the selected filters.</p>
             )}
           </div>
@@ -222,38 +243,73 @@ const ReportingModule = () => {
 
   const exportToCSV = () => {
     setLoading(true);
-    
-    const { csvContent, filename } = reportingService.exportToCSV(reportType, filters);
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    
-    setTimeout(() => setLoading(false), 500);
+    try {
+      let csvContent = '';
+      let filename = '';
+      if (reportType === 'volunteer-participation') {
+        csvContent = 'Volunteer ID,Full Name,Email,City,State,Skills,Total Events,Total Hours\n';
+        (data || []).forEach(v => {
+          csvContent += `${v.volunteer_id || ''},"${v.full_name || ''}","${v.email || ''}","${v.city || ''}","${v.state_code || ''}","${(v.skills||[]).join('; ')}",${v.total_events || 0},${v.total_hours || 0}\n`;
+        });
+        filename = `volunteer_participation_${new Date().toISOString().slice(0,10)}.csv`;
+      } else if (reportType === 'volunteer-history') {
+        csvContent = 'Volunteer ID,Full Name,Email,Event ID,Event Name,Event Date,Location,Hours,Signup Date,Notes\n';
+        (data || []).forEach(r => {
+          csvContent += `${r.volunteer_id || ''},"${r.full_name || ''}","${r.email || ''}",${r.event_id || ''},"${r.event_name || ''}","${r.event_date || ''}","${r.location || ''}",${r.hours_worked || 0},"${r.signup_date || ''}","${r.notes || ''}"\n`;
+        });
+        filename = `volunteer_history_${new Date().toISOString().slice(0,10)}.csv`;
+      } else if (reportType === 'event-management') {
+        csvContent = 'Event ID,Event Name,Description,Location,Date,Urgency,Total Volunteers,Total Hours,Required Skills\n';
+        (data || []).forEach(e => {
+          csvContent += `${e.event_id || ''},"${e.event_name || ''}","${e.description || ''}","${e.location || ''}","${e.event_date || ''}","${e.urgency || ''}",${e.total_volunteers || 0},${e.total_hours || 0},"${(e.required_skills||[]).join('; ')}"\n`;
+        });
+        filename = `event_management_${new Date().toISOString().slice(0,10)}.csv`;
+      } else if (reportType === 'event-volunteers') {
+        csvContent = 'Event ID,Event Name,Volunteer ID,Volunteer Name,Hours,Signup Date\n';
+        (data || []).forEach(e => { (e.volunteers_assigned || []).forEach(v => {
+          csvContent += `${e.event_id || ''},"${e.event_name || ''}",${v.volunteer_id || ''},"${v.full_name || ''}",${v.hours_worked || 0},"${v.signup_date || ''}"\n`;
+        })});
+        filename = `event_volunteers_${new Date().toISOString().slice(0,10)}.csv`;
+      }
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    } catch (err) {
+      console.error('CSV export error', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const exportToPDF = () => {
     setLoading(true);
-    
-    const printWindow = window.open('', '_blank');
-    const reportTitle = '📊 Reporting Dashboard';
-    const reportData = reportRef.current.innerHTML;
-    
-    const pdfContent = reportingService.generatePDFContent(reportTitle, reportData, reportType);
-    
-    printWindow.document.write(pdfContent);
-    printWindow.document.close();
-    
-    // Auto-print after a short delay
-    setTimeout(() => {
-      printWindow.print();
-      setTimeout(() => {
-        printWindow.close();
-        setLoading(false);
-      }, 500);
-    }, 1000);
+    try {
+      const printWindow = window.open('', '_blank');
+      const title = '📊 Reporting Dashboard';
+      const content = `
+        <!doctype html>
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <title>${title}</title>
+            <style>body{font-family:Arial,Helvetica,sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px}</style>
+          </head>
+          <body>
+            <h1>${title}</h1>
+            <div>${reportRef.current ? reportRef.current.innerHTML : ''}</div>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(content);
+      printWindow.document.close();
+      setTimeout(() => { printWindow.print(); printWindow.close(); setLoading(false); }, 500);
+    } catch (err) {
+      console.error('PDF export error', err);
+      setLoading(false);
+    }
   };
 
   const clearFilters = () => {
@@ -337,15 +393,15 @@ const ReportingModule = () => {
 
               <div className="filter-group">
                 <label>Location</label>
-                <select
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="filter-input"
-                >
-                  {reportingService.locations.map(loc => (
-                    <option key={loc} value={loc}>{loc === 'all' ? 'All Locations' : loc}</option>
-                  ))}
-                </select>
+                  <select
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    className="filter-input"
+                  >
+                    {locations.map(loc => (
+                      <option key={loc} value={loc}>{loc === 'all' ? 'All Locations' : loc}</option>
+                    ))}
+                  </select>
               </div>
 
               <div className="filter-group">
@@ -355,9 +411,9 @@ const ReportingModule = () => {
                   onChange={(e) => setSelectedSkill(e.target.value)}
                   className="filter-input"
                 >
-                  {reportingService.skills.map(skill => (
-                    <option key={skill} value={skill}>{skill === 'all' ? 'All Skills' : skill}</option>
-                  ))}
+                    {skills.map(skill => (
+                      <option key={skill} value={skill}>{skill === 'all' ? 'All Skills' : skill}</option>
+                    ))}
                 </select>
               </div>
             </div>
