@@ -44,10 +44,8 @@ const PersonalInfo = ({ user }) => {
     const base = API_BASE.replace(/\/$/, '');
     let url = `${base}/api/user-profile?type=volunteer`;
     if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
-    console.log('Fetching profile from:', url);
     axios.get(url)
       .then(res => {
-        console.log('Profile loaded:', res.data);
         setFormData(prev => ({ ...prev, ...res.data }));
         setAvailability(Array.isArray(res.data.availability) ? res.data.availability : []);
         if (setUserProfile) setUserProfile(res.data);

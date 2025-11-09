@@ -29,7 +29,7 @@ const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, u
   // navigation items
   const navItems = [
     { id: 'home', label: 'Home', href: '/' },
-    ...(isLoggedIn && user?.userType === 'admin' ? [{ id: 'events', label: 'Events', href: '/events' }] : []),
+  ...(isLoggedIn && user?.userType === 'admin' ? [{ id: 'events', label: 'Events', href: '/events' }, { id: 'reports', label: 'Reports', href: '/reports' }] : []),
     ...(isLoggedIn && user?.userType === 'volunteer' ? [{ id: 'matchmaking', label: 'Volunteer Matchmaking', href: '/match-making' }] : []),
     ...(isLoggedIn ? [{ id: 'calendar', label: 'Calendar', href: '/calendar' }] : []),
     { id: 'impact', label: 'Impact', href: '/impact' },
