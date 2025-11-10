@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import ProfileHeader from './profileHeader.jsx';
 import ProfileTabs from './profileTabs.jsx';
 import AdminInfo from './adminInfo.jsx';
-import ManagementTools from './managementTools.jsx';
 
 const AdminProfile = ({ user }) => {
   const [activeTab, setActiveTab] = useState('admin-info');

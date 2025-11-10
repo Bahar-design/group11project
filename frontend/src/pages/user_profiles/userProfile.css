@@ -1057,11 +1057,6 @@ form .btn-primary {
   cursor: not-allowed;
 }
 
-/* Administrative Tools */
-.management-tools-section {
-  margin-top: 2rem;
-}
-
 .admin-tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
