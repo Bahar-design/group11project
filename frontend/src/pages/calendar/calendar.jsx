@@ -91,28 +91,46 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
       </div>
 
       <Modal
-        isOpen={modalOpen}
-        onRequestClose={() => setModalOpen(false)}
-        contentLabel="Event Details"
-        style={{ content: { top: "20%", left: "30%", right: "30%", bottom: "20%" } }}
-      >
-        {selectedEvent && (
-          <div>
-            <h2>{selectedEvent.title}</h2>
-            <p><strong>Date:</strong> {selectedEvent.start.toDateString()}</p>
-            <p><strong>Location:</strong> {selectedEvent.location}</p>
-            <p>{selectedEvent.description}</p>
+  isOpen={modalOpen}
+  onRequestClose={() => setModalOpen(false)}
+  contentLabel="Event Details"
+  style={{
+    overlay: {
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', // dark semi-transparent overlay
+      zIndex: 1000
+    },
+    content: {
+      top: "20%",
+      left: "25%",
+      right: "25%",
+      bottom: "20%",
+      backgroundColor: "#fff",   // white background
+      color: "#333",
+      padding: "30px",
+      borderRadius: "10px",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+      overflow: "auto"
+    }
+  }}
+>
+  {selectedEvent && (
+    <div>
+      <h2>{selectedEvent.title}</h2>
+      <p><strong>Date:</strong> {selectedEvent.start.toDateString()}</p>
+      <p><strong>Location:</strong> {selectedEvent.location}</p>
+      <p>{selectedEvent.description}</p>
 
-            {!attending ? (
-              <button onClick={handleAttend}>I’m attending</button>
-            ) : (
-              <p style={{ color: "green" }}>You are attending this event!</p>
-            )}
+      {!attending ? (
+        <button onClick={handleAttend}>I’m attending</button>
+      ) : (
+        <p style={{ color: "green" }}>You are attending this event!</p>
+      )}
 
-            <button onClick={() => setModalOpen(false)}>Close</button>
-          </div>
-        )}
-      </Modal>
+      <button onClick={() => setModalOpen(false)}>Close</button>
+    </div>
+  )}
+</Modal>
+
 
       <Footer />
     </div>
