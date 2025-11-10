@@ -18,6 +18,30 @@ exports.getVolunteerHistory = async (req, res) => {
   }
 };
 
+// GET history for a single volunteer
+exports.getVolunteerHistoryByVolunteer = async (req, res) => {
+  try {
+    const { volunteer_id } = req.params;
+
+    if (!volunteer_id) return res.status(400).json({ error: "Missing volunteer_id" });
+
+    const result = await pool.query(`
+      SELECT vh.*, vp.full_name AS volunteer_name, c.event_name, c.event_date, c.location
+      FROM volunteer_history vh
+      JOIN volunteerprofile vp ON vh.volunteer_id = vp.volunteer_id
+      JOIN calendar c ON vh.event_id = c.event_id
+      WHERE vh.volunteer_id = $1
+      ORDER BY vh.signup_date DESC
+    `, [volunteer_id]);
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch volunteer history.' });
+  }
+};
+
+
 // POST create a new volunteer record
 exports.createVolunteerRecord = async (req, res) => {
   try {
