@@ -50,17 +50,21 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   };
 
   const handleAttend = async () => {
-    if (!user || user.user_type !== 'volunteer') {
+    const role = user?.userType || user?.user_type || user?.type;
+    if (!user || role !== 'volunteer') {
       alert("You must be logged in as a volunteer to attend.");
       return;
     }
-  
+
+    // Support multiple possible id field names depending on where user object came from
+    const volunteerId = user?.user_id || user?.id || user?.userId || user?.id;
+
     try {
       const res = await fetch(`${API_BASE}/api/calendar/attend`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          volunteer_id: user.user_id, // use user_id from your user_table
+          volunteer_id: volunteerId, // use whichever id field exists
           event_id: selectedEvent.id,
         }),
       });

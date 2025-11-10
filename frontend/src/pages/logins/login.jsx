@@ -41,11 +41,18 @@ export default function Login({ onLogin, isLoggedIn, user }) {
         return;
       }
 
-      // Minimal info only, no profile fetch
+      // Normalize user object shape so the rest of the app can rely on consistent fields.
+      // Keep both camelCase and snake_case keys to be defensive against mixed usage.
       const userObj = {
+        id: data.user.id || data.user.user_id || null,
+        user_id: data.user.id || data.user.user_id || null,
         email: data.user.email,
-        userType: data.user.type,   // 'admin' or 'volunteer'
+        userType: data.user.type || data.user.userType || data.user.user_type || null,
+        user_type: data.user.type || data.user.userType || data.user.user_type || null,
       };
+
+      // Clear any stale cached profile so header initials don't come from a previously stored admin profile.
+      try { localStorage.removeItem('hh_userProfile'); } catch (e) { /* ignore */ }
 
       onLogin(userObj);
       // Delay navigation slightly to ensure parent state updates propagate
