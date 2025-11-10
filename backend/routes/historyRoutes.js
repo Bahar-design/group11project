@@ -1,6 +1,7 @@
 const express = require('express');
 const {
   getVolunteerHistory,
+  getVolunteerHistoryByVolunteer,
   createVolunteerRecord,
   updateVolunteerRecord,
   deleteVolunteerRecord
