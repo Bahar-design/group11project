@@ -17,7 +17,7 @@ import UserProfiles from "./pages/user_profiles/userProfile";
 import HomePage from './pages/homepage/HomePage';
 import EventsPage from './pages/events/Events';
 import ReportingModule from './pages/reports/reportingModule';
-
+import About from "./pages/about/about.jsx";
 import './App.css';
 
 export default function App() {
@@ -34,12 +34,14 @@ export default function App() {
   };
 
     return (
+      
       <Router>
         <Routes>
-          <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
-          <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} user={user} />} />
+          <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} /> 
+          <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} user={user} />} /> 
           <Route path="/register" element={<Registration isLoggedIn={isLoggedIn} user={user} onLogin={handleLogin} />} />
-
+          <Route path=".about" element={<About />} />
+          
           <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/reports" element={<ReportingModule isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/user-profiles" element={
