@@ -50,27 +50,23 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   };
 
   const handleAttend = async () => {
-    console.log("USER OBJECT:", user); // 👈 Add this to debug what user looks like
-  
-    if (!user?.volunteer_id) {
+    if (!user || user.user_type !== 'volunteer') {
       alert("You must be logged in as a volunteer to attend.");
       return;
     }
   
     try {
-      console.log("Sending attend request:", user.volunteer_id, selectedEvent.id);
-  
       const res = await fetch(`${API_BASE}/api/calendar/attend`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          volunteer_id: user.volunteer_id, // 👈 We’ll confirm this key matches your DB
+          volunteer_id: user.user_id, // use user_id from your user_table
           event_id: selectedEvent.id,
         }),
       });
   
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
+        const errData = await res.json();
         throw new Error(errData.error || "Failed to attend event.");
       }
   
@@ -78,10 +74,11 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
       setMessage(data.message || "Successfully registered!");
       setAttending(true);
     } catch (err) {
-      console.error("Attend event error:", err);
+      console.error(err);
       alert(`Error: ${err.message}`);
     }
   };
+  
   
   
 
