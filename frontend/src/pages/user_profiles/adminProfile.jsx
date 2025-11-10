@@ -9,7 +9,6 @@ const AdminProfile = ({ user }) => {
 
   const tabs = [
     { id: 'admin-info', label: 'Admin Info' },
-    { id: 'management-tools', label: 'Management Tools' },
     { id: 'notifications', label: 'Notifications' },
   ];
 
@@ -20,8 +19,6 @@ const AdminProfile = ({ user }) => {
     switch (activeTab) {
       case 'admin-info':
         return <AdminInfo user={user} />;
-      case 'management-tools':
-        return <ManagementTools user={user} />;
       case 'notifications':
         return (
           <React.Suspense fallback={<div>Loading...</div>}>

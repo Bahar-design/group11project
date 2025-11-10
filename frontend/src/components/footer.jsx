@@ -1,97 +1,75 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  
+  const navigate = useNavigate();
+
+  // Basic links - use app routes defined in App.jsx
   const getInvolvedLinks = [
-    { label: 'Volunteer Opportunities', href: '#volunteer-opportunities' },
-    { label: 'Upcoming Events', href: '#events' },
-    { label: 'Donation Guidelines', href: '#donation-guidelines' },
-    { label: 'Emergency Response', href: '#emergency' },
-    { label: 'Become a Team Leader', href: '#team-leader' }
+    { id: 'about', label: 'Learn About Us', path: '/about' },
+    { id: 'calendar', label: 'Upcoming Events', path: '/calendar' },
+    { id: 'register', label: 'Become a Volunteer', path: '/register' }
   ];
 
   const serviceAreas = [
-    { label: '🏢 Downtown Houston', area: 'Downtown Houston' },
-    { label: '🏘️ Sugar Land Community', area: 'Sugar Land Community' },
-    { label: '🌳 Katy Neighborhoods', area: 'Katy Neighborhoods' },
-    { label: '🏡 Cypress Areas', area: 'Cypress Areas' },
-    { label: '🌆 Greater Houston Metro', area: 'Greater Houston Metro' }
+    'Downtown Houston',
+    'Sugar Land Community',
+    'Katy Neighborhoods',
+    'Cypress Areas',
+    'Greater Houston Metro'
   ];
 
-  const socialIcons = [
-    { icon: '📧', label: 'Email', action: () => window.location.href = 'mailto:volunteer@houstonhearts.org' },
-    { icon: '📱', label: 'Phone', action: () => window.location.href = 'tel:7135554357' },
-    { icon: '🌐', label: 'Website', action: () => window.open('#', '_blank') }
-  ];
-
-  const footerLinks = [
-    { label: 'Privacy Policy', href: '#privacy' },
-    { label: 'Terms of Service', href: '#terms' },
-    { label: 'Volunteer Agreement', href: '#agreement' },
-    { label: 'Accessibility', href: '#accessibility' },
-    { label: 'Report Issue', href: '#report' }
-  ];
-
-  const contactInfo = [
-    { icon: '📧', text: 'volunteer@houstonhearts.org', action: () => window.location.href = 'mailto:volunteer@houstonhearts.org' },
-    { icon: '📱', text: '(713) 555-HELP (4357)', action: () => window.location.href = 'tel:7135554357' },
-    { icon: '🚨', text: 'Emergency: (713) 555-URGENT', action: () => window.location.href = 'tel:7135558743' },
-    { icon: '📍', text: 'Houston, TX 77001', action: null }
-  ];
-
-  const handleSocialClick = (socialAction) => {
-    if (socialAction) {
-      socialAction();
+  // Determine whether a volunteer is logged in. The app stores a cached profile in localStorage under
+  // 'hh_userProfile' and the Header/Layout also pass `user` and `isLoggedIn` down when available. Footer
+  // doesn't receive props, so we use localStorage as a reasonable fallback.
+  let isVolunteer = false;
+  try {
+    const s = localStorage.getItem('hh_userProfile');
+    if (s) {
+      const profile = JSON.parse(s);
+      const profileType = (profile && (profile.userType || profile.type)) || null;
+      if (profileType === 'volunteer') isVolunteer = true;
     }
-  };
+  } catch (e) {
+    // ignore parse errors
+  }
 
-  const handleContactClick = (contactAction) => {
-    if (contactAction) {
-      contactAction();
+  const handleLinkClick = (link) => (e) => {
+    e.preventDefault();
+    if (link.id === 'calendar') {
+      // calendar is protected in App.jsx; if not a volunteer (or not logged in), go to login
+      if (isVolunteer) navigate('/calendar');
+      else navigate('/login');
+      return;
     }
+    navigate(link.path);
   };
 
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer-content">
-          {/* Brand Section */}
           <div className="footer-section">
             <div className="footer-brand">
               <div className="footer-logo-icon">🤝</div>
               <span className="footer-brand-name">Houston Hearts</span>
             </div>
             <p className="footer-description">
-              Connecting hearts through clothing donations. Every item shared is a story of hope, 
+              Connecting hearts through clothing donations. Every item shared is a story of hope,
               dignity, and community care across Houston.
             </p>
-            <div className="footer-social">
-              {socialIcons.map((social, index) => (
-                <div
-                  key={index}
-                  className="footer-social-icon"
-                  onClick={() => handleSocialClick(social.action)}
-                  title={social.label}
-                  role="button"
-                  tabIndex={0}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSocialClick(social.action)}
-                >
-                  {social.icon}
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Get Involved Section */}
           <div className="footer-section">
-            <h3 className="footer-section-title">🎯 Get Involved</h3>
+            <h3 className="footer-section-title">Get Involved</h3>
             <div className="footer-links">
-              {getInvolvedLinks.map((link, index) => (
+              {getInvolvedLinks.map((link) => (
                 <a
-                  key={index}
-                  href={link.href}
+                  key={link.id}
+                  href={link.path}
                   className="footer-link"
+                  onClick={handleLinkClick(link)}
                 >
                   {link.label}
                 </a>
@@ -99,61 +77,31 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Service Areas Section */}
           <div className="footer-section">
-            <h3 className="footer-section-title">📍 Service Areas</h3>
+            <h3 className="footer-section-title">Service Areas</h3>
             <div className="footer-service-areas">
-              {serviceAreas.map((area, index) => (
+              {serviceAreas.map((label, index) => (
                 <div key={index} className="footer-service-area">
-                  {area.label}
+                  {label}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Contact Section */}
           <div className="footer-section">
-            <h3 className="footer-section-title">📞 Connect With Us</h3>
+            <h3 className="footer-section-title">Connect With Us</h3>
             <div className="footer-contact">
-              {contactInfo.map((contact, index) => (
-                <div
-                  key={index}
-                  className={`footer-contact-item ${contact.action ? 'clickable' : ''}`}
-                  onClick={() => handleContactClick(contact.action)}
-                  role={contact.action ? 'button' : 'text'}
-                  tabIndex={contact.action ? 0 : -1}
-                  onKeyPress={(e) => e.key === 'Enter' && handleContactClick(contact.action)}
-                >
-                  {contact.icon} {contact.text}
-                </div>
-              ))}
-              <div className="footer-emergency-notice">
-                <strong className="emergency-title">24/7 Crisis Support</strong>
-                <br />
-                <span className="emergency-description">
-                  For urgent clothing needs during disasters
-                </span>
-              </div>
+              <div className="footer-contact-item clickable" role="button" tabIndex={0} onClick={() => (window.location.href = 'mailto:volunteer@houstonhearts.org')}>volunteer@houstonhearts.org</div>
+              <div className="footer-contact-item clickable" role="button" tabIndex={0} onClick={() => (window.location.href = 'tel:8327055309')}>(832) 705-5309</div>
+              <div className="footer-contact-item">4800 Calhoun Road, Houston, TX 77204</div>
             </div>
           </div>
         </div>
 
-        {/* Footer Bottom */}
         <div className="footer-bottom">
           <p className="footer-copyright">
             &copy; {currentYear} Houston Hearts Clothing Drive. Making a difference, one family at a time.
           </p>
-          <div className="footer-legal-links">
-            {footerLinks.map((link, index) => (
-              <a
-                key={index}
-                href={link.href}
-                className="footer-legal-link"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </footer>
