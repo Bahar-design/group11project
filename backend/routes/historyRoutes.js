@@ -10,7 +10,8 @@ const router = express.Router();
 
 // GET all volunteer history
 router.get('/', getVolunteerHistory);
-
+//individual volunteer history
+router.get('/my/:volunteer_id', getVolunteerHistoryByVolunteer);
 // POST create new record
 router.post('/', createVolunteerRecord);
 

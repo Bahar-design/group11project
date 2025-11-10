@@ -1,39 +1,29 @@
-// src/pages/calendar.jsx
 import React, { useState, useEffect } from "react";
 import { Calendar as Calendars, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
+import Modal from "react-modal"; // <- add modal
 import Footer from "../../components/footer.jsx";
 import Header from "../../components/header.jsx";
-import API_BASE from "../../lib/apiBase"; // ✅ same as registration page
+import API_BASE from "../../lib/apiBase";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
 
 const localizer = momentLocalizer(moment);
+Modal.setAppElement('#root');
 
 export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   const [events, setEvents] = useState([]);
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [attending, setAttending] = useState(false);
 
-  // ✅ Fetch events from backend
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/calendar`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          console.error("Failed to fetch events:", res.status, errData);
-          setMessage(errData.error || `Failed to load events (status ${res.status})`);
-          return;
-        }
-
+        const res = await fetch(`${API_BASE}/api/calendar`);
         const data = await res.json();
-
-        // Transform DB fields to react-big-calendar format
         const formatted = data.map(ev => ({
           id: ev.event_id,
           title: ev.event_name,
@@ -42,27 +32,46 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
           location: ev.location,
           description: ev.description,
         }));
-
         setEvents(formatted);
       } catch (err) {
-        console.error("Network error fetching events:", err);
-        setMessage(`Network error: ${err.message}`);
+        console.error(err);
+        setMessage("Failed to load events");
       } finally {
         setLoading(false);
       }
     };
-
     fetchEvents();
   }, []);
 
+  const handleSelectEvent = (event) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+    setAttending(false);
+  };
+
+  const handleAttend = async () => {
+    if (!user?.volunteer_id) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/calendar/attend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          volunteer_id: user.volunteer_id,
+          event_id: selectedEvent.id,
+        }),
+      });
+      const data = await res.json();
+      setMessage(data.message);
+      setAttending(true);
+    } catch (err) {
+      console.error(err);
+      setMessage("Failed to attend event");
+    }
+  };
+
   return (
     <div>
-      <Header
-        isLoggedIn={isLoggedIn}
-        user={user}
-        onLogout={onLogout}
-        currentPage="calendar"
-      />
+      <Header isLoggedIn={isLoggedIn} user={user} onLogout={onLogout} currentPage="calendar" />
 
       <div style={{ height: "80vh", margin: "30px 60px 50px" }}>
         {loading ? (
@@ -76,9 +85,34 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
             startAccessor="start"
             endAccessor="end"
             style={{ height: "100%", width: "100%" }}
+            onSelectEvent={handleSelectEvent} // <- add this
           />
         )}
       </div>
+
+      <Modal
+        isOpen={modalOpen}
+        onRequestClose={() => setModalOpen(false)}
+        contentLabel="Event Details"
+        style={{ content: { top: "20%", left: "30%", right: "30%", bottom: "20%" } }}
+      >
+        {selectedEvent && (
+          <div>
+            <h2>{selectedEvent.title}</h2>
+            <p><strong>Date:</strong> {selectedEvent.start.toDateString()}</p>
+            <p><strong>Location:</strong> {selectedEvent.location}</p>
+            <p>{selectedEvent.description}</p>
+
+            {!attending ? (
+              <button onClick={handleAttend}>I’m attending</button>
+            ) : (
+              <p style={{ color: "green" }}>You are attending this event!</p>
+            )}
+
+            <button onClick={() => setModalOpen(false)}>Close</button>
+          </div>
+        )}
+      </Modal>
 
       <Footer />
     </div>

@@ -80,3 +80,29 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete event.' });
   }
 };
+
+// rename function
+exports.attendEvent = async (req, res) => {
+  const { volunteer_id, event_id } = req.body;
+  if (!volunteer_id || !event_id) return res.status(400).json({ error: "Missing volunteer_id or event_id" });
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO volunteer_history (volunteer_id, event_id)
+       VALUES ($1, $2)
+       ON CONFLICT DO NOTHING
+       RETURNING *`,
+      [volunteer_id, event_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(200).json({ message: "Already signed up for this event" });
+    }
+
+    res.status(201).json({ message: "You’re now attending this event!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+};
+
