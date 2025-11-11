@@ -14,7 +14,9 @@ export default function About({ isLoggedIn, onLogout, user }) {
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section>
-        <h1 className="flex items-center justify-center">About Houston Hearts</h1>
+        <h1 className="flex items-center justify-center font-bold">About Houston 
+          <div className="text-red-50 font-bold">Hearts</div>
+        </h1>
         <p className="flex items-center justify-center">We connect volunteers with local events using skills, availability, and proximity.</p>
       </section>
     </Layout>
