@@ -15,7 +15,7 @@ const AdminNotificationsTab = ({ user }) => {
   const [expandedId, setExpandedId] = useState(null);
   const inputRef = useRef(null);
 
-  //Autocomplete
+  //autocomplete
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
