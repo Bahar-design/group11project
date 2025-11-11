@@ -15,10 +15,10 @@ export default function About({ isLoggedIn, onLogout, user }) {
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section>
         <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
-          <span className="text-red-500 font-bold ml-2">Hearts</span>
+          <span className="text-red-500 font-bold ml-2"> Hearts</span>
         </h1>
         <p className="flex items-center justify-center">
-          We connect volunteers with local events using skills, availability, and proximity.
+          We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
         </p>
       </section>
     </Layout>
