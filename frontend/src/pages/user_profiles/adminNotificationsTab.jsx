@@ -1,4 +1,3 @@
-
 // frontend/src/pages/AdminNotificationsTab.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import API_BASE from '../../lib/apiBase';
@@ -65,7 +64,7 @@ const AdminNotificationsTab = ({ user }) => {
     loadData();
   }, [user]);
 
-  // When sendToAll toggled, update recipients
+  //When sendToAll toggled, update recipients
   useEffect(() => {
     if (sendToAll) {
       setToEmails(volunteers.map(v => v.email));
@@ -76,49 +75,30 @@ const AdminNotificationsTab = ({ user }) => {
     }
   }, [sendToAll, volunteers]);
 
-  /*
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const value = e.target.value;
     setInputValue(value);
     setShowSuggestions(true);
-    if (value.length > 0) {
-      setSuggestions(
-        volunteers.filter(v =>
-          v.email.toLowerCase().includes(value.toLowerCase()) &&
-          !toEmails.includes(v.email)
-        )
-      );
-    } else {
+
+    if (value.length < 2) {
       setSuggestions([]);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/notifications/emails?query=${encodeURIComponent(value)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      //Lowercase filtering and shape consistency -just in case
+      setSuggestions(
+        data
+          .filter(email => !toEmails.includes(email.toLowerCase()))
+          .map(email => ({ email }))
+      );
+    } catch (err) {
+      console.error('Error fetching email suggestions:', err);
     }
   };
-  */
-
-  const handleInputChange = async (e) => {
-  const value = e.target.value;
-  setInputValue(value);
-  setShowSuggestions(true);
-
-  if (value.length < 2) {
-    setSuggestions([]);
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/api/notifications/emails?query=${encodeURIComponent(value)}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    // data is an array of emails (["maria.d@houstonhearts.org", ...])
-    setSuggestions(
-      data
-        .filter(email => !toEmails.includes(email))
-        .map(email => ({ email })) // keep consistent shape
-    );
-  } catch (err) {
-    console.error('Error fetching email suggestions:', err);
-  }
-};
-
 
   const handleSuggestionClick = (email) => {
     if (!toEmails.includes(email)) {
@@ -150,9 +130,10 @@ const AdminNotificationsTab = ({ user }) => {
       const res = await fetch(`${API_BASE}/api/notifications/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        //Normalize casing before sending
         body: JSON.stringify({
-          from: user.email,
-          to: toEmails.join(', '),
+          from: user.email.trim().toLowerCase(),
+          to: toEmails.map(e => e.trim().toLowerCase()).join(', '),
           message
         })
       });

@@ -1,13 +1,12 @@
 // GET /api/notifications/admins
+// emails can be typed case insensitive for easy use
 
-// controllers/notificationController.js
 const pool = require('../db');
 
-// Simple in-memory messages array to support legacy tests and API behavior
 let messages = [];
 function __getMessages() { return messages; }
 
-//Get all notifications for a user (by email)
+//get user notifications
 async function getUserNotifications(req, res) {
   try {
     const { email } = req.query;
@@ -16,8 +15,10 @@ async function getUserNotifications(req, res) {
     }
 
     const result = await pool.query(
-      'SELECT * FROM notifications WHERE message_to = $1 ORDER BY message_ID DESC',
-      [email]
+      `SELECT * FROM notifications 
+       WHERE LOWER(message_to) = LOWER($1)
+       ORDER BY "message_ID" DESC`,
+      [email.trim()]
     );
 
     res.status(200).json(result.rows);
@@ -27,15 +28,21 @@ async function getUserNotifications(req, res) {
   }
 }
 
-//Send a message
+//send message
 async function sendMessage(req, res) {
-  const { from, to, message } = req.body;
-
-  if (!from || !to || !message) {
-    return res.status(400).json({ message: 'invalid or missing required fields (from, to, message)' });
-  }
-
   try {
+    let { from, to, message } = req.body;
+
+    if (!from || !to || !message) {
+      return res.status(400).json({ message: 'invalid or missing required fields (from, to, message)' });
+    }
+
+    // Normalize and trim
+    from = from.trim().toLowerCase();
+    to = Array.isArray(to)
+      ? to.map(email => email.trim().toLowerCase()).join(', ')
+      : to.trim().toLowerCase();
+
     const result = await pool.query(
       `INSERT INTO notifications (message_from, message_to, message_text, message_sent)
        VALUES ($1, $2, $3, TRUE)
@@ -43,15 +50,12 @@ async function sendMessage(req, res) {
       [from, to, message]
     );
 
-    // also keep an in-memory copy for tests that rely on messages array
+    //for compatibility with existing tests
     try {
       const inMem = { id: messages.length + 1, from, to, message, timestamp: new Date().toISOString() };
       messages.push(inMem);
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) { /* ignore */ }
 
-    // maintain backward-compatible shape expected by older tests
     const sent = result.rows[0];
     const simpleMsg = { from: sent.message_from || from, message: sent.message_text || message };
     return res.status(201).json({ message: 'Message sent', notification: sent, msg: simpleMsg });
@@ -61,12 +65,12 @@ async function sendMessage(req, res) {
   }
 }
 
-//Delete a notification by ID
+//delete notification
 async function deleteNotification(req, res) {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      'DELETE FROM notifications WHERE message_ID = $1 RETURNING *',
+      'DELETE FROM notifications WHERE "message_ID" = $1 RETURNING *',
       [id]
     );
 
@@ -84,10 +88,10 @@ async function deleteNotification(req, res) {
   }
 }
 
-//Get all notifications
+//get all notifications (admin)
 async function getAllNotifications(req, res) {
   try {
-    const result = await pool.query('SELECT * FROM notifications ORDER BY message_ID DESC');
+    const result = await pool.query('SELECT * FROM notifications ORDER BY "message_ID" DESC');
     res.status(200).json(result.rows);
   } catch (err) {
     console.error('Error fetching all notifications:', err);
@@ -95,13 +99,13 @@ async function getAllNotifications(req, res) {
   }
 }
 
-//Mark message as sent
+//mark message as sent
 async function markMessageAsSent(req, res) {
   const { id } = req.params;
 
   try {
     const result = await pool.query(
-      'UPDATE notifications SET message_sent = TRUE WHERE message_ID = $1 RETURNING *',
+      'UPDATE notifications SET message_sent = TRUE WHERE "message_ID" = $1 RETURNING *',
       [id]
     );
 
@@ -119,7 +123,7 @@ async function markMessageAsSent(req, res) {
   }
 }
 
-//Get volunteers and admins (for frontend autocomplete)
+//get volunteers
 async function getVolunteers(req, res) {
   try {
     const result = await pool.query(
@@ -130,12 +134,12 @@ async function getVolunteers(req, res) {
       return res.status(200).json(result.rows);
     }
 
-    // Fallback to in-memory users list when DB has no volunteers (tests rely on this)
+    // fallback for tests
     try {
       const { users } = require('./loginController');
       const fallback = users.filter(u => u.type === 'volunteer').map((u, idx) => ({ user_id: idx + 1, email: u.email }));
       return res.status(200).json(fallback);
-    } catch (e) {
+    } catch {
       return res.status(200).json([]);
     }
   } catch (err) {
@@ -144,6 +148,7 @@ async function getVolunteers(req, res) {
   }
 }
 
+//get admins
 async function getAdmins(req, res) {
   try {
     const result = await pool.query(
@@ -154,12 +159,11 @@ async function getAdmins(req, res) {
       return res.status(200).json(result.rows);
     }
 
-    // Fallback to in-memory users list when DB has no admins (tests rely on this)
     try {
       const { users } = require('./loginController');
       const fallback = users.filter(u => u.type === 'admin').map((u, idx) => ({ user_id: idx + 1, email: u.email }));
       return res.status(200).json(fallback);
-    } catch (e) {
+    } catch {
       return res.status(200).json([]);
     }
   } catch (err) {
@@ -168,7 +172,7 @@ async function getAdmins(req, res) {
   }
 }
 
-// Get admin inbox by admin id
+//get admin inbox
 async function getAdminInbox(req, res) {
   try {
     const adminId = parseInt(req.params.adminId);
@@ -176,20 +180,25 @@ async function getAdminInbox(req, res) {
 
     const userRes = await pool.query('SELECT user_email, user_type FROM user_table WHERE user_id = $1', [adminId]);
     if (userRes.rows.length === 0 || userRes.rows[0].user_type !== 'admin') {
-      // fallback to in-memory users/messages
+      // fallback
       try {
         const { users } = require('./loginController');
         const admin = users.find((u, idx) => idx + 1 === adminId && u.type === 'admin');
         if (!admin) return res.status(404).json({ message: 'Admin not found' });
-        const inbox = messages.filter(m => Array.isArray(m.to) ? m.to.includes(admin.email) : m.message_to === admin.email);
+        const inbox = messages.filter(m =>
+          Array.isArray(m.to) ? m.to.includes(admin.email.toLowerCase()) : m.message_to.toLowerCase() === admin.email.toLowerCase()
+        );
         return res.status(200).json(inbox);
-      } catch (e) {
+      } catch {
         return res.status(404).json({ message: 'Admin not found' });
       }
     }
 
-    const email = userRes.rows[0].user_email;
-    const inboxRes = await pool.query('SELECT * FROM notifications WHERE message_to = $1 ORDER BY message_ID DESC', [email]);
+    const email = userRes.rows[0].user_email.trim().toLowerCase();
+    const inboxRes = await pool.query(
+      'SELECT * FROM notifications WHERE LOWER(message_to) = LOWER($1) ORDER BY "message_ID" DESC',
+      [email]
+    );
     res.status(200).json(inboxRes.rows);
   } catch (err) {
     console.error('Error fetching admin inbox:', err);
@@ -197,7 +206,7 @@ async function getAdminInbox(req, res) {
   }
 }
 
-// Get volunteer inbox by volunteer id
+//get volunteer inbox
 async function getVolunteerInbox(req, res) {
   try {
     const volunteerId = parseInt(req.params.volunteerId);
@@ -205,20 +214,24 @@ async function getVolunteerInbox(req, res) {
 
     const userRes = await pool.query('SELECT user_email, user_type FROM user_table WHERE user_id = $1', [volunteerId]);
     if (userRes.rows.length === 0 || userRes.rows[0].user_type !== 'volunteer') {
-      // fallback to in-memory users/messages
       try {
         const { users } = require('./loginController');
         const vol = users.find((u, idx) => idx + 1 === volunteerId && u.type === 'volunteer');
         if (!vol) return res.status(404).json({ message: 'Volunteer not found' });
-        const inbox = messages.filter(m => Array.isArray(m.to) ? m.to.includes(vol.email) : m.message_to === vol.email);
+        const inbox = messages.filter(m =>
+          Array.isArray(m.to) ? m.to.includes(vol.email.toLowerCase()) : m.message_to.toLowerCase() === vol.email.toLowerCase()
+        );
         return res.status(200).json(inbox);
-      } catch (e) {
+      } catch {
         return res.status(404).json({ message: 'Volunteer not found' });
       }
     }
 
-    const email = userRes.rows[0].user_email;
-    const inboxRes = await pool.query('SELECT * FROM notifications WHERE message_to = $1 ORDER BY message_ID DESC', [email]);
+    const email = userRes.rows[0].user_email.trim().toLowerCase();
+    const inboxRes = await pool.query(
+      'SELECT * FROM notifications WHERE LOWER(message_to) = LOWER($1) ORDER BY "message_ID" DESC',
+      [email]
+    );
     res.status(200).json(inboxRes.rows);
   } catch (err) {
     console.error('Error fetching volunteer inbox:', err);
@@ -226,12 +239,15 @@ async function getVolunteerInbox(req, res) {
   }
 }
 
-// Get admin inbox by email (existing tests expect this name)
+//get admin inbox by email
 async function getAdminInboxByEmail(req, res) {
   try {
     const email = req.params.email;
     if (!email) return res.status(400).json({ message: 'Email required' });
-    const inboxRes = await pool.query('SELECT * FROM notifications WHERE message_to = $1 ORDER BY message_ID DESC', [email]);
+    const inboxRes = await pool.query(
+      'SELECT * FROM notifications WHERE LOWER(message_to) = LOWER($1) ORDER BY "message_ID" DESC',
+      [email.trim()]
+    );
     res.status(200).json(inboxRes.rows);
   } catch (err) {
     console.error('Error fetching admin inbox by email:', err);
@@ -239,12 +255,15 @@ async function getAdminInboxByEmail(req, res) {
   }
 }
 
-// Get volunteer inbox by email
+//get volunteer inbox by email
 async function getVolunteerInboxByEmail(req, res) {
   try {
     const email = req.params.email;
     if (!email) return res.status(400).json({ message: 'Email required' });
-    const inboxRes = await pool.query('SELECT * FROM notifications WHERE message_to = $1 ORDER BY message_ID DESC', [email]);
+    const inboxRes = await pool.query(
+      'SELECT * FROM notifications WHERE LOWER(message_to) = LOWER($1) ORDER BY "message_ID" DESC',
+      [email.trim()]
+    );
     res.status(200).json(inboxRes.rows);
   } catch (err) {
     console.error('Error fetching volunteer inbox by email:', err);
@@ -252,22 +271,20 @@ async function getVolunteerInboxByEmail(req, res) {
   }
 }
 
-// Search for emails that start or contain a given query (for autocomplete)
+//search emails for autocomplete
 async function searchEmails(req, res) {
   try {
     const { query } = req.query;
-
     if (!query || query.trim() === '') {
       return res.status(400).json({ message: 'Query required' });
     }
 
-    //postgreSQL just compares a lowercase version internally.
     const result = await pool.query(
       `SELECT user_email 
        FROM user_table
-       WHERE LOWER(user_email) LIKE LOWER($1)         
+       WHERE LOWER(user_email) LIKE LOWER($1)
        LIMIT 10`,
-      [`%${query}%`]
+      [`%${query.trim()}%`]
     );
 
     res.status(200).json(result.rows.map(r => r.user_email));
@@ -277,7 +294,7 @@ async function searchEmails(req, res) {
   }
 }
 
-
+// Export functions
 module.exports = {
   getUserNotifications,
   sendMessage,
@@ -293,10 +310,5 @@ module.exports = {
   searchEmails
 };
 
-// Export in-memory helpers for tests
 module.exports.__getMessages = __getMessages;
 module.exports.messages = messages;
-
-
-
-
