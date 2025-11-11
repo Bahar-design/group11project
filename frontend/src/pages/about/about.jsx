@@ -13,8 +13,8 @@ import Layout from "../../components/layout.jsx"; // note the .jsx
 export default function About({ isLoggedIn, onLogout, user }) {
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section className="flex">
-        <h1 className="items-center ">About Houston Hearts</h1>
+      <section>
+        <h1 className="flex items-center justify-center">About Houston Hearts</h1>
         <p>We connect volunteers with local events using skills, availability, and proximity.</p>
       </section>
     </Layout>
