@@ -22,17 +22,16 @@ export default function About({ isLoggedIn, onLogout, user }) {
         </p>
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
-          {/* removed flex-col */}
-          <div className="flex flex-col items-center max-w-xs">
-            <h2 className="text-xl font-semibold text-gray-700">
-              🎯 Our Mission
-            </h2>
-            <p className="text-gray-600">
-              To strengthen communities by empowering volunteers to easily find meaningful opportunities.
-            </p>
+          <div className="flex flex-row">
+            <div classname="flex-col items-center max-w-xs">
+              <h2 className="text-xl font-semibold text-gray-700">
+                🎯 Our Mission
+              </h2>
+              <p className="text-gray-600">
+                To strengthen communities by empowering volunteers to easily find meaningful opportunities.
+              </p>
+            </div>
           </div>
-
-          {/* removed flex col */}
         </div>
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
