@@ -14,6 +14,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section>
+
         <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
           <span className="text-red-500 font-bold ml-2"> Hearts</span>
         </h1>
@@ -23,16 +24,16 @@ export default function About({ isLoggedIn, onLogout, user }) {
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
           <div className="flex flex-row">
-            <div classname="flex-col items-center max-w-xs">
+            <div classname="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
                 🎯 Our Mission
               </h2>
-              <p className="text-gray-600 max-w-40">
+              <p className="text-gray-600 max-w-80">
                 To strengthen communities by empowering volunteers to easily find meaningful opportunities.
               </p>
             </div>
           </div>
-          <div>I am Here</div>
+          <div>where we will add image</div>
         </div>
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
@@ -45,6 +46,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
             </p>
           </div>
         </div>
+
       </section>
     </Layout>
   );
