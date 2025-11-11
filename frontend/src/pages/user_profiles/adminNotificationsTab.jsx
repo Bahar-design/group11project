@@ -1,57 +1,39 @@
-// frontend/src/pages/AdminNotificationsTab.jsx
+// frontend/src/pages/adminNotificationsTab.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import API_BASE from '../../lib/apiBase';
 
-const fetchVolunteers = async () => {
-  try {
-    const res = await fetch(`${API_BASE}/api/notifications/volunteers`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-};
-
 const AdminNotificationsTab = ({ user }) => {
-  const [volunteers, setVolunteers] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [inbox, setInbox] = useState([]);
   const [toEmails, setToEmails] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const inputRef = useRef(null);
   const [message, setMessage] = useState('');
-  const [sendToAll, setSendToAll] = useState(false);
-  const [inbox, setInbox] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
+  const inputRef = useRef(null);
 
-  // Load volunteers, notifications, and inbox
+  //Autocomplete
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  //Load notifications and inbox
   useEffect(() => {
-    const loadData = async () => {
+    const fetchData = async () => {
+      if (!user?.email) return;
       try {
-        const vols = await fetchVolunteers();
-        setVolunteers(vols);
+        const notifRes = await fetch(`${API_BASE}/api/notifications?email=${encodeURIComponent(user.email)}`);
+        const notifData = await notifRes.json();
+        setNotifications(Array.isArray(notifData) ? notifData : []);
 
-        // Get admin email
-        const adminEmail = user?.email;
-        if (adminEmail) {
-          // Notifications (sent to admin)
-          const notifRes = await fetch(`${API_BASE}/api/notifications?email=${encodeURIComponent(adminEmail)}`);
-          const notifData = await notifRes.json();
-          setNotifications(Array.isArray(notifData) ? notifData : []);
-
-          // Inbox (messages from volunteers)
-          const inboxRes = await fetch(`${API_BASE}/api/notifications/all`);
-          const inboxData = await inboxRes.json();
-          setInbox(Array.isArray(inboxData) ? inboxData.filter(n => n.message_to === adminEmail) : []);
-        } else {
-          setNotifications([]);
-          setInbox([]);
-        }
+        const inboxRes = await fetch(`${API_BASE}/api/notifications/all`);
+        const inboxData = await inboxRes.json();
+        const filteredInbox = Array.isArray(inboxData)
+          ? inboxData.filter(n => n.message_to === user.email)
+          : [];
+        setInbox(filteredInbox);
       } catch (err) {
         console.error('Error loading notifications:', err);
         setNotifications([]);
@@ -60,21 +42,10 @@ const AdminNotificationsTab = ({ user }) => {
         setLoading(false);
       }
     };
-
-    loadData();
+    fetchData();
   }, [user]);
 
-  //When sendToAll toggled, update recipients
-  useEffect(() => {
-    if (sendToAll) {
-      setToEmails(volunteers.map(v => v.email));
-      setInputValue('');
-      setSuggestions([]);
-    } else {
-      setToEmails([]);
-    }
-  }, [sendToAll, volunteers]);
-
+  //Fetch email suggestions
   const handleInputChange = async (e) => {
     const value = e.target.value;
     setInputValue(value);
@@ -89,14 +60,26 @@ const AdminNotificationsTab = ({ user }) => {
       const res = await fetch(`${API_BASE}/api/notifications/emails?query=${encodeURIComponent(value)}`);
       if (!res.ok) return;
       const data = await res.json();
-      //Lowercase filtering and shape consistency -just in case
       setSuggestions(
-        data
-          .filter(email => !toEmails.includes(email.toLowerCase()))
-          .map(email => ({ email }))
+        data.filter(email => !toEmails.includes(email.toLowerCase()))
       );
     } catch (err) {
       console.error('Error fetching email suggestions:', err);
+    }
+  };
+
+  //Add recipient manually or by suggestion
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
+      e.preventDefault();
+      const email = inputValue.trim();
+      if (email && !toEmails.includes(email) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        setToEmails([...toEmails, email]);
+        setInputValue('');
+        setSuggestions([]);
+      }
+    } else if (e.key === 'Backspace' && !inputValue && toEmails.length > 0) {
+      setToEmails(prev => prev.slice(0, -1));
     }
   };
 
@@ -104,16 +87,32 @@ const AdminNotificationsTab = ({ user }) => {
     if (!toEmails.includes(email)) {
       setToEmails([...toEmails, email]);
       setInputValue('');
+      setSuggestions([]);
       setShowSuggestions(false);
       inputRef.current?.focus();
     }
   };
 
-  const handleRemoveEmail = (email) => {
-    setToEmails(prev => prev.filter(e => e !== email));
-    setSendToAll(false);
+  //Delete notification or inbox message
+  const handleDeleteNotification = async (id, isInbox = false) => {
+    try {
+      await fetch(`${API_BASE}/api/notifications/${id}`, { method: 'DELETE' });
+      if (isInbox) {
+        setInbox(prev => prev.filter(n => n.message_ID !== id));
+      } else {
+        setNotifications(prev => prev.filter(n => n.message_ID !== id));
+      }
+    } catch (err) {
+      console.error('Error deleting message:', err);
+    }
   };
 
+  //Expand / collapse
+  const handleToggleView = (id) => {
+    setExpandedId(prev => (prev === id ? null : id));
+  };
+
+  //Send message
   const handleSend = async (e) => {
     e.preventDefault();
     setSending(true);
@@ -121,7 +120,7 @@ const AdminNotificationsTab = ({ user }) => {
     setSuccess(null);
 
     if (!message || toEmails.length === 0) {
-      setError('Please specify recipients and a message.');
+      setError('Please provide recipients and a message.');
       setSending(false);
       return;
     }
@@ -130,42 +129,41 @@ const AdminNotificationsTab = ({ user }) => {
       const res = await fetch(`${API_BASE}/api/notifications/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        //Normalize casing before sending
         body: JSON.stringify({
           from: user.email.trim().toLowerCase(),
-          to: toEmails.map(e => e.trim().toLowerCase()).join(', '),
-          message
-        })
+          to: toEmails[0].trim().toLowerCase(),
+          message,
+        }),
       });
 
       const data = await res.json();
-      if (res.ok && data.message === 'Message sent') {
+      if (res.ok && data?.message === 'Message sent') {
         setSuccess('Message sent!');
         setMessage('');
         setToEmails([]);
-        setSendToAll(false);
+        setInputValue('');
       } else {
-        setError(data.message || 'Failed to send message.');
+        setError(data?.message || 'Failed to send message.');
       }
     } catch {
-      setError('Error sending message.');
+      setError('Failed to send message.');
     } finally {
       setSending(false);
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Loading notifications...</p>;
 
   return (
     <div className="admin-notifications-tab">
       {/* Send Message Section */}
       <section
-        className="admin-notifications-section"
+        className="notifications-section"
         style={{
           backgroundColor: '#fff6f6ff',
           borderRadius: '10px',
           border: '2px solid #c78d8dff',
-          marginBottom: '1rem'
+          marginBottom: '1rem',
         }}
       >
         <div
@@ -173,152 +171,305 @@ const AdminNotificationsTab = ({ user }) => {
             backgroundColor: '#ef4444',
             padding: '0.5rem 1rem',
             borderTopLeftRadius: '8px',
-            borderTopRightRadius: '8px'
+            borderTopRightRadius: '8px',
           }}
         >
-          <h3 style={{ color: '#ffffff', margin: 0, fontWeight: '800', fontSize: '1.25rem' }}>
+          <h3
+            style={{
+              color: '#ffffff',
+              margin: 0,
+              fontWeight: '800',
+              fontSize: '1.25rem',
+            }}
+          >
             Send Message to Volunteers
           </h3>
         </div>
-
         <div style={{ padding: '1rem' }}>
-          <form onSubmit={handleSend} autoComplete="off">
+          <form onSubmit={handleSend}>
             <label>To:</label>
             <div style={{ position: 'relative' }}>
-              <div className="email-chips-input" onClick={() => inputRef.current?.focus()}>
-                {toEmails.map(email => (
-                  <span key={email} className="email-chip">
-                    {email}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveEmail(email)}
-                      className="email-chip-remove"
-                    >
-                      &times;
-                    </button>
-                  </span>
-                ))}
-                <input
-                  type="text"
-                  ref={inputRef}
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  placeholder={toEmails.length === 0 ? 'Enter email addresses' : 'Add another...'}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    borderRadius: '8px',
-                    border: '1px solid #ccc',
-                    marginBottom: '1rem'
-                  }}
-                />
-                {showSuggestions && suggestions.length > 0 && (
-                  <ul
-                    className="email-suggestions-list"
-                    style={{
-                      position: 'absolute',
-                      zIndex: 20,
-                      background: '#fff',
-                      border: '1px solid #ccc',
-                      borderRadius: '6px',
-                      margin: 0,
-                      padding: 0,
-                      listStyle: 'none',
-                      left: 0,
-                      right: 0,
-                      top: '100%',
-                      maxHeight: '180px',
-                      overflowY: 'auto',
-                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
-                    }}
-                  >
-                    {suggestions.map(v => (
-                      <li
-                        key={v.email}
-                        onClick={() => handleSuggestionClick(v.email)}
-                        style={{
-                          padding: '0.5rem',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid #eee'
-                        }}
-                        onMouseDown={(e) => e.preventDefault()}
-                      >
-                        {v.email}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Message:</label>
-              <textarea
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                rows={4}
-                required
+              <input
+                type="text"
+                ref={inputRef}
+                placeholder="Enter recipient email"
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleInputKeyDown}
                 style={{
                   width: '100%',
                   padding: '0.5rem',
+                  marginBottom: '1rem',
                   borderRadius: '8px',
-                  border: '2px solid #ccc',
-                  background: 'white',
-                  marginBottom: '1rem'
+                  border: '1px solid #ccc',
                 }}
               />
+              {showSuggestions && suggestions.length > 0 && (
+                <ul
+                  style={{
+                    position: 'absolute',
+                    zIndex: 10,
+                    background: '#fff',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    margin: 0,
+                    padding: 0,
+                    listStyle: 'none',
+                    left: 0,
+                    right: 0,
+                    maxHeight: '150px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  {suggestions.map((email, i) => (
+                    <li
+                      key={i}
+                      style={{
+                        padding: '0.5rem',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid #eee',
+                      }}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleSuggestionClick(email)}
+                    >
+                      {email}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
+            {toEmails.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <strong>Recipients:</strong> {toEmails.join(', ')}
+              </div>
+            )}
+
+            <label>Message:</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={4}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                borderRadius: '8px',
+                border: '2px solid #ccc',
+                background: 'white',
+              }}
+            />
             <button
               type="submit"
-              className="btn-primary"
-              disabled={sending}
               style={{
                 backgroundColor: '#ef4444',
                 color: '#fff',
                 border: 'none',
                 padding: '0.5rem 1rem',
                 borderRadius: '5px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                marginTop: '0.5rem',
               }}
+              disabled={sending}
             >
               {sending ? 'Sending...' : 'Send Message'}
             </button>
-
-            {error && <div className="form-error" style={{ color: '#b91c1c', marginTop: '0.5rem' }}>{error}</div>}
-            {success && <div className="form-success" style={{ color: '#16a34a', marginTop: '0.5rem' }}>{success}</div>}
+            {error && <p style={{ color: '#b91c1c', marginTop: '0.5rem' }}>{error}</p>}
+            {success && <p style={{ color: '#16a34a', marginTop: '0.5rem' }}>{success}</p>}
           </form>
         </div>
       </section>
 
-      {/* Notifications */}
-      <section className="admin-notifications-section">
-        <h3>Notifications</h3>
-        {Array.isArray(notifications) && notifications.length > 0 ? (
-          notifications.map(n => (
-            <div key={n.message_ID} className="admin-notification-item">
-              <strong>From:</strong> {n.message_from}
-              <div>{n.message_text}</div>
-            </div>
-          ))
-        ) : (
-          <p>No notifications</p>
-        )}
+      {/* Notifications Section */}
+      <section
+        className="notifications-section"
+        style={{
+          backgroundColor: '#fff6f6ff',
+          borderRadius: '10px',
+          border: '2px solid #c78d8dff',
+          marginBottom: '1rem',
+          maxHeight: '250px',
+          overflowY: 'auto',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#ef4444',
+            padding: '0.5rem 1rem',
+            borderTopLeftRadius: '8px',
+            borderTopRightRadius: '8px',
+          }}
+        >
+          <h3
+            style={{
+              color: '#ffffff',
+              margin: 0,
+              fontWeight: '800',
+              fontSize: '1.25rem',
+            }}
+          >
+            Notifications
+          </h3>
+        </div>
+        <div style={{ padding: '1rem' }}>
+          {!Array.isArray(notifications) || notifications.length === 0 ? (
+            <p>No notifications</p>
+          ) : (
+            notifications.map((n) => {
+              const isExpanded = expandedId === n.message_ID;
+              return (
+                <div
+                  key={n.message_ID}
+                  style={{
+                    border: '1px solid #000',
+                    borderRadius: '8px',
+                    padding: '0.5rem',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{n.message_from}</div>
+                      {!isExpanded && (
+                        <div style={{ fontSize: '0.9rem' }}>{n.message_text}</div>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => handleToggleView(n.message_ID)}
+                        style={{
+                          backgroundColor: '#ef4444',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '5px',
+                          padding: '0.25rem 0.5rem',
+                        }}
+                      >
+                        {isExpanded ? 'Hide' : 'View'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteNotification(n.message_ID)}
+                        style={{
+                          backgroundColor: '#ef4444',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '5px',
+                          padding: '0.25rem 0.5rem',
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  {isExpanded && (
+                    <div style={{ marginTop: '0.5rem' }}>{n.message_text}</div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
       </section>
 
-      {/* Inbox */}
-      <section className="admin-notifications-section">
-        <h3>Inbox (Messages from Volunteers)</h3>
-        {Array.isArray(inbox) && inbox.length > 0 ? (
-          inbox.map(m => (
-            <div key={m.message_ID} className="admin-inbox-item">
-              <div><strong>From:</strong> {m.message_from}</div>
-              <div>{m.message_text}</div>
-            </div>
-          ))
-        ) : (
-          <p>No messages</p>
-        )}
+      {/* Inbox Section */}
+      <section
+        className="notifications-section"
+        style={{
+          backgroundColor: '#fff6f6ff',
+          borderRadius: '10px',
+          border: '2px solid #c78d8dff',
+          maxHeight: '250px',
+          overflowY: 'auto',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#ef4444',
+            padding: '0.5rem 1rem',
+            borderTopLeftRadius: '8px',
+            borderTopRightRadius: '8px',
+          }}
+        >
+          <h3
+            style={{
+              color: '#ffffff',
+              margin: 0,
+              fontWeight: '800',
+              fontSize: '1.25rem',
+            }}
+          >
+            Inbox (Messages from Volunteers)
+          </h3>
+        </div>
+        <div style={{ padding: '1rem' }}>
+          {!Array.isArray(inbox) || inbox.length === 0 ? (
+            <p>No messages</p>
+          ) : (
+            inbox.map((m) => {
+              const isExpanded = expandedId === m.message_ID;
+              return (
+                <div
+                  key={m.message_ID}
+                  style={{
+                    border: '1px solid #000',
+                    borderRadius: '8px',
+                    padding: '0.5rem',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{m.message_from}</div>
+                      {!isExpanded && (
+                        <div style={{ fontSize: '0.9rem' }}>{m.message_text}</div>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => handleToggleView(m.message_ID)}
+                        style={{
+                          backgroundColor: '#ef4444',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '5px',
+                          padding: '0.25rem 0.5rem',
+                        }}
+                      >
+                        {isExpanded ? 'Hide' : 'View'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteNotification(m.message_ID, true)}
+                        style={{
+                          backgroundColor: '#ef4444',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '5px',
+                          padding: '0.25rem 0.5rem',
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  {isExpanded && (
+                    <div style={{ marginTop: '0.5rem' }}>{m.message_text}</div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
       </section>
     </div>
   );
