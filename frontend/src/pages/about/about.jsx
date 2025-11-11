@@ -22,7 +22,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
         </p>
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
-          <div className="flex flex-col items-center max-w-xs">
+          {/* removed flex-col */}
+          <div className="flex items-center max-w-xs">
             <h2 className="text-xl font-semibold text-gray-700">
               🎯 Our Mission
             </h2>
@@ -31,7 +32,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
             </p>
           </div>
 
-          <div className="flex flex-col items-center max-w-xs">
+          {/* removed flex col */}
+          <div className="flex items-center max-w-xs">
             <h2 className="text-xl font-semibold text-gray-700">
               💡 How It Works
               </h2>
@@ -39,6 +41,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
               Our smart matching system pairs volunteers and events based on skills, time slots, and locations.
             </p>
           </div>
+
         </div>
       </section>
     </Layout>
