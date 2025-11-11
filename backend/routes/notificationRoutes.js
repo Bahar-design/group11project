@@ -33,8 +33,12 @@ const {
   getAllNotifications,
   markMessageAsSent,
   getVolunteers,
-  getAdmins
+  getAdmins,
+  searchEmails
 } = notificationController;
+
+//email autocomplete
+router.get('/emails', searchEmails);
 
 // Get volunteers list
 router.get('/volunteers', getVolunteers);
