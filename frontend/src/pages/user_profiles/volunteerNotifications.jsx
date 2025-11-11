@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import API_BASE from '../../lib/apiBase';
 
@@ -15,11 +14,11 @@ const VolunteerNotifications = ({ user }) => {
   const [activeButton, setActiveButton] = useState(null);
   const inputRef = useRef(null);
 
-  // New states for autocomplete
+  //New states for autocomplete
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Load notifications for the logged-in user
+  //Load notifications for the logged-in user
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!user?.email) return;
@@ -37,7 +36,7 @@ const VolunteerNotifications = ({ user }) => {
     fetchNotifications();
   }, [user]);
 
-  // Fetch autocomplete suggestions from backend
+  //Fetch autocomplete suggestions from backend
   const handleInputChange = async (e) => {
     const value = e.target.value;
     setInputValue(value);
@@ -52,13 +51,17 @@ const VolunteerNotifications = ({ user }) => {
       const res = await fetch(`${API_BASE}/api/notifications/emails?query=${encodeURIComponent(value)}`);
       if (!res.ok) return;
       const data = await res.json();
-      setSuggestions(data.filter(email => !toEmails.includes(email)));
+
+      //ensure lowercase comparison
+      setSuggestions(
+        data.filter(email => !toEmails.includes(email.toLowerCase()))
+      );
     } catch (err) {
       console.error('Error fetching email suggestions:', err);
     }
   };
 
-  // Add recipient when pressing Enter, comma, or Tab
+  //Add recipient when pressing Enter, comma, or Tab
   const handleInputKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
       e.preventDefault();
@@ -73,7 +76,7 @@ const VolunteerNotifications = ({ user }) => {
     }
   };
 
-  // Add recipient from suggestion
+  //Add recipient from suggestion
   const handleSuggestionClick = (email) => {
     if (!toEmails.includes(email)) {
       setToEmails([...toEmails, email]);
@@ -84,7 +87,7 @@ const VolunteerNotifications = ({ user }) => {
     }
   };
 
-  // Delete notification
+  //Delete notification
   const handleDeleteNotification = async (id) => {
     try {
       await fetch(`${API_BASE}/api/notifications/${id}`, { method: 'DELETE' });
@@ -94,12 +97,12 @@ const VolunteerNotifications = ({ user }) => {
     }
   };
 
-  // Toggle expand/hide message view
+  //Toggle expand/hide message view
   const handleToggleView = (id) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
-  // Send message
+  //Send message
   const handleSend = async (e) => {
     e.preventDefault();
     setSending(true);
@@ -116,7 +119,12 @@ const VolunteerNotifications = ({ user }) => {
       const res = await fetch(`${API_BASE}/api/notifications/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: user.email, to: toEmails[0], message }),
+        //normalize emails before sending -just in case
+        body: JSON.stringify({
+          from: user.email.trim().toLowerCase(),
+          to: toEmails[0].trim().toLowerCase(),
+          message,
+        }),
       });
 
       const data = await res.json();
@@ -360,4 +368,3 @@ const VolunteerNotifications = ({ user }) => {
 };
 
 export default VolunteerNotifications;
-
