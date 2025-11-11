@@ -20,6 +20,26 @@ export default function About({ isLoggedIn, onLogout, user }) {
         <p className="flex items-center justify-center">
           We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
         </p>
+
+        <div className="flex flex-wrap justify-center gap-8 mt-8">
+          <div className="flex flex-col items-center max-w-xs">
+            <h2 className="text-xl font-semibold text-gray-700">
+              🎯 Our Mission
+            </h2>
+            <p className="text-gray-600">
+              To strengthen communities by empowering volunteers to easily find meaningful opportunities.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center max-w-xs">
+            <h2 className="text-xl font-semibold text-gray-700">
+              💡 How It Works
+              </h2>
+            <p className="text-gray-600">
+              Our smart matching system pairs volunteers and events based on skills, time slots, and locations.
+            </p>
+          </div>
+        </div>
       </section>
     </Layout>
   );
