@@ -27,7 +27,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
               <h2 className="text-xl font-semibold text-gray-700">
                 🎯 Our Mission
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-600 max-w-40">
                 To strengthen communities by empowering volunteers to easily find meaningful opportunities.
               </p>
             </div>
