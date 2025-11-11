@@ -32,6 +32,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
               </p>
             </div>
           </div>
+          <div>I am Here</div>
         </div>
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
