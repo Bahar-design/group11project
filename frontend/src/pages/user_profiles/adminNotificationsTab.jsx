@@ -159,60 +159,136 @@ const AdminNotificationsTab = ({ user }) => {
   return (
     <div className="admin-notifications-tab">
       {/* Send Message Section */}
-      <section className="admin-notifications-section">
-        <h3>Send Message to Volunteers</h3>
-        <form onSubmit={handleSend} autoComplete="off">
-          <div className="form-group">
+      <section
+        className="admin-notifications-section"
+        style={{
+          backgroundColor: '#fff6f6ff',
+          borderRadius: '10px',
+          border: '2px solid #c78d8dff',
+          marginBottom: '1rem'
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#ef4444',
+            padding: '0.5rem 1rem',
+            borderTopLeftRadius: '8px',
+            borderTopRightRadius: '8px'
+          }}
+        >
+          <h3 style={{ color: '#ffffff', margin: 0, fontWeight: '800', fontSize: '1.25rem' }}>
+            Send Message to Volunteers
+          </h3>
+        </div>
+
+        <div style={{ padding: '1rem' }}>
+          <form onSubmit={handleSend} autoComplete="off">
             <label>To:</label>
-            <div className="email-chips-input" onClick={() => inputRef.current?.focus()}>
-              {toEmails.map(email => (
-                <span key={email} className="email-chip">
-                  {email}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveEmail(email)}
-                    className="email-chip-remove"
+            <div style={{ position: 'relative' }}>
+              <div className="email-chips-input" onClick={() => inputRef.current?.focus()}>
+                {toEmails.map(email => (
+                  <span key={email} className="email-chip">
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEmail(email)}
+                      className="email-chip-remove"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  placeholder={toEmails.length === 0 ? 'Enter email addresses' : 'Add another...'}
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    border: '1px solid #ccc',
+                    marginBottom: '1rem'
+                  }}
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul
+                    className="email-suggestions-list"
+                    style={{
+                      position: 'absolute',
+                      zIndex: 20,
+                      background: '#fff',
+                      border: '1px solid #ccc',
+                      borderRadius: '6px',
+                      margin: 0,
+                      padding: 0,
+                      listStyle: 'none',
+                      left: 0,
+                      right: 0,
+                      top: '100%',
+                      maxHeight: '180px',
+                      overflowY: 'auto',
+                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
+                    }}
                   >
-                    &times;
-                  </button>
-                </span>
-              ))}
-              <input
-                type="text"
-                ref={inputRef}
-                value={inputValue}
-                onChange={handleInputChange}
-                placeholder={toEmails.length === 0 ? 'Enter email addresses' : 'Add another...'}
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <ul className="email-suggestions-list">
-                  {suggestions.map(v => (
-                    <li key={v.email} onClick={() => handleSuggestionClick(v.email)}>
-                      {v.email} <span style={{ color: '#888' }}>({v.name})</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                    {suggestions.map(v => (
+                      <li
+                        key={v.email}
+                        onClick={() => handleSuggestionClick(v.email)}
+                        style={{
+                          padding: '0.5rem',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #eee'
+                        }}
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        {v.email}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="form-group">
-            <label>Message:</label>
-            <textarea
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              rows={4}
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label>Message:</label>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                rows={4}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '8px',
+                  border: '2px solid #ccc',
+                  background: 'white',
+                  marginBottom: '1rem'
+                }}
+              />
+            </div>
 
-          <button type="submit" className="btn-primary" disabled={sending}>
-            {sending ? 'Sending...' : 'Send Message'}
-          </button>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={sending}
+              style={{
+                backgroundColor: '#ef4444',
+                color: '#fff',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              {sending ? 'Sending...' : 'Send Message'}
+            </button>
 
-          {error && <div className="form-error">{error}</div>}
-          {success && <div className="form-success">{success}</div>}
-        </form>
+            {error && <div className="form-error" style={{ color: '#b91c1c', marginTop: '0.5rem' }}>{error}</div>}
+            {success && <div className="form-success" style={{ color: '#16a34a', marginTop: '0.5rem' }}>{success}</div>}
+          </form>
+        </div>
       </section>
 
       {/* Notifications */}
