@@ -13,8 +13,6 @@ import Layout from "../../components/layout.jsx"; // note the .jsx
 
 
 export default function About({ isLoggedIn, onLogout, user }) {
-
-  console.log("volunteerImg =", volunteerImg);
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
