@@ -27,8 +27,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
         </section>
         
 
-        <section className="flex flex-wrap justify-center mt-10"> {/*got rid of the margin top here it was mt-14 */}
-          <div className="flex flex-row">
+        <section className="bg-red-500"> {/*got rid of the margin top here it was mt-14 */}
+          <div className="flex flex-row mt-10">
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
                 🎯 Our Mission
