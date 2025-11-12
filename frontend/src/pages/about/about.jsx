@@ -48,7 +48,6 @@ export default function About({ isLoggedIn, onLogout, user }) {
           
         </section>
 
-
         {/* <div className="flex flex-wrap justify-center gap-8 mt-4"> 
           <div className="flex flex-col items-center max-w-xs">
             <h2 className="text-xl font-semibold text-gray-700">
