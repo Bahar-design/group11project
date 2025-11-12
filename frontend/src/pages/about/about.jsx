@@ -20,9 +20,12 @@ export default function About({ isLoggedIn, onLogout, user }) {
         <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
           <span className="text-red-500 font-bold ml-2"> Hearts</span>
         </h1>
-        <p className="flex items-center justify-center mb-[200px]">
-          We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
-        </p>
+        
+        <div className="flex items-center justify-center mb-[200px]">
+          <p>
+            We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
+          </p>
+        </div>
 
         <div className="flex flex-wrap justify-center">
           <div className="flex flex-row">
