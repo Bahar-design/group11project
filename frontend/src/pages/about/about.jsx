@@ -27,9 +27,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
         </section>
         
 
-        <section className="flex flex-wrap justify-center"> {/*got rid of the margin top here it was mt-14 */}
+        <section className="flex flex-wrap justify-center mt-10"> {/*got rid of the margin top here it was mt-14 */}
           <div className="flex flex-row">
-
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
                 🎯 Our Mission
@@ -38,7 +37,6 @@ export default function About({ isLoggedIn, onLogout, user }) {
                 We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
               </p>
             </div>
-
             <div className="rounded-2xl shadow-lg overflow-hidden">
               <img
                 src={volunteerImg}
@@ -46,8 +44,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
                 className="w-[500px] h-[350px]" 
               />
             </div>
-            
           </div>
+          
         </section>
 
 
