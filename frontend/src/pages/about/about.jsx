@@ -22,7 +22,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
             About Houston <span className="text-red-500 font-bold">Hearts</span>
           </h1>
 
-          <p className="text-center max-w-2xl mx-auto">
+          <p className="text-center max-w-2xl mx-auto mb-0">
               We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
           </p>
         </section>
