@@ -12,6 +12,8 @@ import Layout from "../../components/layout.jsx"; // note the .jsx
 import volunteerImg from "./images/image.png";
 
 export default function About({ isLoggedIn, onLogout, user }) {
+
+  console.log("volunteerImg =", volunteerImg);
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section>
@@ -39,10 +41,9 @@ export default function About({ isLoggedIn, onLogout, user }) {
             <img
               src={volunteerImg}
               alt="volunteer image"
-              className="w-80 h-80 object-cover" 
+              className="w-64 h-64 object-cover" 
             />
           </div>
-
         </div>
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
