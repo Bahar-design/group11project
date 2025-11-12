@@ -34,12 +34,14 @@ export default function About({ isLoggedIn, onLogout, user }) {
             </div>
           </div>
           
-          <img
-            src="/images/image.png"
-            alt="volunteer image"
-            className="w-64 h-64 object-cover rounded-2xl shadow-lg" 
-          />
-          
+          <div> className="rounded-2xl shadow-lg overflow-hidden">
+            <img
+              src="/images/image.png"
+              alt="volunteer image"
+              className="w-64 h-64 object-cover" 
+            />
+          </div>
+
         </div>
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
