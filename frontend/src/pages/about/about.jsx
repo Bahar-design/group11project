@@ -15,13 +15,10 @@ export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section>
-        <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
-          <span className="text-red-500 font-bold pl-2"> Hearts</span>
+      <section className="py-20 px-6 bg-white">
+        <h1 className="font-bold">
+          About Houston <span className="text-red-500 font-bold pl-2">Hearts</span>
         </h1>
-      </section>
-
-      <section>
         <p className="text-center max-w-2xl mx-auto mb-8">
             We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
         </p>
@@ -42,7 +39,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
             </div>
           </div>
 
-
+ 
           <div className="rounded-2xl shadow-lg overflow-hidden">
             <img
               src={volunteerImg}
