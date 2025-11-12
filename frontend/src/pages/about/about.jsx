@@ -27,7 +27,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center mt-4">
+        
+        <div className="flex flex-wrap justify-center mt-6">
 
           <div className="flex flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
