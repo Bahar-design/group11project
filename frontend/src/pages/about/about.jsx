@@ -25,29 +25,19 @@ export default function About({ isLoggedIn, onLogout, user }) {
       </section>
       
 
-      <section>
-        <div className="flex flex-wrap justify-center mt-12">
-
-          <div className="flex flex-row">
-            <div className="flex-col justify-center items-center max-w-xs">
-              <h2 className="text-xl font-semibold text-gray-700">
-                🎯 Our Mission
-              </h2>
-              <p className="text-gray-600 max-w-80">
-                We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
-              </p>
-            </div>
-          </div>
-
- 
-          <div className="rounded-2xl shadow-lg overflow-hidden">
-            <img
-              src={volunteerImg}
-              alt="volunteer-image"
-              className="w-[500px] h-[350px]" 
-            />
-          </div>
-
+      <section className="flex flex-wrap justify-center items-center gap-8 py-20 px-6 bg-gray-50">
+        <div className="max-w-xs">
+          <h2 className="text-xl font-semibold text-gray-700 mb-3">🎯 Our Mission</h2>
+          <p className="text-gray-600">
+            We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
+          </p>
+        </div>
+        <div className="rounded-2xl shadow-lg overflow-hidden">
+          <img
+            src={volunteerImg}
+            alt="volunteer image"
+            className="w-64 h-64 object-cover"
+          />
         </div>
       </section>
 
