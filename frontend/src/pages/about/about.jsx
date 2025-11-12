@@ -11,7 +11,6 @@ import "./about.css";
 import Layout from "../../components/layout.jsx"; // note the .jsx
 import volunteerImg from "./images/image.png";
 
-
 export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
