@@ -14,38 +14,45 @@ import volunteerImg from "./images/image.png";
 export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
-    <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user} className="flex flex-row">
-
-      <section className=" my-20 mx-6 py-20 px-6 bg-white">
-        <h1 className="font-bold text-center">
-          About Houston <span className="text-red-500 font-bold pl-2">Hearts</span>
+    <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
+      <section>
+        <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
+          <span className="text-red-500 font-bold pl-2"> Hearts</span>
         </h1>
-        <p className="text-center max-w-2xl mx-auto py-16 px-4">
+      </section>
+
+      <section>
+        <p className="text-center max-w-2xl mx-auto mb-8">
             We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
         </p>
       </section>
       
 
-      <section className="flex flex-wrap justify-center items-center gap-8 py-20 px-6 bg-gray-50">
-        <div className="max-w-xs">
-          <h2 className="text-xl font-semibold text-gray-700 mb-3">🎯 Our Mission</h2>
-          <p className="text-gray-600">
-            We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
-          </p>
-        </div>
-        <div className="rounded-2xl shadow-lg overflow-hidden">
-          <img
-            src={volunteerImg}
-            alt="volunteer image"
-            className="w-64 h-64 object-cover"
-          />
+      <section>
+        <div className="flex flex-wrap justify-center mt-12">
+
+          <div className="flex flex-row">
+            <div className="flex-col justify-center items-center max-w-xs">
+              <h2 className="text-xl font-semibold text-gray-700">
+                🎯 Our Mission
+              </h2>
+              <p className="text-gray-600 max-w-80">
+                We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
+              </p>
+            </div>
+          </div>
+
+
+          <div className="rounded-2xl shadow-lg overflow-hidden">
+            <img
+              src={volunteerImg}
+              alt="volunteer-image"
+              className="w-[500px] h-[350px]" 
+            />
+          </div>
+
         </div>
       </section>
-
-      
-
-
-
     </Layout>
   );
 }
