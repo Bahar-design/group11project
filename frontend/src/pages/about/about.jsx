@@ -16,8 +16,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section>
-
-        <section className="mb-8 mt-8 bg-blue-500" >
+        {/* okay so this fixed the margin issue i was having just now giving each portion its own section */}
+        <section className="mb-8 mt-8 bg-blue-500" > 
           <h1 className="flex items-center justify-center font-bold mb-4">
             About Houston <span className="text-red-500 font-bold">Hearts</span>
           </h1>
@@ -28,7 +28,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
         </section>
         
 
-        <div className="flex flex-wrap justify-center mt-12">
+        <section className="flex flex-wrap justify-center mt-12">
           <div className="flex flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
@@ -46,7 +46,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
               className="w-[500px] h-[350px]" 
             />
           </div>
-        </div>
+        </section>
 
 
         {/* <div className="flex flex-wrap justify-center gap-8 mt-4"> 
