@@ -15,18 +15,19 @@ export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section>
+      <section className="flex flex-col">
 
-        <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
-          <span className="text-red-500 font-bold pl-2"> Hearts</span>
-        </h1>
+        <section>
+          <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
+            <span className="text-red-500 font-bold pl-2"> Hearts</span>
+          </h1>
 
-        <p className="text-center max-w-2xl mx-auto mb-8">
-            We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
-        </p>
-
+          <p className="text-center max-w-2xl mx-auto mb-8">
+              We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
+          </p>
+        </section>
         
-        <div className="flex flex-wrap justify-center mt-12">
+        {/* <div className="flex flex-wrap justify-center mt-12">
 
           <div className="flex flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
@@ -48,10 +49,10 @@ export default function About({ isLoggedIn, onLogout, user }) {
             />
           </div>
 
-        </div>
+        </div> */}
 
 
-        <div className="flex flex-wrap justify-center gap-8 mt-4"> {/*okay so the margin top worked here */}
+        {/* <div className="flex flex-wrap justify-center gap-8 mt-4"> 
           <div className="flex flex-col items-center max-w-xs">
             <h2 className="text-xl font-semibold text-gray-700">
               💡 How It Works
@@ -60,7 +61,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
               Our smart matching system pairs volunteers and events based on skills, time slots, and locations.
             </p>
           </div>
-        </div>
+        </div> */}
 
 
       </section>
