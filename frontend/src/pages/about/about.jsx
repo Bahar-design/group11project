@@ -35,7 +35,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
             </div>
           </div>
           
-          <div className="rounded-2xl shadow-lg overflow-hidden">
+          <div className="rounded-2xl shadow-lg">
             <img
               src={volunteerImg}
               alt="volunteer image"
