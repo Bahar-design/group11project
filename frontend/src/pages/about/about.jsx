@@ -21,12 +21,12 @@ export default function About({ isLoggedIn, onLogout, user }) {
           <span className="text-red-500 font-bold pl-2"> Hearts</span>
         </h1>
 
-        <p className="text-center max-w-2xl mx-auto mb-[30px]">
+        <p className="text-center max-w-2xl mx-auto mb-8">
             We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
         </p>
 
         
-        <div className="flex flex-wrap justify-center ">
+        <div className="flex flex-wrap justify-center mt-12">
 
           <div className="flex flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
