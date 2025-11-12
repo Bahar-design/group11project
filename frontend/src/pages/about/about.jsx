@@ -9,11 +9,12 @@
 import React from "react";
 import "./about.css";
 import Layout from "../../components/layout.jsx"; // note the .jsx
-import volunteerImg from "./images/image.png";
+const volunteerImg = new URL("./images/image.png", import.meta.url).href;
 
 export default function About({ isLoggedIn, onLogout, user }) {
 
   console.log("volunteerImg =", volunteerImg);
+
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section>
@@ -40,7 +41,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
           <div className="rounded-2xl shadow-lg">
             <img
               src={volunteerImg}
-              alt="volunteer image"
+              alt="volunteer-image"
               className="w-64 h-64 object-cover" 
             />
           </div>
