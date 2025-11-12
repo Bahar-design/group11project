@@ -17,7 +17,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section>
         {/* okay so this fixed the margin issue i was having just now giving each portion its own section */}
-        <section className="mb-8 mt-8 bg-blue-500" > 
+        <section className="mb-10 mt-8 bg-blue-500" > 
           <h1 className="flex items-center justify-center font-bold mb-4">
             About Houston <span className="text-red-500 font-bold">Hearts</span>
           </h1>
