@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react'; 
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-//protectedRoute component for refreshing logged in state
-function ProtectedRoute({ isLoggedIn, children }) {
+//protectedRoute
+function ProtectedRoute({ isLoggedIn, authChecked, children }) {
+  //wait until login state is restored
+  if (!authChecked) {
+    return null; 
+  }
+
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
@@ -26,6 +31,9 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
+  //track if we’ve checked localStorage
+  const [authChecked, setAuthChecked] = useState(false);
+
   //restore login/session on page refresh
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -35,8 +43,10 @@ export default function App() {
       setUser(JSON.parse(storedUser));
       setIsLoggedIn(true);
     }
-  }, []);
 
+    //Mark as checked
+    setAuthChecked(true);
+    }, []);
 
     //handle login
     const handleLogin = (userObj) => {
@@ -44,12 +54,12 @@ export default function App() {
       setIsLoggedIn(true);
     };
 
-    //localStorage when logging out
+    //clear localStorage when logging out
     const handleLogout = () => {
       setUser(null);
       setIsLoggedIn(false);
-      localStorage.removeItem("user");        
-      localStorage.removeItem("isLoggedIn");  
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
     };
 
     return (
