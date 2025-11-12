@@ -17,7 +17,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section className="flex flex-col">
 
-        <section className="my-8 mx-4 bg-blue-500" >
+        <section className="mb-8 mt-8 bg-blue-500" >
           <h1 className="flex items-center justify-center font-bold mb-4">
             About Houston <span className="text-red-500 font-bold">Hearts</span>
           </h1>
@@ -29,7 +29,6 @@ export default function About({ isLoggedIn, onLogout, user }) {
         
 
         <div className="flex flex-wrap justify-center mt-12">
-
           <div className="flex flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
