@@ -14,7 +14,7 @@ import volunteerImg from "./images/image.png";
 export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
-    <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
+    <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user} className="flex flex-col">
       <section className=" my-20 mx-6 py-20 px-6 bg-white">
         <h1 className="font-bold text-center">
           About Houston <span className="text-red-500 font-bold pl-2">Hearts</span>
