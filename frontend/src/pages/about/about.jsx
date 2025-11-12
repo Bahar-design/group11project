@@ -16,10 +16,10 @@ export default function About({ isLoggedIn, onLogout, user }) {
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section className="py-20 px-6 bg-white">
-        <h1 className="font-bold">
+        <h1 className="font-bold text-center">
           About Houston <span className="text-red-500 font-bold pl-2">Hearts</span>
         </h1>
-        <p className="text-center max-w-2xl mx-auto mb-8">
+        <p className="text-center max-w-2xl mx-auto py-16 px-4">
             We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
         </p>
       </section>
