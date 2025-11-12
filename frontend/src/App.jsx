@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 // ProtectedRoute component
 function ProtectedRoute({ isLoggedIn, children }) {
   if (!isLoggedIn) {
@@ -21,17 +22,35 @@ import About from "./pages/about/about.jsx";
 import './App.css';
 
 export default function App() {
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
-  const handleLogin = (userObj) => {
-    setUser(userObj);
-    setIsLoggedIn(true);
-  };
-  const handleLogout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-  };
+  //restore login/session on page refresh
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedLoggedIn = localStorage.getItem("isLoggedIn");
+
+    if (storedLoggedIn === "true" && storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+
+    //handle login
+    const handleLogin = (userObj) => {
+      setUser(userObj);
+      setIsLoggedIn(true);
+    };
+
+    //localStorage when logging out
+    const handleLogout = () => {
+      setUser(null);
+      setIsLoggedIn(false);
+      localStorage.removeItem("user");        
+      localStorage.removeItem("isLoggedIn");  
+    };
 
     return (
       
