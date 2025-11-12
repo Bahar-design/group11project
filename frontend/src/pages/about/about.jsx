@@ -37,7 +37,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
                 We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
               </p>
             </div>
-            <div className="rounded-2xl shadow-lg overflow-hidden">
+            <div className="rounded-2xl shadow-lg overflow-hidden mt-10">
               <img
                 src={volunteerImg}
                 alt="volunteer-image"
