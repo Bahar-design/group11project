@@ -15,19 +15,19 @@ export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section>
+      <section className="space-y-20">
         {/* okay so this fixed the margin issue i was having just now giving each portion its own section */}
-        <section className="bg-blue-500" > 
+        <section className="bg-blue-500 " > 
           <h1 className="flex items-center justify-center font-bold mb-3">
             About Houston <span className="text-red-500 font-bold">Hearts</span>
           </h1>
-          <p className="text-center max-w-2xl mx-auto mb-0"> {/*this were the margin are having issues, this is the only thing seeting margin bottom size*/}
+          <p className="text-center max-w-2xl mx-auto mb-3"> {/*this were the margin are having issues, this is the only thing seeting margin bottom size*/}
               We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
           </p>
         </section>
         
 
-        <section className="bg-red-500 pt-10"> {/*got rid of the margin top here it was mt-14 */}
+        <section className="bg-red-500"> {/*got rid of the margin top here it was mt-14 */}
           <div className="flex items-center justify-center flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
