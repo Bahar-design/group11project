@@ -18,7 +18,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
       <section>
 
         <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
-          <span className="text-red-500 font-bold gap-2"> Hearts</span>
+          <span className="text-red-500 font-bold pl-2"> Hearts</span>
         </h1>
 
         <div className="mb-40">
@@ -57,9 +57,6 @@ export default function About({ isLoggedIn, onLogout, user }) {
           </div>
         </div>
       </section>
-
-
-
     </Layout>
   );
 }
