@@ -33,7 +33,13 @@ export default function About({ isLoggedIn, onLogout, user }) {
               </p>
             </div>
           </div>
-          <div>where we will add image</div>
+          
+          <img
+            src="./images/image.png"
+            alt="volunteer image"
+            // className="" 
+          />
+          
         </div>
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
