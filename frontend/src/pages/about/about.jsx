@@ -40,7 +40,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
             <img
               src={volunteerImg}
               alt="volunteer-image"
-              className="w-48 h-48 sm:h-64 sm:w-64 md:h-80 md:w-80" 
+              className="w-64 h-60 sm:h-44 sm:w-48 md:h-80 md:w-80" 
             />
           </div>
         </div>
