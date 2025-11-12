@@ -37,7 +37,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
           <img
             src="./images/image.png"
             alt="volunteer image"
-            // className="" 
+            className="w-64 h-64 object-cover rounded-2xl shadow-lg" 
           />
           
         </div>
