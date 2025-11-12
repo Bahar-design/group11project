@@ -28,7 +28,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
 
         <div className="flex flex-wrap justify-center gap-8 mt-8">
           <div className="flex flex-row">
-            <div classname="flex-col justify-center items-center max-w-xs">
+            <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
                 🎯 Our Mission
               </h2>
