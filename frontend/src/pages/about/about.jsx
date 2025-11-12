@@ -15,7 +15,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section className="flex flex-col">
+      <section>
 
         <section className="mb-8 mt-8 bg-blue-500" >
           <h1 className="flex items-center justify-center font-bold mb-4">
@@ -39,8 +39,6 @@ export default function About({ isLoggedIn, onLogout, user }) {
               </p>
             </div>
           </div>
-
-
           <div className="rounded-2xl shadow-lg overflow-hidden">
             <img
               src={volunteerImg}
@@ -48,7 +46,6 @@ export default function About({ isLoggedIn, onLogout, user }) {
               className="w-[500px] h-[350px]" 
             />
           </div>
-
         </div>
 
 
