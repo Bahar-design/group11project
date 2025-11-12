@@ -18,7 +18,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
       <section>
 
         <h1 className="flex items-center justify-center font-bold mb-4">About Houston 
-          <span className="text-red-500 font-bold ml-2"> Hearts</span>
+          <span className="text-red-500 font-bold gap-2"> Hearts</span>
         </h1>
 
         <div className="mb-40">
@@ -46,7 +46,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
             />
           </div>
         </div>
-        <div className="flex flex-wrap justify-center gap-8 mt-8">
+        <div className="flex flex-wrap justify-center gap-8 mt-4">
           <div className="flex flex-col items-center max-w-xs">
             <h2 className="text-xl font-semibold text-gray-700">
               💡 How It Works
