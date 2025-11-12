@@ -21,7 +21,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
           <span className="text-red-500 font-bold pl-2"> Hearts</span>
         </h1>
 
-        <div>
+        <div className="mb-6">
           <p className="text-center max-w-2xl mx-auto">
             We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
           </p>
