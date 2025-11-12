@@ -27,7 +27,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
         </section>
         
 
-        <section className="flex flex-wrap justify-center mt-14">
+        <section className="flex flex-wrap justify-center"> {/*got rid of the margin top here it was mt-14 */}
           <div className="flex flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
