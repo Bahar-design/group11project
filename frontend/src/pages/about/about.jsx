@@ -9,6 +9,7 @@
 import React from "react";
 import "./about.css";
 import Layout from "../../components/layout.jsx"; // note the .jsx
+import image from "/images/image.png"
 
 export default function About({ isLoggedIn, onLogout, user }) {
   return (
@@ -36,7 +37,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
           
           <div className="rounded-2xl shadow-lg overflow-hidden">
             <img
-              src="/images/image.png"
+              src={image}
               alt="volunteer image"
               className="w-80 h-80 object-cover" 
             />
