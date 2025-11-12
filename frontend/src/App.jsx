@@ -3,16 +3,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 
 //protectedRoute
 function ProtectedRoute({ isLoggedIn, authChecked, children }) {
-  //wait until login state is restored
-  if (!authChecked) {
-    return null; 
-  }
+  // Wait until login has been restored from localStorage
+  if (!authChecked) return null;
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
   return children;
 }
+
 
 import Header from './components/header.jsx';
 import Login from './pages/logins/login';
@@ -74,9 +73,9 @@ export default function App() {
           <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/reports" element={<ReportingModule isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/user-profiles" element={
-            <ProtectedRoute isLoggedIn={isLoggedIn}>
-              <UserProfiles isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
-            </ProtectedRoute>
+          <ProtectedRoute isLoggedIn={isLoggedIn} authChecked={authChecked}>
+            <UserProfiles isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
           } />
           <Route path="/calendar" element={<Calendar isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
           <Route path="/match-making" element={<MatchMaking isLoggedIn={isLoggedIn} user={user} />} />
