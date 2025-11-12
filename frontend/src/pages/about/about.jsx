@@ -15,7 +15,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section className="py-20 px-6 bg-white">
+      <section className=" my-10 mx-5 py-20 px-6 bg-white">
         <h1 className="font-bold text-center">
           About Houston <span className="text-red-500 font-bold pl-2">Hearts</span>
         </h1>
