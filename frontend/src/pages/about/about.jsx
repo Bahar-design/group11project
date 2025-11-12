@@ -25,7 +25,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
       </section>
       
 
-      {/* <section>
+      <section>
         <div className="flex flex-wrap justify-center mt-12">
 
           <div className="flex flex-row">
@@ -49,7 +49,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
           </div>
 
         </div>
-      </section> */}
+      </section>
 
       
 
