@@ -9,7 +9,8 @@
 import React from "react";
 import "./about.css";
 import Layout from "../../components/layout.jsx"; // note the .jsx
-import volunteerImg from "./images/image.png";
+
+
 
 export default function About({ isLoggedIn, onLogout, user }) {
 
@@ -40,7 +41,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
           
           <div className="rounded-2xl shadow-lg overflow-hidden">
             <img
-              src={volunteerImg}
+              src="/images/image.png"
               alt="volunteer-image"
               className="w-64 h-64 object-cover" 
             />
