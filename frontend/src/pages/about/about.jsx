@@ -24,7 +24,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
           We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
         </p>
 
-        <div className="flex flex-wrap justify-center gap-8 pt-[40px]">
+        <div className="flex flex-wrap justify-center">
           <div className="flex flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
