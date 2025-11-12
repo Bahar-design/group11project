@@ -21,13 +21,14 @@ export default function About({ isLoggedIn, onLogout, user }) {
           <span className="text-red-500 font-bold pl-2"> Hearts</span>
         </h1>
 
-        <div className="mb-40">
+        <div>
           <p className="text-center max-w-2xl mx-auto">
             We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center">
+        <div className="flex flex-wrap justify-center mt-4">
+
           <div className="flex flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
@@ -38,6 +39,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
               </p>
             </div>
           </div>
+
+
           <div className="rounded-2xl shadow-lg overflow-hidden">
             <img
               src={volunteerImg}
@@ -45,8 +48,11 @@ export default function About({ isLoggedIn, onLogout, user }) {
               className="w-[500px] h-[350px]" 
             />
           </div>
+
         </div>
-        <div className="flex flex-wrap justify-center gap-8 mt-4">
+
+
+        <div className="flex flex-wrap justify-center gap-8 mt-4"> {/*okay so the margin top worked here */}
           <div className="flex flex-col items-center max-w-xs">
             <h2 className="text-xl font-semibold text-gray-700">
               💡 How It Works
@@ -56,6 +62,8 @@ export default function About({ isLoggedIn, onLogout, user }) {
             </p>
           </div>
         </div>
+
+
       </section>
     </Layout>
   );
