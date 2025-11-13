@@ -51,31 +51,7 @@ async function ensureSkillIds(skillNames = []) {
 }
 
 // In-memory fallback store used when DB is unavailable or operations fail
-let fallbackEvents = [
-  {
-    id: 1,
-    name: 'Holiday Drive',
-    description: 'Annual holiday event to distribute gifts and food.',
-    location: 'Downtown Houston',
-    requiredSkills: ['Organization & Sorting', 'Customer Service'],
-    urgency: 'High',
-    date: '2025-12-23',
-    volunteersList: [{ name: 'James Miller' }, { name: 'Sarah Lee' }],
-    volunteers: 2
-  },
-  {
-    id: 2,
-    name: 'Food Bank Support',
-    description: 'Help sort and distribute food donations.',
-    location: 'Sugar Land',
-    requiredSkills: ['Organization & Sorting'],
-    urgency: 'Medium',
-    date: '2025-10-15',
-    volunteersList: [{ name: 'Alex Kim' }],
-    volunteers: 1
-  }
-];
-let fallbackNextId = 3;
+// NOTE: removed in-memory hardcoded fallback events. Data must come from the DB.
 
 // Helper: get skill names by ids
 async function skillNamesForIds(ids = []) {
@@ -109,6 +85,15 @@ router.get('/', async (req, res) => {
         volunteersList = [];
       }
 
+      // lookup creator name if available
+      let createdByName = null;
+      try {
+        if (r.created_by) {
+          const cr = await pool.query('SELECT full_name FROM adminprofile WHERE admin_id = $1', [r.created_by]);
+          if (cr.rows.length > 0) createdByName = cr.rows[0].full_name;
+        }
+      } catch (e) { /* ignore */ }
+
       out.push({
         id: r.event_id,
         name: r.event_name,
@@ -116,32 +101,20 @@ router.get('/', async (req, res) => {
         location: r.location,
         urgency: URGENCY_MAP_REVERSE[r.urgency] || r.urgency,
         date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
-        timeSlots: r.time_slots || null,
         volunteers: Number(r.volunteers) || (volunteersList.length),
         volunteersList,
         skillIds,
         requiredSkills: skills,
-        createdBy: r.created_by
+        createdBy: r.created_by,
+        createdByName
       });
     }
     res.json(out);
   } catch (err) {
     // DB failed — fallback to in-memory store
     console.error('Events GET error, using fallback in-memory events:', err.message || err);
-    const out = fallbackEvents.map(r => ({
-      id: r.id,
-      name: r.name,
-      description: r.description,
-      location: r.location,
-      urgency: r.urgency,
-      date: r.date,
-      timeSlots: r.timeSlots || null,
-      volunteers: r.volunteers || (r.volunteersList ? r.volunteersList.length : 0),
-      volunteersList: r.volunteersList || [],
-      requiredSkills: r.requiredSkills || [],
-      skillIds: r.skillIds || []
-    }));
-    res.json(out);
+    // If DB fails, return empty array (no in-memory fallback)
+    res.json([]);
   }
 });
 
@@ -153,6 +126,9 @@ router.get('/:id', async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: 'Event not found' });
     const r = rows[0];
     const skills = await skillNamesForIds(r.skill_id || []);
+    // resolve creator name
+    let createdByName = null;
+    try { if (r.created_by) { const cr = await pool.query('SELECT full_name FROM adminprofile WHERE admin_id = $1', [r.created_by]); if (cr.rows.length) createdByName = cr.rows[0].full_name; } } catch (e) {}
     res.json({
       id: r.event_id,
       name: r.event_name,
@@ -160,10 +136,11 @@ router.get('/:id', async (req, res) => {
       location: r.location,
       urgency: URGENCY_MAP_REVERSE[r.urgency] || r.urgency,
       date: r.event_date ? r.event_date.toISOString().slice(0,10) : null,
-      timeSlots: r.time_slots,
       volunteers: Number(r.volunteers) || 0,
       requiredSkills: skills,
-      skillIds: r.skill_id || []
+      skillIds: r.skill_id || [],
+      createdBy: r.created_by,
+      createdByName
     });
   } catch (err) {
     console.error('GET event by id error, falling back:', err.message || err);
@@ -174,10 +151,11 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
 // POST create event
 router.post('/', async (req, res) => {
   // destructure outside try so fallback catch can reference values
-  const { name, description, location, requiredSkills = [], urgency, date, timeSlots = null, createdBy = null } = req.body || {};
+  const { name, description, location, requiredSkills = [], urgency, date, createdBy = null } = req.body || {};
   try {
     // basic validation
     if (!name || !description || !location || !Array.isArray(requiredSkills) || requiredSkills.length === 0 || !urgency || !date) {
@@ -187,8 +165,11 @@ router.post('/', async (req, res) => {
 
     const skillIds = await ensureSkillIds(requiredSkills);
 
-    const insertQ = `INSERT INTO ${TABLE} (event_name, description, location, urgency, event_date, created_by, time_slots, volunteers, skill_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`;
-    const { rows } = await pool.query(insertQ, [name, description, location, urgencyNum, date, createdBy, timeSlots, 0, skillIds]);
+    // allow createdBy from body or from authenticated user (req.user)
+    const creator = createdBy || (req.user && (req.user.id || req.user.user_id)) || null;
+
+    const insertQ = `INSERT INTO ${TABLE} (event_name, description, location, urgency, event_date, created_by, volunteers, skill_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`;
+    const { rows } = await pool.query(insertQ, [name, description, location, urgencyNum, date, creator, 0, skillIds]);
     const r = rows[0];
 
     // maintain event_skills join table if it exists
@@ -200,7 +181,7 @@ router.post('/', async (req, res) => {
     } catch (ignore) {}
 
     const skills = await skillNamesForIds(skillIds);
-    res.status(201).json({ id: r.event_id, name: r.event_name, description: r.description, location: r.location, urgency, date: r.event_date.toISOString().slice(0,10), requiredSkills: skills, volunteers: 0 });
+    res.status(201).json({ id: r.event_id, name: r.event_name, description: r.description, location: r.location, urgency, date: r.event_date.toISOString().slice(0,10), requiredSkills: skills, volunteers: 0, createdBy: r.created_by });
   } catch (err) {
     // If DB is not available or insert fails, fallback to in-memory
     console.error('Create event error, falling back to in-memory:', err.message || err);
@@ -213,7 +194,7 @@ router.post('/', async (req, res) => {
 // PUT update event
 router.put('/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const { name, description, location, requiredSkills = [], urgency, date, timeSlots = null } = req.body || {};
+  const { name, description, location, requiredSkills = [], urgency, date } = req.body || {};
   try {
     const { rows: exists } = await pool.query(`SELECT * FROM ${TABLE} WHERE event_id = $1`, [id]);
     if (exists.length === 0) return res.status(404).json({ error: 'Event not found' });
@@ -221,8 +202,9 @@ router.put('/:id', async (req, res) => {
     const urgencyNum = URGENCY_MAP[urgency] || URGENCY_MAP['Low'];
     const skillIds = await ensureSkillIds(requiredSkills);
 
-    const updateQ = `UPDATE ${TABLE} SET event_name=$1, description=$2, location=$3, urgency=$4, event_date=$5, time_slots=$6, skill_id=$7 WHERE event_id=$8 RETURNING *`;
-    const { rows } = await pool.query(updateQ, [name, description, location, urgencyNum, date, timeSlots, skillIds, id]);
+  // Do not modify created_by on update. Remove time_slots column usage.
+  const updateQ = `UPDATE ${TABLE} SET event_name=$1, description=$2, location=$3, urgency=$4, event_date=$5, skill_id=$6 WHERE event_id=$7 RETURNING *`;
+  const { rows } = await pool.query(updateQ, [name, description, location, urgencyNum, date, skillIds, id]);
     const r = rows[0];
 
     // update event_skills join table
