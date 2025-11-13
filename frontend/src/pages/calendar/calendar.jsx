@@ -33,22 +33,28 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   
         // Format calendar table data
         const formattedCalendar = calendarData.map(ev => ({
-          id: `cal-${ev.event_id}`,
-          title: ev.event_name,
-          start: new Date(ev.event_date),
-          end: new Date(ev.event_date),
+          id: `cal-${ev.id}`,
+          title: ev.name,
+          start: new Date(ev.date),
+          end: new Date(ev.date),
           location: ev.location,
           description: ev.description,
+          urgency: ev.urgency,
+          volunteers: ev.volunteers,
+          requiredSkills: ev.requiredSkills,
         }));
   
         // Format events table data
         const formattedEvents = eventsData.map(ev => ({
-          id: `evt-${ev.event_id}`,
-          title: ev.event_name,
-          start: new Date(ev.event_date),
-          end: new Date(ev.event_date),
+          id: `evt-${ev.id}`,
+          title: ev.name,
+          start: new Date(ev.date),
+          end: new Date(ev.date),
           location: ev.location,
           description: ev.description,
+          urgency: ev.urgency,
+          volunteers: ev.volunteers,
+          requiredSkills: ev.requiredSkills,
         }));
   
         // Combine both into one array
@@ -99,7 +105,7 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   contentLabel="Event Details"
   style={{
     overlay: {
-      backgroundColor: 'rgba(0, 0, 0, 0.5)', // dark semi-transparent overlay
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
       zIndex: 1000
     },
     content: {
@@ -107,7 +113,7 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
       left: "25%",
       right: "25%",
       bottom: "20%",
-      backgroundColor: "#fff",   // white background
+      backgroundColor: "#fff",
       color: "#333",
       padding: "30px",
       borderRadius: "10px",
@@ -122,17 +128,15 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
       <p><strong>Date:</strong> {selectedEvent.start.toDateString()}</p>
       <p><strong>Location:</strong> {selectedEvent.location}</p>
       <p>{selectedEvent.description}</p>
-
-      {!attending ? (
-        <button onClick={handleAttend}>I’m attending</button>
-      ) : (
-        <p style={{ color: "green" }}>You are attending this event!</p>
-      )}
+      {selectedEvent.urgency && <p><strong>Urgency:</strong> {selectedEvent.urgency}</p>}
+      {selectedEvent.volunteers !== undefined && <p><strong>Volunteers:</strong> {selectedEvent.volunteers}</p>}
+      {selectedEvent.requiredSkills?.length > 0 && <p><strong>Skills:</strong> {selectedEvent.requiredSkills.join(", ")}</p>}
 
       <button onClick={() => setModalOpen(false)}>Close</button>
     </div>
   )}
 </Modal>
+
 
 
       <Footer />
