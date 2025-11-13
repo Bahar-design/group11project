@@ -71,20 +71,20 @@ export default function About({ isLoggedIn, onLogout, user }) {
         {/* this one will be about our volunteer history tracking */}
         <section>
           <div className="flex flex-row items-center justify-center gap-8">
-            <div className="flex-col">
+            <div className="flex-col ">
               <h2 className="text-2xl font-semibold text-gray-700">📊 Volunteer Hours & History</h2>
 
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed max-w-80">
                 Houston Hearts keeps a complete record of every volunteer's service activity —
                 including hours contributed, events participated in, and roles performed.
               </p>
 
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed max-w-80">
                 Volunteers can review their past events, track their total hours, and build a verified
                 impact profile that highlights their dedication to the community.
               </p>
 
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed max-w-80">
                 Our system automatically updates each user’s history after every event,
                 making it easy to stay organized and monitor your community contributions.
               </p>
@@ -93,7 +93,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
               <img
                 src={volunteerImg3}
                 alt="volunteer_img3"
-                className="w-[500px] h-[350px] object-cover"
+                className="w-[500px] h-[350px]"
                 />
             </div>
           </div>
