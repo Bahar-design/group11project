@@ -22,17 +22,37 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/calendar`);
-        const data = await res.json();
-        const formatted = data.map(ev => ({
-          id: ev.event_id,
+        // Fetch both calendar + events tables at once
+        const [calendarRes, eventsRes] = await Promise.all([
+          fetch(`${API_BASE}/api/calendar`),
+          fetch(`${API_BASE}/api/events`)
+        ]);
+  
+        const calendarData = await calendarRes.json();
+        const eventsData = await eventsRes.json();
+  
+        // Format calendar table data
+        const formattedCalendar = calendarData.map(ev => ({
+          id: `cal-${ev.event_id}`,
           title: ev.event_name,
           start: new Date(ev.event_date),
           end: new Date(ev.event_date),
           location: ev.location,
           description: ev.description,
         }));
-        setEvents(formatted);
+  
+        // Format events table data
+        const formattedEvents = eventsData.map(ev => ({
+          id: `evt-${ev.event_id}`,
+          title: ev.event_name,
+          start: new Date(ev.event_date),
+          end: new Date(ev.event_date),
+          location: ev.location,
+          description: ev.description,
+        }));
+  
+        // Combine both into one array
+        setEvents([...formattedCalendar, ...formattedEvents]);
       } catch (err) {
         console.error(err);
         setMessage("Failed to load events");
@@ -40,8 +60,10 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
         setLoading(false);
       }
     };
+  
     fetchEvents();
   }, []);
+  
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
