@@ -29,6 +29,8 @@ function buildFilterClauses(filters, params) {
   return clauses.length ? clauses.join(' AND ') : '';
 }
 
+//report for event volunteer assignments , has volunteer_history and event details
+/*
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
@@ -56,6 +58,49 @@ async function getVolunteerParticipation(filters = {}) {
     skills: r.skills || []
   }));
 }
+  */
+ async function getEventVolunteerReport(filters = {}) {
+  const params = [];
+  const where = buildFilterClauses(filters, params);
+
+  const sql = `
+    SELECT
+        e.event_id,
+        e.event_name,
+        e.event_date,
+        e.location,
+        u.user_id AS volunteer_id,
+        u.full_name AS volunteer_name,
+        u.user_email,
+        vp.city,
+        vp.state_code,
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills,
+        vh.hours_worked,
+        vh.rating,
+        vh.status,
+        vh.signup_date
+    FROM eventdetails e
+    JOIN volunteer_history vh ON e.event_id = vh.event_id
+    JOIN user_table u ON vh.volunteer_id = u.user_id
+    LEFT JOIN volunteerprofile vp ON u.user_id = vp.volunteer_id
+    LEFT JOIN volunteer_skills vs ON u.user_id = vs.volunteer_id
+    LEFT JOIN skills s ON vs.skill_id = s.skill_id
+    ${where ? 'WHERE ' + where : ''}
+    GROUP BY
+      e.event_id, e.event_name, e.event_date, e.location,
+      u.user_id, u.full_name, u.user_email,
+      vp.city, vp.state_code,
+      vh.hours_worked, vh.rating, vh.status, vh.signup_date
+    ORDER BY
+      e.event_id,
+      split_part(u.full_name, ' ', 2),
+      u.full_name;
+  `;
+
+  const { rows } = await pool.query(sql, params);
+  return rows;
+}
+
 
 async function getVolunteerHistory(filters = {}) {
   const params = [];
