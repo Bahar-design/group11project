@@ -204,15 +204,6 @@ const AdminInfo = ({ user, isLoggedIn, onLogout }) => {
           ))}
         </div>
       </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        <h2>Volunteer History</h2>
-        <AdminVolunteerHistory 
-          user={user}
-          isLoggedIn={isLoggedIn}
-          onLogout={onLogout}
-        />
-      </div>
     </div>
   );
 };
