@@ -17,7 +17,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section className="space-y-28"> {/**fixed the section spacing issue */}
+      <section className="flex flex-col gap-20"> {/**fixed the section spacing issue */}
 
         <section> 
           <h1 className="flex items-center justify-center font-bold mb-3">
