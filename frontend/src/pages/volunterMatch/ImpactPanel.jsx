@@ -39,7 +39,7 @@ export default function ImpactPanel({ user }) {
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/volunteer-history/${user.id}`);
+        const res = await fetch(`${API_BASE}/api/volunteer-history/my/${user.id}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setHistory(data);
