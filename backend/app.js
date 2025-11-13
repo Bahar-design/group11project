@@ -22,7 +22,8 @@ const pool = require('./db');
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '';
 
 // Build the allowed origins list. FRONTEND_ORIGIN can be a single origin or a comma-separated list.
-const allowedOrigins = ['http://localhost:5173']; // keep local dev origin
+// Keep local dev origin and include the common production frontend origin (Vercel) so deployed frontend can reach the API.
+const allowedOrigins = ['http://localhost:5173', 'https://group11project.vercel.app']; // keep local dev origin and production
 if (FRONTEND_ORIGIN) {
   const parts = FRONTEND_ORIGIN.split(',').map(s => s.trim()).filter(Boolean);
   parts.forEach(p => allowedOrigins.push(p));
