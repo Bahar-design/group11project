@@ -47,18 +47,26 @@ export default function About({ isLoggedIn, onLogout, user }) {
           </div>
         </section>
 
-        <section>
-          <div className="flex flex-wrap justify-center gap-8 mt-4"> 
-            <div className="flex flex-col items-center max-w-xs">
+        <section> {/*got rid of the margin top here it was mt-14 */}
+          <div className="flex items-center justify-center flex-row">
+            <div className="rounded-2xl shadow-lg overflow-hidden mt-10">
+              <img
+                src={volunteerImg}
+                alt="volunteer-image"
+                className="w-[500px] h-[350px]" 
+              />
+            </div>
+            <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
-                💡 How It Works
-                </h2>
-              <p className="text-gray-600">
-                Our smart matching system pairs volunteers and events based on skills, time slots, and locations.
+                🎯 Our Mission
+              </h2>
+              <p className="text-gray-600 max-w-80">
+                We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
               </p>
             </div>
           </div>
         </section>
+        
       </section>
     </Layout>
   );
