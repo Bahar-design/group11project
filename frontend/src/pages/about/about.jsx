@@ -17,7 +17,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section className="space-y-20"> {/**fixed the section spacing issue */}
         {/* okay so this fixed the margin issue i was having just now giving each portion its own section */}
-        <section className="bg-blue-500 " > 
+        <section> 
           <h1 className="flex items-center justify-center font-bold mb-3">
             About Houston <span className="text-red-500 font-bold">Hearts</span>
           </h1>
@@ -45,19 +45,20 @@ export default function About({ isLoggedIn, onLogout, user }) {
               />
             </div>
           </div>
-          
         </section>
 
-        {/* <div className="flex flex-wrap justify-center gap-8 mt-4"> 
-          <div className="flex flex-col items-center max-w-xs">
-            <h2 className="text-xl font-semibold text-gray-700">
-              💡 How It Works
-              </h2>
-            <p className="text-gray-600">
-              Our smart matching system pairs volunteers and events based on skills, time slots, and locations.
-            </p>
+        <section>
+          <div className="flex flex-wrap justify-center gap-8 mt-4"> 
+            <div className="flex flex-col items-center max-w-xs">
+              <h2 className="text-xl font-semibold text-gray-700">
+                💡 How It Works
+                </h2>
+              <p className="text-gray-600">
+                Our smart matching system pairs volunteers and events based on skills, time slots, and locations.
+              </p>
+            </div>
           </div>
-        </div> */}
+        </section>
       </section>
     </Layout>
   );
