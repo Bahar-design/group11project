@@ -3,7 +3,7 @@ import ProfileHeader from './profileHeader.jsx';
 import ProfileTabs from './profileTabs.jsx';
 import AdminInfo from './adminInfo.jsx';
 
-const AdminProfile = ({ user }) => {
+const AdminProfile = ({ user, isLoggedIn, onLogout }) => {
   const [activeTab, setActiveTab] = useState('admin-info');
 
   const tabs = [
@@ -11,21 +11,20 @@ const AdminProfile = ({ user }) => {
     { id: 'notifications', label: 'Notifications' },
   ];
 
-  // Lazy load to avoid circular import
   const AdminNotificationsTab = React.lazy(() => import('./adminNotificationsTab.jsx'));
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'admin-info':
-        return <AdminInfo user={user} />;
+        return <AdminInfo user={user} isLoggedIn={isLoggedIn} onLogout={onLogout} />;
       case 'notifications':
         return (
           <React.Suspense fallback={<div>Loading...</div>}>
-            <AdminNotificationsTab user={user} />
+            <AdminNotificationsTab user={user} isLoggedIn={isLoggedIn} onLogout={onLogout} />
           </React.Suspense>
         );
       default:
-        return <AdminInfo user={user} />;
+        return <AdminInfo user={user} isLoggedIn={isLoggedIn} onLogout={onLogout} />;
     }
   };
 
@@ -45,13 +44,13 @@ const AdminProfile = ({ user }) => {
           { number: `${stats.successRate ?? 0}%`, label: 'Success Rate' }
         ]}
       />
-      
+
       <ProfileTabs 
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
-      
+
       <div className="profile-content active">
         {renderTabContent()}
       </div>

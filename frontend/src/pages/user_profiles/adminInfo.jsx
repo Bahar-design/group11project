@@ -1,12 +1,9 @@
-
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import axios from 'axios';
 import API_BASE from '../../lib/apiBase';
 import AdminVolunteerHistory from '../admin/adminhistory';
 
-// Context for global user info (name, initials)
 export const UserProfileContext = createContext();
-
 
 const getInitials = (name) => {
   if (!name) return '';
@@ -15,7 +12,7 @@ const getInitials = (name) => {
   return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
 };
 
-const AdminInfo = ({ user }) => {
+const AdminInfo = ({ user, isLoggedIn, onLogout }) => {
   const { userProfile, setUserProfile } = useContext(UserProfileContext) || {};
   const [formData, setFormData] = useState(userProfile || {
     name: '',
@@ -34,34 +31,27 @@ const AdminInfo = ({ user }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Fetch user profile from backend on mount
-  // On mount, fetch latest profile for this admin (by email if available)
   useEffect(() => {
     setLoading(true);
-  const apiBase = API_BASE.replace(/\/$/, '') || '';
-  let url = `${apiBase}/api/user-profile?type=admin`;
+    const apiBase = API_BASE.replace(/\/$/, '') || '';
+    let url = `${apiBase}/api/user-profile?type=admin`;
     if (user?.email) url += `&email=${encodeURIComponent(user.email)}`;
+
     axios.get(url)
       .then(res => {
         const data = { ...res.data };
-        // normalize startDate to YYYY-MM-DD for <input type="date"> value
         if (data.startDate) {
           data.startDate = String(data.startDate).split('T')[0];
         }
         setFormData(prev => ({ ...prev, ...data }));
         if (setUserProfile) setUserProfile(data);
-        try {
-          localStorage.setItem('hh_userProfile', JSON.stringify(data));
-        } catch (err) {
-          // ignore localStorage errors
-        }
+        try { localStorage.setItem('hh_userProfile', JSON.stringify(data)); } catch {}
         setLoading(false);
       })
       .catch(err => {
         setError('Failed to load user profile');
         setLoading(false);
       });
-    // eslint-disable-next-line
   }, [user?.email]);
 
   const handleInputChange = (e) => {
@@ -76,25 +66,22 @@ const AdminInfo = ({ user }) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
+
     try {
-  const apiBase = API_BASE.replace(/\/$/, '') || '';
-      // Ensure email is passed as query param (backend expects it)
+      const apiBase = API_BASE.replace(/\/$/, '') || '';
       const emailToUse = formData.email || user?.email;
       const emailQuery = emailToUse ? `&email=${encodeURIComponent(emailToUse)}` : '';
-  const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
+
+      const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
       setFormData(prev => ({ ...prev, ...res.data }));
-      // Update global profile only after successful save
+
       if (setUserProfile) {
         setUserProfile(res.data);
-        try {
-          localStorage.setItem('hh_userProfile', JSON.stringify(res.data));
-        } catch (err) {
-          // ignore localStorage errors
-        }
+        try { localStorage.setItem('hh_userProfile', JSON.stringify(res.data)); } catch {}
       }
+
       setSuccess(true);
     } catch (err) {
-      // Show structured message if available
       const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to save profile';
       setError(msg);
     }
@@ -109,12 +96,14 @@ const AdminInfo = ({ user }) => {
   ];
 
   if (loading) return <div>Loading...</div>;
-  // Show initials in big red circle above name
+
   const initials = getInitials(formData.name);
+
   return (
     <div>
       {error && <div style={{ color: 'red', marginBottom: 10 }}>{error}</div>}
       {success && <div style={{ color: 'green', marginBottom: 10 }}>Profile saved!</div>}
+
       <div className="profile-grid">
         <div className="profile-card">
           <div className="profile-card-header">
@@ -132,147 +121,76 @@ const AdminInfo = ({ user }) => {
               Edit Profile
             </button>
           </div>
+
           <div className="profile-card-content">
             <form onSubmit={handleSubmit}>
-              {/* ...existing form fields... */}
               <div className="form-group">
                 <label>Full Name*</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
+                <input type="text" className="form-input" name="name" value={formData.name} onChange={handleInputChange} required />
               </div>
+
               <div className="form-group">
                 <label>Email Address*</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
+                <input type="email" className="form-input" name="email" value={formData.email} onChange={handleInputChange} required />
               </div>
+
               <div className="form-group">
                 <label>Phone Number*</label>
-                <input
-                  type="tel"
-                  className="form-input"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                />
+                <input type="tel" className="form-input" name="phone" value={formData.phone} onChange={handleInputChange} required />
               </div>
+
               <div className="form-group">
                 <label>Address Line 1*</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  name="address1"
-                  value={formData.address1}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                  required
-                />
+                <input type="text" className="form-input" name="address1" value={formData.address1} onChange={handleInputChange} maxLength={100} required />
               </div>
+
               <div className="form-group">
                 <label>Address line 2</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  name="address2"
-                  value={formData.address2}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
+                <input type="text" className="form-input" name="address2" value={formData.address2} onChange={handleInputChange} maxLength={100} />
               </div>
+
               <div className="form-group">
                 <label>City*</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                  required
-                />
+                <input type="text" className="form-input" name="city" value={formData.city} onChange={handleInputChange} maxLength={100} required />
               </div>
+
               <div className="form-group">
                 <label>State*</label>
-                <select
-                  className="form-input"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleInputChange}
-                  required
-                >
-                    <option value="">Select State</option>
-                    <option value="TX">Texas</option>
+                <select className="form-input" name="state" value={formData.state} onChange={handleInputChange} required>
+                  <option value="">Select State</option>
+                  <option value="TX">Texas</option>
                 </select>
               </div>
+
               <div className="form-group">
                 <label>Zip Code*</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  name="zipCode"
-                  value={formData.zipCode}
-                  onChange={handleInputChange}
-                  minLength={5}
-                  maxLength={9}
-                  required
-                />
+                <input type="text" className="form-input" name="zipCode" value={formData.zipCode} onChange={handleInputChange} minLength={5} maxLength={9} required />
               </div>
+
               <div className="form-group">
                 <label>Administrator Level*</label>
-                <select
-                  className="form-input"
-                  name="adminLevel"
-                  value={formData.adminLevel}
-                  onChange={handleInputChange}
-                  required
-                >
+                <select className="form-input" name="adminLevel" value={formData.adminLevel} onChange={handleInputChange} required>
                   <option value="">Select Admin Level</option>
                   <option value="Regional Administrator">Regional Administrator</option>
                   <option value="Site Administrator">Site Administrator</option>
                   <option value="Super Administrator">Super Administrator</option>
                 </select>
               </div>
+
               <div className="form-group">
                 <label>Department</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  name="department"
-                  value={formData.department || ''}
-                  onChange={handleInputChange}
-                />
+                <input type="text" className="form-input" name="department" value={formData.department || ''} onChange={handleInputChange} />
               </div>
 
-              {/* start date should be shown but not editable - comes from DB registration */}
               <div className="form-group">
                 <label>Start Date</label>
-                <input
-                  type="date"
-                  className="form-input"
-                  name="startDate"
-                  value={formData.startDate || ''}
-                  onChange={handleInputChange}
-                  readOnly
-                />
+                <input type="date" className="form-input" name="startDate" value={formData.startDate || ''} onChange={handleInputChange} readOnly />
               </div>
+
               <button type="submit" className="btn-primary" style={{ marginTop: 16 }}>Save Profile</button>
             </form>
           </div>
         </div>
-
-        {/* Organization/department card removed — simplified single admin form */}
       </div>
 
       <div style={{ marginTop: '2rem' }}>
@@ -286,19 +204,17 @@ const AdminInfo = ({ user }) => {
           ))}
         </div>
       </div>
-      {/* Volunteer History Section */}
-<div style={{ marginTop: '2rem' }}>
-  <h2>Volunteer History</h2>
-  <AdminVolunteerHistory 
-    user={user} 
-    isLoggedIn={isLoggedIn} 
-    onLogout={onLogout} 
-  />
-</div>
+
+      <div style={{ marginTop: '2rem' }}>
+        <h2>Volunteer History</h2>
+        <AdminVolunteerHistory 
+          user={user}
+          isLoggedIn={isLoggedIn}
+          onLogout={onLogout}
+        />
+      </div>
     </div>
-    
   );
 };
-
 
 export default AdminInfo;
