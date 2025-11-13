@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import axios from 'axios';
 import API_BASE from '../../lib/apiBase';
+import AdminVolunteerHistory from '../admin/adminhistory';
 
 // Context for global user info (name, initials)
 export const UserProfileContext = createContext();
@@ -285,8 +286,19 @@ const AdminInfo = ({ user }) => {
           ))}
         </div>
       </div>
+      {/* Volunteer History Section */}
+<div style={{ marginTop: '2rem' }}>
+  <h2>Volunteer History</h2>
+  <AdminVolunteerHistory 
+    user={user} 
+    isLoggedIn={isLoggedIn} 
+    onLogout={onLogout} 
+  />
+</div>
     </div>
+    
   );
 };
+
 
 export default AdminInfo;
