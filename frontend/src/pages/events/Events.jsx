@@ -36,7 +36,10 @@ export default function EventsPage({ isLoggedIn, user }) {
   const handleCreate = async (data) => {
     // data: { name, description, location, requiredSkills, urgency, date }
     try {
-  const res = await fetch(`${API_BASE}/api/events`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  // include admin id as createdBy if available
+  const createdBy = user && (user.id || user.user_id) ? (user.id || user.user_id) : null;
+  const payload = { ...data, createdBy };
+  const res = await fetch(`${API_BASE}/api/events`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('Create failed');
       const created = await res.json();
       // reload events to reflect DB
@@ -125,6 +128,9 @@ export default function EventsPage({ isLoggedIn, user }) {
                 <div style={{ marginBottom: '0.3em' }}><strong>Urgency:</strong> <span style={{ color: 'var(--primary-red)', fontWeight: 500 }}>{event.urgency}</span></div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Skills:</strong> {(event.requiredSkills || []).map(skill => <span className="skill-chip" key={skill}>{skill}</span>)}</div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {event.volunteers} volunteers signed up</div>
+                  {event.createdByName && (
+                    <div style={{ marginBottom: '0.3em' }}><strong>Created by:</strong> {event.createdByName}</div>
+                  )}
                 {event.volunteersList && event.volunteersList.length > 0 && (
                   <div style={{ marginTop: '0.5em' }}>
                     <button className="btn-secondary" onClick={() => toggleVolunteers(event.id)}>
