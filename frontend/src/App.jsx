@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-// ProtectedRoute component
-function ProtectedRoute({ isLoggedIn, children }) {
+
+//protectedRoute
+function ProtectedRoute({ isLoggedIn, authChecked, children }) {
+  // Wait until login has been restored from localStorage
+  if (!authChecked) return null;
+
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
   return children;
 }
+
 
 import Header from './components/header.jsx';
 import Login from './pages/logins/login';
@@ -21,17 +26,40 @@ import About from "./pages/about/about.jsx";
 import './App.css';
 
 export default function App() {
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
-  const handleLogin = (userObj) => {
-    setUser(userObj);
-    setIsLoggedIn(true);
-  };
-  const handleLogout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-  };
+  //track if we’ve checked localStorage
+  const [authChecked, setAuthChecked] = useState(false);
+
+  //restore login/session on page refresh
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedLoggedIn = localStorage.getItem("isLoggedIn");
+
+    if (storedLoggedIn === "true" && storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsLoggedIn(true);
+    }
+
+    //Mark as checked
+    setAuthChecked(true);
+    }, []);
+
+    //handle login
+    const handleLogin = (userObj) => {
+      setUser(userObj);
+      setIsLoggedIn(true);
+    };
+
+    //clear localStorage when logging out
+    const handleLogout = () => {
+      setUser(null);
+      setIsLoggedIn(false);
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+    };
 
     return (
       
@@ -45,9 +73,9 @@ export default function App() {
           <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/reports" element={<ReportingModule isLoggedIn={isLoggedIn} user={user} />} />
           <Route path="/user-profiles" element={
-            <ProtectedRoute isLoggedIn={isLoggedIn}>
-              <UserProfiles isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
-            </ProtectedRoute>
+          <ProtectedRoute isLoggedIn={isLoggedIn} authChecked={authChecked}>
+            <UserProfiles isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
           } />
           <Route path="/calendar" element={<Calendar isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
           <Route path="/match-making" element={<MatchMaking isLoggedIn={isLoggedIn} user={user} />} />

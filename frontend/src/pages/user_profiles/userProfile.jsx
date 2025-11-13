@@ -9,7 +9,9 @@ import './userProfile.css';
 import '../../../styling2/style.css';
 
 const UserProfiles = ({ isLoggedIn, user, onLogout }) => {
-  if (!user) return null;
+  //if (!user) return null; debugging
+  if (!user) return <div>Loading...</div>;
+
 
   // Initialize profile from localStorage if available, otherwise use passed user
   let initialProfile = user || {};

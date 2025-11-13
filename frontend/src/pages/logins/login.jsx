@@ -55,6 +55,10 @@ export default function Login({ onLogin, isLoggedIn, user }) {
       try { localStorage.removeItem('hh_userProfile'); } catch (e) { /* ignore */ }
 
       onLogin(userObj);
+      // Save login info so refresh doesn't log user out
+      localStorage.setItem("user", JSON.stringify(userObj));
+      localStorage.setItem("isLoggedIn", "true");
+
       // Delay navigation slightly to ensure parent state updates propagate
       // and the UserProfiles component gets the `user` prop.
       Promise.resolve().then(() => navigate('/user-profiles'));
