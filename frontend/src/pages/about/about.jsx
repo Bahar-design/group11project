@@ -10,6 +10,7 @@ import React from "react";
 import "./about.css";
 import Layout from "../../components/layout.jsx"; // note the .jsx
 import volunteerImg from "./images/image.png";
+import volunteerImg2 from "./images/image2.png";
 
 export default function About({ isLoggedIn, onLogout, user }) {
   
@@ -37,7 +38,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
                 We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
               </p>
             </div>
-            <div className="rounded-2xl shadow-lg overflow-hidden mt-10">
+            <div className="rounded-2xl shadow-lg overflow-hidden">
               <img
                 src={volunteerImg}
                 alt="volunteer-image"
@@ -45,28 +46,28 @@ export default function About({ isLoggedIn, onLogout, user }) {
               />
             </div>
           </div>
+
         </section>
 
-        <section> {/*got rid of the margin top here it was mt-14 */}
-          <div className="flex items-center justify-center flex-row">
-            <div className="rounded-2xl shadow-lg overflow-hidden mt-10">
-              <img
-                src={volunteerImg}
-                alt="volunteer-image"
-                className="w-[500px] h-[350px]" 
+        <section>
+          <div className="flex flex-wrap justify-center gap-8 mt-4"> 
+            <div className="rounded-2xl shadow-lg overflow-hidden">
+              <img 
+                src={volunteerImg2}
+                alt="volunteer_photo2"
+                className="w-[500px] h-[350px]"
               />
             </div>
-            <div className="flex-col justify-center items-center max-w-xs">
+            <div className="flex flex-col items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
-                🎯 Our Mission
-              </h2>
-              <p className="text-gray-600 max-w-80">
-                We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
+                💡 How It Works
+                </h2>
+              <p className="text-gray-600">
+                Our smart matching system pairs volunteers and events based on skills, time slots, and locations.
               </p>
             </div>
           </div>
         </section>
-        
       </section>
     </Layout>
   );
