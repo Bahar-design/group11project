@@ -8,6 +8,8 @@ jest.mock('../db', () => mockDb);
 const eventRouter = require('../routes/eventRoutes');
 const app = express();
 app.use(express.json());
+// inject a fake authenticated user so POST /api/events succeeds in tests
+app.use((req, res, next) => { req.user = { user_id: 1, id: 1 }; next(); });
 app.use('/api/events', eventRouter);
 
 beforeEach(() => jest.clearAllMocks());
@@ -71,7 +73,8 @@ describe('eventRoutes basic flows', () => {
     mockDb.query
       .mockResolvedValueOnce({ rows: [] }) // select skill by name -> none
       .mockResolvedValueOnce({ rows: [{ skill_id: 77 }] }) // insert skill returning id
-      .mockResolvedValueOnce({ rows: [{ event_id: 21, event_name: 'Created', description: 'd', location: 'L', urgency: 1, event_date: new Date('2025-12-01'), time_slots: null, volunteers: 0, skill_id: [77] }] }) // insert eventdetails
+      .mockResolvedValueOnce({ rows: [{ admin_id: 1 }] }) // adminprofile lookup for req.user
+      .mockResolvedValueOnce({ rows: [{ event_id: 21, event_name: 'Created', description: 'd', location: 'L', urgency: 1, event_date: new Date('2025-12-01'), volunteers: 0, skill_id: [77] }] }) // insert eventdetails
       .mockResolvedValueOnce({ rows: [] }) // delete event_skills
       .mockResolvedValueOnce({ rows: [] }) // insert event_skills
       .mockResolvedValueOnce({ rows: [{ skill_name: 'NewSkill' }] }); // skillNamesForIds
@@ -87,7 +90,7 @@ describe('eventRoutes basic flows', () => {
       .mockResolvedValueOnce({ rows: [{ event_id: 20 }] }) // exists
       .mockResolvedValueOnce({ rows: [] }) // select skill by name
       .mockResolvedValueOnce({ rows: [{ skill_id: 88 }] }) // insert skill
-      .mockResolvedValueOnce({ rows: [{ event_id: 20, event_name: 'Updated', description: 'd', location: 'L', urgency: 1, event_date: new Date('2025-12-01'), time_slots: null, volunteers: 0, skill_id: [88] }] }) // update returning
+      .mockResolvedValueOnce({ rows: [{ event_id: 20, event_name: 'Updated', description: 'd', location: 'L', urgency: 1, event_date: new Date('2025-12-01'), volunteers: 0, skill_id: [88] }] }) // update returning
       .mockResolvedValueOnce({ rows: [] }) // delete event_skills
       .mockResolvedValueOnce({ rows: [{ skill_name: 'Added' }] }); // skillNamesForIds
 
@@ -147,7 +150,8 @@ describe('eventRoutes basic flows', () => {
     // SELECT skill found -> no insert
     mockDb.query
       .mockResolvedValueOnce({ rows: [{ skill_id: 77 }] }) // select skill
-      .mockResolvedValueOnce({ rows: [{ event_id: 99, event_name: 'HaveSkill', description: 'd', location: 'L', urgency: 1, event_date: new Date('2025-12-01'), time_slots: null, volunteers: 0, skill_id: [77] }] }) // insert eventdetails
+      .mockResolvedValueOnce({ rows: [{ admin_id: 1 }] }) // adminprofile lookup for req.user
+      .mockResolvedValueOnce({ rows: [{ event_id: 99, event_name: 'HaveSkill', description: 'd', location: 'L', urgency: 1, event_date: new Date('2025-12-01'), volunteers: 0, skill_id: [77] }] }) // insert eventdetails
       .mockResolvedValueOnce({ rows: [] }) // delete event_skills
       .mockResolvedValueOnce({ rows: [] }) // insert event_skills
       .mockResolvedValueOnce({ rows: [{ skill_name: 'ExistingSkill' }] }); // skillNamesForIds
