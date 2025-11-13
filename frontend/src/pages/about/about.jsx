@@ -30,7 +30,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
         
         <section> {/*got rid of the margin top here it was mt-14 */}
           <div className="flex items-center justify-center flex-row">
-            <div className="flex-col justify-center items-center max-w-xs">
+            <div className="flex-col max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
                 🎯 Our Mission
               </h2>
@@ -49,7 +49,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
         </section>
 
         <section>
-          <div className="flex flex-wrap justify-center gap-8 mt-4"> 
+          <div className="flex flex-wrap items-center justify-center gap-8 flex-row"> 
             <div className="rounded-2xl shadow-lg overflow-hidden">
               <img 
                 src={volunteerImg2}
@@ -70,31 +70,32 @@ export default function About({ isLoggedIn, onLogout, user }) {
 
         {/* this one will be about our volunteer history tracking */}
         <section>
-            
-          <div className="max-w-md space-y-3">
-            <h2 className="text-2xl font-semibold text-gray-700">📊 Volunteer Hours & History</h2>
+          <div className="flex flex-row items-center justify-center max-w-md space-y-3 ">
+            <div className="flex-col">
+              <h2 className="text-2xl font-semibold text-gray-700">📊 Volunteer Hours & History</h2>
 
-            <p className="text-gray-600 leading-relaxed">
-              Houston Hearts keeps a complete record of every volunteer's service activity —
-              including hours contributed, events participated in, and roles performed.
-            </p>
+              <p className="text-gray-600 leading-relaxed">
+                Houston Hearts keeps a complete record of every volunteer's service activity —
+                including hours contributed, events participated in, and roles performed.
+              </p>
 
-            <p className="text-gray-600 leading-relaxed">
-              Volunteers can review their past events, track their total hours, and build a verified
-              impact profile that highlights their dedication to the community.
-            </p>
+              <p className="text-gray-600 leading-relaxed">
+                Volunteers can review their past events, track their total hours, and build a verified
+                impact profile that highlights their dedication to the community.
+              </p>
 
-            <p className="text-gray-600 leading-relaxed">
-              Our system automatically updates each user’s history after every event,
-              making it easy to stay organized and monitor your community contributions.
-            </p>
-          </div>
-          <div>
-            <img
-              src={volunteerImg3}
-              alt="volunteer_img3"
-              className="w-[450px] h-[300px] object-cover"
-            />
+              <p className="text-gray-600 leading-relaxed">
+                Our system automatically updates each user’s history after every event,
+                making it easy to stay organized and monitor your community contributions.
+              </p>
+            </div>
+            <div>
+              <img
+                src={volunteerImg3}
+                alt="volunteer_img3"
+                className="w-[450px] h-[300px] object-cover"
+                />
+            </div>
           </div>
         </section>
 
