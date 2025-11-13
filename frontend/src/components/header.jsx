@@ -2,7 +2,15 @@ import React, { useState, useContext } from 'react';
 import { UserProfileContext } from '../pages/user_profiles/adminInfo';
 import { useNavigate } from 'react-router-dom';
 
-const Header = ({ currentPage = 'home', onLogin, isLoggedIn = false, onLogout, user }) => {
+const Header = (props) => {
+  const {
+    currentPage = 'home',
+    onLogin,
+    isLoggedIn = false,
+    onLogout,
+    user
+  } = props;
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { userProfile } = useContext(UserProfileContext) || {};
