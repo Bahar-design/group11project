@@ -30,7 +30,6 @@ function buildFilterClauses(filters, params) {
 }
 
 //report for event volunteer assignments , has volunteer_history and event details
-/*
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
@@ -58,49 +57,7 @@ async function getVolunteerParticipation(filters = {}) {
     skills: r.skills || []
   }));
 }
-  */
-async function getVolunteerParticipation(filters = {}) {
-  const params = [];
-  const where = buildFilterClauses(filters, params);
 
-  const sql = `
-    SELECT
-        e.event_id,
-        e.event_name,
-        e.event_date,
-        e.location,
-
-        u.user_id AS volunteer_id,
-        u.full_name AS volunteer_name,
-        u.user_email,
-
-        ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills,
-
-        COALESCE(SUM(vh.hours_worked), 0) AS hours_worked,
-        MIN(vh.signup_date) AS signup_date
-        -- If you want rating or status later, we can re-add properly (separate agg)
-    
-    FROM eventdetails e
-    JOIN volunteer_history vh      ON e.event_id = vh.event_id
-    JOIN user_table u              ON vh.volunteer_id = u.user_id
-    LEFT JOIN volunteer_skills vs  ON u.user_id = vs.volunteer_id
-    LEFT JOIN skills s             ON vs.skill_id = s.skill_id
-
-    ${where ? `WHERE ${where}` : ''}
-
-    GROUP BY
-        e.event_id, e.event_name, e.event_date, e.location,
-        u.user_id, u.full_name, u.user_email
-
-    ORDER BY
-        e.event_id,
-        SPLIT_PART(u.full_name, ' ', 2),   -- last name
-        SPLIT_PART(u.full_name, ' ', 1);   -- first name
-  `;
-
-  const { rows } = await pool.query(sql, params);
-  return rows;
-}
 
 
 
