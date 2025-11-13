@@ -11,19 +11,20 @@ import "./about.css";
 import Layout from "../../components/layout.jsx"; // note the .jsx
 import volunteerImg from "./images/image.png";
 import volunteerImg2 from "./images/image2.png";
+import volunteerImg3 from "./images/image3.png";
 
 export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section className="space-y-20"> {/**fixed the section spacing issue */}
+      <section className="space-y-28"> {/**fixed the section spacing issue */}
         {/* okay so this fixed the margin issue i was having just now giving each portion its own section */}
         <section> 
           <h1 className="flex items-center justify-center font-bold mb-3">
             About Houston <span className="text-red-500 font-bold">Hearts</span>
           </h1>
           <p className="text-center max-w-2xl mx-auto mb-3"> {/*this were the margin are having issues, this is the only thing seeting margin bottom size*/}
-              We connect volunteers with local events using skills, availability, and proximity –– making it easier to give back to the community
+              We connect volunteers with local houston events using skills, availability, and proximity –– making it easier to give back to the community and gain volunteering Hours
           </p>
         </section>
         
@@ -34,7 +35,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
                 🎯 Our Mission
               </h2>
               <p className="text-gray-600 max-w-80">
-                We aim to strengthen communities by empowering volunteers to easily find meaningful opportunities.
+                We aim to strengthen our houston communities by empowering volunteers to easily find meaningful opportunities.
               </p>
             </div>
             <div className="rounded-2xl shadow-lg overflow-hidden">
@@ -67,6 +68,35 @@ export default function About({ isLoggedIn, onLogout, user }) {
           </div>
         </section>
 
+        {/* this one will be about our volunteer history tracking */}
+        <section>
+            
+          <div className="max-w-md space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-700">📊 Volunteer Hours & History</h2>
+
+            <p className="text-gray-600 leading-relaxed">
+              Houston Hearts keeps a complete record of every volunteer's service activity —
+              including hours contributed, events participated in, and roles performed.
+            </p>
+
+            <p className="text-gray-600 leading-relaxed">
+              Volunteers can review their past events, track their total hours, and build a verified
+              impact profile that highlights their dedication to the community.
+            </p>
+
+            <p className="text-gray-600 leading-relaxed">
+              Our system automatically updates each user’s history after every event,
+              making it easy to stay organized and monitor your community contributions.
+            </p>
+          </div>
+          <div>
+            <img
+              src={volunteerImg3}
+              alt="volunteer_img3"
+              className="w-[450px] h-[300px] object-cover"
+            />
+          </div>
+        </section>
 
       </section>
     </Layout>
