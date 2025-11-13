@@ -18,7 +18,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
       <section className="space-y-28"> {/**fixed the section spacing issue */}
-        {/* okay so this fixed the margin issue i was having just now giving each portion its own section */}
+
         <section> 
           <h1 className="flex items-center justify-center font-bold mb-3">
             About Houston <span className="text-red-500 font-bold">Hearts</span>
@@ -28,7 +28,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
           </p>
         </section>
         
-        <section> {/*got rid of the margin top here it was mt-14 */}
+        <section> 
           <div className="flex items-center justify-center flex-row">
             <div className="flex-col max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
@@ -74,17 +74,17 @@ export default function About({ isLoggedIn, onLogout, user }) {
             <div className="flex-col ">
               <h2 className="text-2xl font-semibold text-gray-700">📊 Volunteer Hours & History</h2>
 
-              <p className="text-gray-600 leading-relaxed max-w-80">
+              <p className="text-gray-600 leading-relaxed max-w-96">
                 Houston Hearts keeps a complete record of every volunteer's service activity —
                 including hours contributed, events participated in, and roles performed.
               </p>
 
-              <p className="text-gray-600 leading-relaxed max-w-80">
+              <p className="text-gray-600 leading-relaxed max-w-96">
                 Volunteers can review their past events, track their total hours, and build a verified
                 impact profile that highlights their dedication to the community.
               </p>
 
-              <p className="text-gray-600 leading-relaxed max-w-80">
+              <p className="text-gray-600 leading-relaxed max-w-96">
                 Our system automatically updates each user’s history after every event,
                 making it easy to stay organized and monitor your community contributions.
               </p>
