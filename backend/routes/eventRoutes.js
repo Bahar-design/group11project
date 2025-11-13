@@ -111,10 +111,9 @@ router.get('/', async (req, res) => {
     }
     res.json(out);
   } catch (err) {
-    // DB failed — fallback to in-memory store
-    console.error('Events GET error, using fallback in-memory events:', err.message || err);
-    // If DB fails, return empty array (no in-memory fallback)
-    res.json([]);
+    // DB failed — return 500 (no in-memory fallback)
+    console.error('Events GET error:', err.message || err);
+    return res.status(500).json({ error: 'Failed to fetch events', detail: err.message || String(err) });
   }
 });
 
@@ -143,11 +142,8 @@ router.get('/:id', async (req, res) => {
       createdByName
     });
   } catch (err) {
-    console.error('GET event by id error, falling back:', err.message || err);
-    const id = parseInt(req.params.id, 10);
-    const ev = fallbackEvents.find(e => e.id === id);
-    if (!ev) return res.status(404).json({ error: 'Event not found' });
-    res.json(ev);
+    console.error('GET event by id error:', err.message || err);
+    return res.status(500).json({ error: 'Failed to fetch event', detail: err.message || String(err) });
   }
 });
 
@@ -183,11 +179,13 @@ router.post('/', async (req, res) => {
     const skills = await skillNamesForIds(skillIds);
     res.status(201).json({ id: r.event_id, name: r.event_name, description: r.description, location: r.location, urgency, date: r.event_date.toISOString().slice(0,10), requiredSkills: skills, volunteers: 0, createdBy: r.created_by });
   } catch (err) {
-    // If DB is not available or insert fails, fallback to in-memory
-    console.error('Create event error, falling back to in-memory:', err.message || err);
-    const newEv = { id: fallbackNextId++, name: name || 'Untitled', description: description || '', location: location || '', urgency: urgency || 'Low', date: date || null, timeSlots, volunteers: 0, requiredSkills: requiredSkills || [], volunteersList: [] };
-    fallbackEvents.push(newEv);
-    return res.status(201).json(newEv);
+    // If DB insert fails, return an error (do not fallback to in-memory store)
+    console.error('Create event error:', err.message || err);
+    // If the error is a foreign key violation on created_by, surface a clearer message
+    if (err.code === '23503' && err.constraint && err.constraint.includes('created_by')) {
+      return res.status(400).json({ error: 'Invalid created_by (referenced admin not found)' });
+    }
+    return res.status(500).json({ error: 'Failed to create event', detail: err.message || String(err) });
   }
 });
 
@@ -218,12 +216,9 @@ router.put('/:id', async (req, res) => {
     const skills = await skillNamesForIds(skillIds);
     res.json({ id: r.event_id, name: r.event_name, description: r.description, location: r.location, urgency, date: r.event_date.toISOString().slice(0,10), requiredSkills: skills });
   } catch (err) {
-    console.error('Update event error, falling back to in-memory:', err.message || err);
-    // Fallback: update in-memory
-    const idx = fallbackEvents.findIndex(e => e.id === id);
-    if (idx === -1) return res.status(404).json({ error: 'Event not found' });
-    fallbackEvents[idx] = { ...fallbackEvents[idx], name: name || fallbackEvents[idx].name, description: description || fallbackEvents[idx].description, location: location || fallbackEvents[idx].location, urgency: urgency || fallbackEvents[idx].urgency, date: date || fallbackEvents[idx].date, timeSlots: timeSlots || fallbackEvents[idx].timeSlots, requiredSkills: requiredSkills.length ? requiredSkills : fallbackEvents[idx].requiredSkills };
-    return res.json(fallbackEvents[idx]);
+    console.error('Update event error:', err.message || err);
+    // Return database error details (avoid in-memory fallback)
+    return res.status(500).json({ error: 'Failed to update event', detail: err.message || String(err) });
   }
 });
 
@@ -237,12 +232,8 @@ router.delete('/:id', async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: 'Event not found' });
     res.json({ id: rows[0].event_id, name: rows[0].event_name });
   } catch (err) {
-    console.error('Delete event error, falling back to in-memory:', err.message || err);
-    const id = parseInt(req.params.id, 10);
-    const idx = fallbackEvents.findIndex(e => e.id === id);
-    if (idx === -1) return res.status(404).json({ error: 'Event not found' });
-    const deleted = fallbackEvents.splice(idx, 1)[0];
-    return res.json(deleted);
+    console.error('Delete event error:', err.message || err);
+    return res.status(500).json({ error: 'Failed to delete event', detail: err.message || String(err) });
   }
 });
 
