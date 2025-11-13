@@ -28,6 +28,8 @@ if (FRONTEND_ORIGIN) {
   parts.forEach(p => allowedOrigins.push(p));
 }
 
+// If FRONTEND_ORIGIN is not set, allow all origins (useful for deployed frontend without env configured).
+// In production it's recommended to set FRONTEND_ORIGIN to the allowed origin(s).
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
