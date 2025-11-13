@@ -27,7 +27,6 @@ export default function About({ isLoggedIn, onLogout, user }) {
           </p>
         </section>
         
-
         <section> {/*got rid of the margin top here it was mt-14 */}
           <div className="flex items-center justify-center flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
@@ -46,7 +45,6 @@ export default function About({ isLoggedIn, onLogout, user }) {
               />
             </div>
           </div>
-
         </section>
 
         <section>
@@ -61,13 +59,15 @@ export default function About({ isLoggedIn, onLogout, user }) {
             <div className="flex flex-col items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
                 💡 How It Works
-                </h2>
+              </h2>
               <p className="text-gray-600">
                 Our smart matching system pairs volunteers and events based on skills, time slots, and locations.
               </p>
             </div>
           </div>
         </section>
+
+
       </section>
     </Layout>
   );
