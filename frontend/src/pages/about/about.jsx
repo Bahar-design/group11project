@@ -70,7 +70,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
 
         {/* this one will be about our volunteer history tracking */}
         <section>
-          <div className="flex flex-row items-center justify-center max-w-md space-y-3 ">
+          <div className="flex flex-row items-center justify-center gap-8">
             <div className="flex-col">
               <h2 className="text-2xl font-semibold text-gray-700">📊 Volunteer Hours & History</h2>
 
@@ -89,11 +89,11 @@ export default function About({ isLoggedIn, onLogout, user }) {
                 making it easy to stay organized and monitor your community contributions.
               </p>
             </div>
-            <div>
+            <div className=" rounded-2xl shadow-lg overflow-hidden">
               <img
                 src={volunteerImg3}
                 alt="volunteer_img3"
-                className="w-[450px] h-[300px] object-cover"
+                className="w-[500px] h-[350px] object-cover"
                 />
             </div>
           </div>
