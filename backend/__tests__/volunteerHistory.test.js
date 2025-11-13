@@ -11,31 +11,35 @@ describe('Volunteer History API', () => {
 
   it('POST /api/volunteer-history creates a new volunteer record', async () => {
     const volunteerRecord = {
-      volunteerName: 'Jane Doe',
-      eventName: 'Community Clean-up',
-      hoursServed: 5,
-      skillsUsed: ['Teamwork', 'Organization'],
+      volunteer_name: 'Jane Doe',
+      event_name: 'Community Clean-up',
+      hours_served: 5,
+      skills_used: ['Teamwork', 'Organization'],
       date: '2025-09-10'
     };
     const res = await request(app)
       .post('/api/volunteer-history')
       .send(volunteerRecord);
+  
     expect(res.statusCode).toBe(201);
-    expect(res.body.volunteerName).toBe('Jane Doe');
-    expect(res.body.skillsUsed).toContain('Teamwork');
+    expect(res.body.id).toBeDefined(); // dynamic ID
+    expect(res.body.volunteer_name).toBe('Jane Doe');
+    expect(res.body.hours_served).toBe(5);
   });
+  
 
   it('POST /api/volunteer-history fails on invalid data', async () => {
     const invalidRecord = {
-      volunteerName: '',
-      eventName: '',
-      hoursServed: '',
-      skillsUsed: [],
-      date: ''
+      volunteer_id: '',
+      event_id: '',
+      hours_worked: '',
+      notes: ''
     };
+
     const res = await request(app)
       .post('/api/volunteer-history')
       .send(invalidRecord);
+
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toMatch(/required/i);
   });
@@ -43,43 +47,47 @@ describe('Volunteer History API', () => {
   it('PUT /api/volunteer-history/:id updates a record', async () => {
     // Create a record first
     const record = {
-      volunteerName: 'John Doe',
-      eventName: 'Beach Cleanup',
-      hoursServed: 4,
-      skillsUsed: ['Leadership'],
-      date: '2025-10-01'
+      volunteer_id: 1,
+      event_id: 1,
+      hours_worked: 4,
+      notes: 'Initial note.'
     };
+
     const createRes = await request(app)
       .post('/api/volunteer-history')
       .send(record);
-    const id = createRes.body.id;
+
+    const id = createRes.body.history_id || createRes.body.id;
 
     // Update the record
-    const updated = { ...record, hoursServed: 6 };
+    const updated = { hours_worked: 6, notes: 'Updated note.' };
     const res = await request(app)
       .put(`/api/volunteer-history/${id}`)
       .send(updated);
+
     expect(res.statusCode).toBe(200);
-    expect(res.body.hoursServed).toBe(6);
+    expect(res.body.hours_worked).toBe(6);
+    expect(res.body.notes).toBe('Updated note.');
   });
- 
+
   it('DELETE /api/volunteer-history/:id deletes a record', async () => {
     // Create a record to delete
     const record = {
-      volunteerName: 'To Delete',
-      eventName: 'Food Drive',
-      hoursServed: 3,
-      skillsUsed: ['Cooking'],
-      date: '2025-11-20'
+      volunteer_id: 1,
+      event_id: 1,
+      hours_worked: 3,
+      notes: 'Temporary record to delete.'
     };
+
     const createRes = await request(app)
       .post('/api/volunteer-history')
       .send(record);
-    const id = createRes.body.id;
+
+    const id = createRes.body.history_id || createRes.body.id;
 
     // Delete it
     const res = await request(app).delete(`/api/volunteer-history/${id}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body.volunteerName).toBe('To Delete');
+    expect(res.body.hours_worked).toBe(3);
   });
 });
