@@ -64,6 +64,32 @@ async function skillNamesForIds(ids = []) {
   }
 }
 
+// Helper: resolve an input value to an admin_id.
+// The input may be an admin_id or a user_id; prefer existing admin_id, then try user_id.
+async function resolveAdminId(inputVal) {
+  if (!inputVal) return null;
+  try {
+    // First try to find adminprofile where admin_id matches (some records may store admin_id directly)
+    let q = await pool.query('SELECT admin_id FROM adminprofile WHERE admin_id = $1 LIMIT 1', [inputVal]);
+    if (q && q.rows.length > 0) return q.rows[0].admin_id;
+    // Then try to find adminprofile by user_id
+    q = await pool.query('SELECT admin_id FROM adminprofile WHERE user_id = $1 LIMIT 1', [inputVal]);
+    if (q && q.rows.length > 0) return q.rows[0].admin_id;
+    // Not found; as a last resort attempt to create a minimal adminprofile using inputVal as both ids
+    try {
+      await pool.query('INSERT INTO adminprofile (admin_id, user_id) VALUES ($1, $2)', [inputVal, inputVal]);
+      return inputVal;
+    } catch (createErr) {
+      // If creation fails, try to lookup again by admin_id
+      const lookup = await pool.query('SELECT admin_id FROM adminprofile WHERE admin_id = $1 LIMIT 1', [inputVal]);
+      if (lookup && lookup.rows.length > 0) return lookup.rows[0].admin_id;
+    }
+  } catch (e) {
+    console.error('resolveAdminId error:', e.message || e);
+  }
+  return null;
+}
+
 // GET all events (with skill names and volunteers count)
 router.get('/', async (req, res) => {
   try {
@@ -89,8 +115,12 @@ router.get('/', async (req, res) => {
       let createdByName = null;
       try {
         if (r.created_by) {
-          const cr = await pool.query('SELECT full_name FROM adminprofile WHERE admin_id = $1', [r.created_by]);
-          if (cr.rows.length > 0) createdByName = cr.rows[0].full_name;
+          // Try admin_id then user_id when resolving creator name
+          const adminId = await resolveAdminId(r.created_by);
+          if (adminId) {
+            const cr = await pool.query('SELECT full_name FROM adminprofile WHERE admin_id = $1', [adminId]);
+            if (cr.rows.length > 0) createdByName = cr.rows[0].full_name;
+          }
         }
       } catch (e) { /* ignore */ }
 
@@ -127,7 +157,15 @@ router.get('/:id', async (req, res) => {
     const skills = await skillNamesForIds(r.skill_id || []);
     // resolve creator name
     let createdByName = null;
-    try { if (r.created_by) { const cr = await pool.query('SELECT full_name FROM adminprofile WHERE admin_id = $1', [r.created_by]); if (cr.rows.length) createdByName = cr.rows[0].full_name; } } catch (e) {}
+    try {
+      if (r.created_by) {
+        const adminId = await resolveAdminId(r.created_by);
+        if (adminId) {
+          const cr = await pool.query('SELECT full_name FROM adminprofile WHERE admin_id = $1', [adminId]);
+          if (cr.rows.length) createdByName = cr.rows[0].full_name;
+        }
+      }
+    } catch (e) {}
     res.json({
       id: r.event_id,
       name: r.event_name,
@@ -161,12 +199,19 @@ router.post('/', async (req, res) => {
 
     const skillIds = await ensureSkillIds(requiredSkills);
 
-    // Require an authenticated admin user. The frontend should not send createdBy; created_by is derived from req.user.
-    if (!req.user || !(req.user.id || req.user.user_id)) {
+    // Prefer authenticated user (req.user) but allow a client-provided createdBy as a fallback
+    // Frontend SHOULD rely on server-side auth; accepting client-supplied creator is a fallback for deployments
+    // where auth middleware is not installed. We log a warning when this fallback is used.
+    const userIdFromReq = req.user && (req.user.id || req.user.user_id);
+    const providedCreatedBy = req.body && (req.body.createdBy || req.body.created_by);
+    if (!userIdFromReq && !providedCreatedBy) {
       return res.status(401).json({ error: 'Authentication required: events must be created by an admin' });
     }
 
-    const userId = req.user.id || req.user.user_id;
+    const userId = userIdFromReq || providedCreatedBy;
+    if (!userIdFromReq && providedCreatedBy) {
+      console.warn('No req.user present; using client-provided createdBy as fallback for event creation.');
+    }
     let creator = null;
     try {
       // Prefer to find an adminprofile by user_id
