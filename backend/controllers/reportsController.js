@@ -34,7 +34,7 @@ async function getVolunteerParticipation(filters = {}) {
   const where = buildFilterClauses(filters, params);
 
   const sql = `
-    SELECT vp.volunteer_id, vp.full_name, vp.email, vp.city, vp.state_code,
+    SELECT vp.volunteer_id, vp.full_name, vp.city, vp.state_code,
            COUNT(vh.event_id) as total_events,
            COALESCE(SUM(vh.hours_worked),0) as total_hours,
            ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) as skills
@@ -44,7 +44,7 @@ async function getVolunteerParticipation(filters = {}) {
     LEFT JOIN skills s ON vs.skill_id = s.skill_id
     LEFT JOIN eventdetails ed ON vh.event_id = ed.event_id
     ${where ? 'WHERE ' + where : ''}
-    GROUP BY vp.volunteer_id, vp.full_name, vp.email, vp.city, vp.state_code
+    GROUP BY vp.volunteer_id, vp.full_name, vp.city, vp.state_code
     ORDER BY vp.full_name ASC
   `;
 
@@ -62,7 +62,7 @@ async function getVolunteerHistory(filters = {}) {
   const where = buildFilterClauses(filters, params);
 
   const sql = `
-    SELECT vp.volunteer_id, vp.full_name, vp.email, ed.event_id, ed.event_name, ed.location, ed.event_date, ed.urgency, vh.hours_worked, vh.signup_date, vh.notes
+    SELECT vp.volunteer_id, vp.full_name, ed.event_id, ed.event_name, ed.location, ed.event_date, ed.urgency, vh.hours_worked, vh.signup_date, vh.notes
     FROM volunteer_history vh
     JOIN volunteerprofile vp ON vh.volunteer_id = vp.volunteer_id
     JOIN eventdetails ed ON vh.event_id = ed.event_id
