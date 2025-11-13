@@ -15,7 +15,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
   
   return (
     <Layout currentPage="about" isLoggedIn={isLoggedIn} onLogout={onLogout} user={user}>
-      <section className="space-y-20">
+      <section className="space-y-20"> {/**fixed the section spacing issue */}
         {/* okay so this fixed the margin issue i was having just now giving each portion its own section */}
         <section className="bg-blue-500 " > 
           <h1 className="flex items-center justify-center font-bold mb-3">
@@ -27,7 +27,7 @@ export default function About({ isLoggedIn, onLogout, user }) {
         </section>
         
 
-        <section className="bg-red-500"> {/*got rid of the margin top here it was mt-14 */}
+        <section> {/*got rid of the margin top here it was mt-14 */}
           <div className="flex items-center justify-center flex-row">
             <div className="flex-col justify-center items-center max-w-xs">
               <h2 className="text-xl font-semibold text-gray-700">
