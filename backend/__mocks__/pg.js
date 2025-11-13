@@ -134,41 +134,15 @@ class MockPool {
         urgency: params && params[3] ? params[3] : 1,
         event_date: params && params[4] ? new Date(params[4]) : null,
         created_by: params && params[5] ? params[5] : null,
-        time_slots: params && params[6] ? params[6] : null,
-        volunteers: params && params[7] ? params[7] : 0,
-        skill_id: params && params[8] ? params[8] : []
+        volunteers: params && params[6] ? params[6] : 0,
+        skill_id: params && params[7] ? params[7] : []
       };
       this._data.eventdetails.push(event);
       return { rows: [event], rowCount: 1 };
     }
 
-    // Seeded events (returned when selecting eventdetails) — ensure at least two entries exist
-    if (this._data.eventdetails.length === 0) {
-      this._data.eventdetails.push({
-        event_id: 1,
-        event_name: 'Mocked Holiday Drive',
-        description: 'Mocked event for tests',
-        location: 'MockTown',
-        urgency: 3,
-        event_date: new Date('2025-12-23'),
-        created_by: null,
-        time_slots: null,
-        volunteers: 2,
-        skill_id: []
-      });
-      this._data.eventdetails.push({
-        event_id: 2,
-        event_name: 'Mocked Food Bank',
-        description: 'Mocked food bank event',
-        location: 'MockCity',
-        urgency: 2,
-        event_date: new Date('2025-10-15'),
-        created_by: null,
-        time_slots: null,
-        volunteers: 1,
-        skill_id: []
-      });
-    }
+    // No implicit seeded events here. Tests should explicitly populate the mock
+    // via pool.query.mockResolvedValueOnce(...) or by calling INSERT queries.
 
     // DELETE FROM <table> RETURNING * (for events delete)
     if (/delete from eventdetails/i.test(text) && /returning \*/i.test(text)) {
@@ -190,8 +164,8 @@ class MockPool {
       ev.location = params[2];
       ev.urgency = params[3];
       ev.event_date = params[4] ? new Date(params[4]) : ev.event_date;
-      ev.time_slots = params[5];
-      ev.skill_id = params[6];
+  // params mapping: event_name, description, location, urgency, event_date, skill_ids..., id
+  ev.skill_id = params[5];
       return { rows: [ev], rowCount: 1 };
     }
 
