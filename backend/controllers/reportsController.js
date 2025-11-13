@@ -59,7 +59,7 @@ async function getVolunteerParticipation(filters = {}) {
   }));
 }
   */
- async function getEventVolunteerReport(filters = {}) {
+ async function getVolunteerParticipation(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
 
