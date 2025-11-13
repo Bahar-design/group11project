@@ -1,8 +1,18 @@
 const request = require('supertest');
+const express = require('express');
 // Mock the DB pool used by the app so tests don't rely on runtime fixtures
 jest.mock('../db', () => ({ query: jest.fn(), connect: jest.fn() }));
 const pool = require('../db');
-const app = require('../app');
+// Use the real router but mount it on a local express app and inject a test user
+const eventRouter = require('../routes/eventRoutes');
+const app = express();
+app.use(express.json());
+// inject a fake authenticated user for tests that require req.user
+app.use((req, res, next) => {
+  req.user = { user_id: 1, id: 1 };
+  next();
+});
+app.use('/api/events', eventRouter);
 
 describe('Event API (DB mocked)', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -28,6 +38,7 @@ describe('Event API (DB mocked)', () => {
     pool.query
       .mockResolvedValueOnce({ rows: [] }) // select skill by name -> none
       .mockResolvedValueOnce({ rows: [{ skill_id: 77 }] }) // insert skill returning id
+      .mockResolvedValueOnce({ rows: [{ admin_id: 1 }] }) // adminprofile lookup for req.user
       .mockResolvedValueOnce({ rows: [{ event_id: 21, event_name: 'Created', description: 'd', location: 'L', urgency: 1, event_date: new Date('2025-12-01'), volunteers: 0, skill_id: [77], created_by: null }] }) // insert eventdetails
       .mockResolvedValueOnce({ rows: [] }) // delete event_skills
       .mockResolvedValueOnce({ rows: [] }) // insert event_skills

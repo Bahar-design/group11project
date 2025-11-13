@@ -151,7 +151,7 @@ router.get('/:id', async (req, res) => {
 // POST create event
 router.post('/', async (req, res) => {
   // destructure outside try so fallback catch can reference values
-  const { name, description, location, requiredSkills = [], urgency, date, createdBy = null } = req.body || {};
+  const { name, description, location, requiredSkills = [], urgency, date } = req.body || {};
   try {
     // basic validation
     if (!name || !description || !location || !Array.isArray(requiredSkills) || requiredSkills.length === 0 || !urgency || !date) {
@@ -161,8 +161,37 @@ router.post('/', async (req, res) => {
 
     const skillIds = await ensureSkillIds(requiredSkills);
 
-    // allow createdBy from body or from authenticated user (req.user)
-    const creator = createdBy || (req.user && (req.user.id || req.user.user_id)) || null;
+    // Require an authenticated admin user. The frontend should not send createdBy; created_by is derived from req.user.
+    if (!req.user || !(req.user.id || req.user.user_id)) {
+      return res.status(401).json({ error: 'Authentication required: events must be created by an admin' });
+    }
+
+    const userId = req.user.id || req.user.user_id;
+    let creator = null;
+    try {
+      // Prefer to find an adminprofile by user_id
+      const ap = await pool.query('SELECT admin_id FROM adminprofile WHERE user_id = $1 LIMIT 1', [userId]);
+      if (ap && ap.rows.length > 0) {
+        creator = ap.rows[0].admin_id;
+      } else {
+        // Create a minimal adminprofile with admin_id = userId
+        try {
+          await pool.query('INSERT INTO adminprofile (admin_id, user_id) VALUES ($1, $2)', [userId, userId]);
+          creator = userId;
+        } catch (createErr) {
+          // If insert fails, try to lookup by admin_id
+          const lookup = await pool.query('SELECT admin_id FROM adminprofile WHERE admin_id = $1 LIMIT 1', [userId]);
+          if (lookup && lookup.rows.length > 0) creator = lookup.rows[0].admin_id;
+        }
+      }
+    } catch (e) {
+      console.error('Error mapping req.user to adminprofile:', e.message || e);
+      return res.status(500).json({ error: 'Server error mapping authenticated user to admin profile' });
+    }
+
+    if (!creator) {
+      return res.status(400).json({ error: 'Unable to resolve admin profile for authenticated user' });
+    }
 
     const insertQ = `INSERT INTO ${TABLE} (event_name, description, location, urgency, event_date, created_by, volunteers, skill_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`;
     const { rows } = await pool.query(insertQ, [name, description, location, urgencyNum, date, creator, 0, skillIds]);
