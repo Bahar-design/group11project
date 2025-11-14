@@ -23,6 +23,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
+const { validateEvent } = require('../validators/eventValidator');
 
 // Table name
 const TABLE = 'eventdetails';
@@ -63,6 +64,19 @@ async function skillNamesForIds(ids = []) {
     return [];
   }
 }
+
+// GET available skills (for frontend dropdowns)
+router.get('/skills', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT skill_id, skill_name FROM skills ORDER BY skill_name ASC');
+    // return as simple array of { value, label }
+    const out = rows.map(r => ({ value: r.skill_name, label: r.skill_name, id: r.skill_id }));
+    res.json(out);
+  } catch (err) {
+    console.error('GET /api/events/skills error:', err.message || err);
+    res.status(500).json({ error: 'Failed to fetch skills' });
+  }
+});
 
 // Helper: resolve an input value to an admin_id.
 // The input may be an admin_id or a user_id; prefer existing admin_id, then try user_id.
@@ -191,13 +205,12 @@ router.post('/', async (req, res) => {
   // destructure outside try so fallback catch can reference values
   const { name, description, location, requiredSkills = [], urgency, date } = req.body || {};
   try {
-    // basic validation
-    if (!name || !description || !location || !Array.isArray(requiredSkills) || requiredSkills.length === 0 || !urgency || !date) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    const urgencyNum = URGENCY_MAP[urgency] || URGENCY_MAP['Low'];
+      // validate payload using validator (also enforces Houston-area city requirement)
+      const { error, value } = validateEvent({ name, description, location, requiredSkills, urgency, date });
+      if (error) return res.status(400).json({ error: error.message });
+      const urgencyNum = URGENCY_MAP[value.urgency] || URGENCY_MAP['Low'];
 
-    const skillIds = await ensureSkillIds(requiredSkills);
+  const skillIds = await ensureSkillIds(value.requiredSkills);
 
     // Prefer authenticated user (req.user) but allow a client-provided createdBy as a fallback
     // Frontend SHOULD rely on server-side auth; accepting client-supplied creator is a fallback for deployments
@@ -239,7 +252,7 @@ router.post('/', async (req, res) => {
     }
 
     const insertQ = `INSERT INTO ${TABLE} (event_name, description, location, urgency, event_date, created_by, volunteers, skill_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`;
-    const { rows } = await pool.query(insertQ, [name, description, location, urgencyNum, date, creator, 0, skillIds]);
+  const { rows } = await pool.query(insertQ, [value.name, value.description, value.location, urgencyNum, value.date, creator, 0, skillIds]);
     const r = rows[0];
 
     // maintain event_skills join table if it exists
@@ -250,8 +263,8 @@ router.post('/', async (req, res) => {
       }
     } catch (ignore) {}
 
-    const skills = await skillNamesForIds(skillIds);
-    res.status(201).json({ id: r.event_id, name: r.event_name, description: r.description, location: r.location, urgency, date: r.event_date.toISOString().slice(0,10), requiredSkills: skills, volunteers: 0, createdBy: r.created_by });
+  const skills = await skillNamesForIds(skillIds);
+  res.status(201).json({ id: r.event_id, name: r.event_name, description: r.description, location: r.location, urgency: value.urgency, date: r.event_date.toISOString().slice(0,10), requiredSkills: skills, volunteers: 0, createdBy: r.created_by });
   } catch (err) {
     // If DB insert fails, return an error (do not fallback to in-memory store)
     console.error('Create event error:', err.message || err);
@@ -271,8 +284,11 @@ router.put('/:id', async (req, res) => {
     const { rows: exists } = await pool.query(`SELECT * FROM ${TABLE} WHERE event_id = $1`, [id]);
     if (exists.length === 0) return res.status(404).json({ error: 'Event not found' });
 
-    const urgencyNum = URGENCY_MAP[urgency] || URGENCY_MAP['Low'];
-    const skillIds = await ensureSkillIds(requiredSkills);
+    // validate payload
+    const { error, value } = validateEvent({ name, description, location, requiredSkills, urgency, date });
+    if (error) return res.status(400).json({ error: error.message });
+    const urgencyNum = URGENCY_MAP[value.urgency] || URGENCY_MAP['Low'];
+    const skillIds = await ensureSkillIds(value.requiredSkills);
 
   // Do not modify created_by on update. Remove time_slots column usage.
   const updateQ = `UPDATE ${TABLE} SET event_name=$1, description=$2, location=$3, urgency=$4, event_date=$5, skill_id=$6 WHERE event_id=$7 RETURNING *`;

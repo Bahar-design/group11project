@@ -49,6 +49,16 @@ function validateEvent(data) {
     value.date = data.date;
   }
 
+  // Location must include one of the allowed Houston-area cities
+  const allowedCities = ['Katy', 'Cypress', 'Sugar Land', 'Tomball', 'Galveston', 'The Woodlands', 'Houston'];
+  if (value.location) {
+    const locLower = value.location.toLowerCase();
+    const found = allowedCities.some(c => locLower.includes(c.toLowerCase()));
+    if (!found) {
+      errors.push('Event location must include one of the Houston-area cities: ' + allowedCities.join(', '));
+    }
+  }
+
   if (errors.length > 0) {
     return { error: new Error(errors.join(' ')), value: null };
   }
