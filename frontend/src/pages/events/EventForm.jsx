@@ -33,19 +33,30 @@ export default function EventForm({
     // eslint-disable-next-line
   }, [initialData]);
 
+  const [skillOptions, setSkillOptions] = useState([]);
 
-  const skillOptions = [
-    { value: 'Tailoring & Alterations', label: 'Tailoring & Alterations' },
-    { value: 'Sewing & Stitching', label: 'Sewing & Stitching' },
-    { value: 'Customer Service', label: 'Customer Service' },
-    { value: 'Organization & Sorting', label: 'Organization & Sorting' },
-    { value: 'Communication', label: 'Communication' },
-    { value: 'Bilingual', label: 'Bilingual' },
-    { value: 'Leadership & Training', label: 'Leadership & Training' },
-    { value: 'Computer Skills & Data Entry', label: 'Computer Skills & Data Entry' },
-    { value: 'Business & Administration', label: 'Business & Administration' },
-    { value: 'Adaptability & Problem Solving', label: 'Adaptability & Problem Solving' },
-  ];
+  useEffect(() => {
+    // fetch skills from backend
+    let cancelled = false;
+    async function loadSkills() {
+      try {
+        const res = await fetch('/api/events/skills');
+        if (!res.ok) throw new Error('Failed to fetch skills');
+        const data = await res.json();
+        if (cancelled) return;
+        // data is expected to be [{ value, label, id }]
+        setSkillOptions(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error('Failed to load skills for EventForm:', e.message || e);
+        setSkillOptions([]);
+      }
+    }
+    loadSkills();
+    return () => { cancelled = true; };
+  }, []);
+
+
+  
 
   const urgencyOptions = [
     { value: 'Low', label: 'Low' },
@@ -94,7 +105,7 @@ export default function EventForm({
       </div>
       <div className="form-group event-form-group-full">
         <label>Location <span style={{ color: 'var(--primary-red)' }}>*</span></label>
-        <textarea className="form-input" value={form.location} onChange={e => handleChange('location', e.target.value)} required rows={2} placeholder="Event location" style={{ borderColor: 'var(--primary-red)' }} />
+        <textarea className="form-input" value={form.location} onChange={e => handleChange('location', e.target.value)} required rows={2} placeholder="Enter an address and name if applicable for the event's location." style={{ borderColor: 'var(--primary-red)' }} />
         {errors.location && <div className="event-form-error">{errors.location}</div>}
       </div>
       <div className="form-group event-form-group-full">
