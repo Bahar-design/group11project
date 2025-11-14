@@ -12,6 +12,7 @@ export default function EventForm({
   submitLabel = 'Create Event',
   errors = {},
 }) {
+  const [localErrors, setLocalErrors] = useState({});
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -64,6 +65,24 @@ export default function EventForm({
     return () => { cancelled = true; };
   }, []);
 
+  // Client-side validation to improve UX before hitting the server
+  const allowedCities = ['Katy', 'Cypress', 'Sugar Land', 'Tomball', 'Galveston', 'The Woodlands', 'Houston'];
+  function clientValidate(values) {
+    const errs = {};
+    if (!values.name || String(values.name).trim().length === 0) errs.name = 'Event name is required';
+    if (!values.description || String(values.description).trim().length === 0) errs.description = 'Event description is required';
+    if (!values.location || String(values.location).trim().length === 0) errs.location = 'Location is required';
+    else {
+      const loc = String(values.location).toLowerCase();
+      const found = allowedCities.some(c => loc.includes(c.toLowerCase()));
+      if (!found) errs.location = 'Location must include a Houston-area city: ' + allowedCities.join(', ');
+    }
+    if (!Array.isArray(values.requiredSkills) || values.requiredSkills.length === 0) errs.requiredSkills = 'Select at least one skill';
+    if (!values.urgency) errs.urgency = 'Select an urgency';
+    if (!values.date || !/^\d{4}-\d{2}-\d{2}$/.test(values.date)) errs.date = 'Select an event date (YYYY-MM-DD)';
+    return errs;
+  }
+
 
   
 
@@ -96,8 +115,18 @@ export default function EventForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const errs = clientValidate(form);
+    if (Object.keys(errs).length > 0) {
+      setLocalErrors(errs);
+      return;
+    }
+    // clear previous local errors
+    setLocalErrors({});
     onSubmit(form);
   };
+
+  // merge server errors (props) with local validation errors, local take precedence
+  const displayErrors = { ...(errors || {}), ...localErrors };
 
   return (
     <form className="event-form card fade-in" onSubmit={handleSubmit}>
@@ -105,17 +134,17 @@ export default function EventForm({
       <div className="form-group event-form-group-full">
         <label>Event Name <span style={{ color: 'var(--primary-red)' }}>*</span></label>
         <input className="form-input" value={form.name} onChange={e => handleChange('name', e.target.value)} maxLength={100} required placeholder="Enter event name (max 100 chars)" style={{ borderColor: 'var(--primary-red)' }} />
-        {errors.name && <div className="event-form-error">{errors.name}</div>}
+        {displayErrors.name && <div className="event-form-error">{displayErrors.name}</div>}
       </div>
       <div className="form-group event-form-group-full">
         <label>Event Description <span style={{ color: 'var(--primary-red)' }}>*</span></label>
         <textarea className="form-input" value={form.description} onChange={e => handleChange('description', e.target.value)} required rows={4} placeholder="Describe the event" style={{ borderColor: 'var(--primary-red)' }} />
-        {errors.description && <div className="event-form-error">{errors.description}</div>}
+        {displayErrors.description && <div className="event-form-error">{displayErrors.description}</div>}
       </div>
       <div className="form-group event-form-group-full">
         <label>Location <span style={{ color: 'var(--primary-red)' }}>*</span></label>
         <textarea className="form-input" value={form.location} onChange={e => handleChange('location', e.target.value)} required rows={2} placeholder="Enter an address and name if applicable for the event's location." style={{ borderColor: 'var(--primary-red)' }} />
-        {errors.location && <div className="event-form-error">{errors.location}</div>}
+        {displayErrors.location && <div className="event-form-error">{displayErrors.location}</div>}
       </div>
       <div className="form-group event-form-group-full">
         <label>Required Skills <span style={{ color: 'var(--primary-red)' }}>*</span></label>
@@ -134,7 +163,7 @@ export default function EventForm({
                 <span className="skill-chip" key={skill}>{skill}</span>
             ))}
         </div>
-        {errors.requiredSkills && <div className="event-form-error">{errors.requiredSkills}</div>}
+        {displayErrors.requiredSkills && <div className="event-form-error">{displayErrors.requiredSkills}</div>}
       </div>
       <div className="form-group">
         <label>Urgency <span style={{ color: 'var(--primary-red)' }}>*</span></label>
@@ -160,12 +189,13 @@ export default function EventForm({
           placeholder="Select event date"
           required
         />
-        {errors.date && <div className="event-form-error">{errors.date}</div>}
+        {displayErrors.date && <div className="event-form-error">{displayErrors.date}</div>}
       </div>
       <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
         <button type="submit" className="btn-primary event-form-submit" style={{ background: 'linear-gradient(135deg, var(--primary-red), var(--accent-red))', border: 'none', fontWeight: 600 }}>{submitLabel}</button>
         {onCancel && <button type="button" className="btn-secondary" onClick={onCancel} style={{ border: '1px solid var(--primary-red)', color: 'var(--primary-red)', background: 'var(--white)' }}>Cancel</button>}
       </div>
+      {displayErrors.submit && <div style={{ marginTop: '1rem' }} className="event-form-error">{displayErrors.submit}</div>}
     </form>
   );
 }
