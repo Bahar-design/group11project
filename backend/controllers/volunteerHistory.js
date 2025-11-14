@@ -4,10 +4,10 @@ const pool = require('../db'); // adjust the path if needed
 exports.getVolunteerHistory = async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT vh.*, vp.full_name AS volunteer_name, c.event_name
+      SELECT vh.*, vp.full_name AS volunteer_name, ed.event_name
       FROM volunteer_history vh
       JOIN volunteerprofile vp ON vh.volunteer_id = vp.volunteer_id
-      JOIN calendar c ON vh.event_id = c.event_id
+      JOIN eventdetails ed ON vh.event_id = ed.event_id
       ORDER BY vh.signup_date DESC
     `);
 
@@ -26,10 +26,10 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
     if (!volunteer_id) return res.status(400).json({ error: "Missing volunteer_id" });
 
     const result = await pool.query(`
-      SELECT vh.*, vp.full_name AS volunteer_name, c.event_name, c.event_date, c.location
+      SELECT vh.*, vp.full_name AS volunteer_name, ed.event_name, ed.event_date, ed.location
       FROM volunteer_history vh
       JOIN volunteerprofile vp ON vh.volunteer_id = vp.volunteer_id
-      JOIN calendar c ON vh.event_id = c.event_id
+      JOIN eventdetails ed ON vh.event_id = ed.event_id
       WHERE vh.volunteer_id = $1
       ORDER BY vh.signup_date DESC
     `, [volunteer_id]);
@@ -41,21 +41,20 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
   }
 };
 
-
 // POST create a new volunteer record
 exports.createVolunteerRecord = async (req, res) => {
   try {
-    const { volunteer_id, event_id, hours_worked, notes } = req.body;
+    const { volunteer_id, event_id } = req.body;
 
-    if (!volunteer_id || !event_id || hours_worked === undefined) {
-      return res.status(400).json({ error: 'volunteer_id, event_id, and hours_worked are required.' });
+    if (!volunteer_id || !event_id) {
+      return res.status(400).json({ error: 'volunteer_id and event_id are required.' });
     }
 
     const result = await pool.query(
-      `INSERT INTO volunteer_history (volunteer_id, event_id, hours_worked, notes)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO volunteer_history (volunteer_id, event_id)
+       VALUES ($1, $2)
        RETURNING *`,
-      [volunteer_id, event_id, hours_worked, notes]
+      [volunteer_id, event_id]
     );
 
     res.status(201).json(result.rows[0]);
@@ -69,17 +68,15 @@ exports.createVolunteerRecord = async (req, res) => {
 exports.updateVolunteerRecord = async (req, res) => {
   try {
     const { id } = req.params;
-    const { volunteer_id, event_id, hours_worked, notes } = req.body;
+    const { volunteer_id, event_id } = req.body;
 
     const result = await pool.query(
       `UPDATE volunteer_history
        SET volunteer_id = COALESCE($1, volunteer_id),
-           event_id = COALESCE($2, event_id),
-           hours_worked = COALESCE($3, hours_worked),
-           notes = COALESCE($4, notes)
-       WHERE history_id = $5
+           event_id = COALESCE($2, event_id)
+       WHERE history_id = $3
        RETURNING *`,
-      [volunteer_id, event_id, hours_worked, notes, id]
+      [volunteer_id, event_id, id]
     );
 
     if (result.rows.length === 0) {
