@@ -39,8 +39,15 @@ export default function EventsPage({ isLoggedIn, user }) {
   // include admin id as createdBy if available
   const createdBy = user && (user.id || user.user_id) ? (user.id || user.user_id) : null;
   const payload = { ...data, createdBy };
-  const res = await fetch(`${API_BASE}/api/events`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      if (!res.ok) throw new Error('Create failed');
+      const res = await fetch(`${API_BASE}/api/events`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!res.ok) {
+        // try to read JSON error body for better diagnostics
+        let detail = null;
+        try { detail = await res.json(); } catch (e) { detail = await res.text(); }
+        console.error('Create event failed, server response:', res.status, detail);
+        setFormErrors({ submit: detail && (detail.error || detail.message) ? (detail.error || detail.message) : 'Failed to create event' });
+        return;
+      }
       const created = await res.json();
       // reload events to reflect DB
       await loadEvents();

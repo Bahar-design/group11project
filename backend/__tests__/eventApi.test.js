@@ -18,7 +18,7 @@ describe('Event API (DB mocked)', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('GET /api/events returns all events', async () => {
-    const eventRow = { event_id: 10, event_name: 'DB Event', description: 'd', location: 'L', urgency: 2, event_date: new Date('2025-12-01'), volunteers: 5, skill_id: [7], created_by: null };
+  const eventRow = { event_id: 10, event_name: 'DB Event', description: 'd', location: '123 Main St, Houston, TX', urgency: 2, event_date: new Date('2025-12-01'), volunteers: 5, skill_id: [7], created_by: null };
     // SELECT * FROM eventdetails
     pool.query.mockResolvedValueOnce({ rows: [eventRow] })
       // skillNamesForIds
@@ -44,7 +44,7 @@ describe('Event API (DB mocked)', () => {
       .mockResolvedValueOnce({ rows: [] }) // insert event_skills
       .mockResolvedValueOnce({ rows: [{ skill_name: 'NewSkill' }] }); // skillNamesForIds
 
-    const payload = { name: 'Created', description: 'd', location: 'L', requiredSkills: ['NewSkill'], urgency: 'Low', date: '2025-12-01' };
+  const payload = { name: 'Created', description: 'd', location: '500 Westheimer, Houston, TX', requiredSkills: ['NewSkill'], urgency: 'Low', date: '2025-12-01' };
     const res = await request(app).post('/api/events').send(payload);
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('id');
@@ -75,7 +75,7 @@ describe('Event API (DB mocked)', () => {
       .mockResolvedValueOnce({ rows: [] }) // delete event_skills
       .mockResolvedValueOnce({ rows: [{ skill_name: 'Added' }] }); // skillNamesForIds
 
-    const payload = { name: 'Updated', description: 'd', location: 'L', requiredSkills: ['Added'], urgency: 'Low', date: '2025-12-01' };
+  const payload = { name: 'Updated', description: 'd', location: '2000 W Holcombe Blvd, Houston, TX', requiredSkills: ['Added'], urgency: 'Low', date: '2025-12-01' };
     const res = await request(app).put(`/api/events/${id}`).send(payload);
     expect(res.statusCode).toBe(200);
     expect(res.body.name).toBe('Updated');
