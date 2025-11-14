@@ -40,8 +40,17 @@ export default function EventForm({
     let cancelled = false;
     async function loadSkills() {
       try {
-        const res = await fetch('/api/events/skills');
-        if (!res.ok) throw new Error('Failed to fetch skills');
+        // Use Vite env var when deployed (set VITE_API_BASE to your backend base url),
+        // otherwise rely on relative '/api' which is proxied in dev via vite.config.js
+        const apiBase = (import.meta && import.meta.env && import.meta.env.VITE_API_BASE) ? import.meta.env.VITE_API_BASE : '';
+        const res = await fetch(`${apiBase}/api/events/skills`);
+        if (!res.ok) throw new Error('Failed to fetch skills: ' + res.status + ' ' + res.statusText);
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          // defensive: log returned body (likely HTML index page when proxy is not configured)
+          const text = await res.text();
+          throw new Error('Expected JSON but received: ' + (text && text.substring(0, 200)));
+        }
         const data = await res.json();
         if (cancelled) return;
         // data is expected to be [{ value, label, id }]
