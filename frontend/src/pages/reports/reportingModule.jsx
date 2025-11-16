@@ -27,8 +27,13 @@ const ReportingModule = ({ isLoggedIn, user }) => {
   const filters = {
     search: searchTerm,
     location: selectedLocation,
-    skill: selectedSkill && typeof selectedSkill === 'string' ? selectedSkill : null,
-    skillId: selectedSkill && typeof selectedSkill === 'object' ? selectedSkill.skill_id : null,
+    /*debugging
+     skill: selectedSkill && typeof selectedSkill === 'string' ? selectedSkill : null,
+     skillId: selectedSkill && typeof selectedSkill === 'object' ? selectedSkill.skill_id : null,
+*/
+    skill: null,
+    skillId: selectedSkill !== 'all' && selectedSkill?.skill_id ? selectedSkill.skill_id : null,
+
     startDate: dateRange.start,
     endDate: dateRange.end
   };
@@ -452,6 +457,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                     </select>
                 </div>
 
+{/*      
                 <div className="filter-group">
                     <label>Skill</label>
                     <select
@@ -478,7 +484,42 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                     Clear Filters
                 </button>
                 </div>
-            </div>
+            </div> 
+            */}
+              <div className="filter-group">
+                    <label>Skill</label>
+                    <select
+                      value={selectedSkill === 'all' ? 'all' : selectedSkill?.skill_id}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        if (id === 'all') {
+                          setSelectedSkill('all');
+                        } else {
+                          const found = skills.find(s => String(s.skill_id) === id);
+                          setSelectedSkill(found);
+                        }
+                      }}
+                      className="filter-input"
+                    >
+                      <option value="all">All Skills</option>
+                      {skills.map(skill => (
+                        <option key={skill.skill_id} value={skill.skill_id}>{skill.skill_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="filter-actions">
+                <button
+                    onClick={clearFilters}
+                    className="clear-filters-btn"
+                >
+                    Clear Filters
+                </button>
+                </div>
+            </div> 
+
+
 
             {/* Report Data Table */}
             <div ref={reportRef} className="report-table-container">
