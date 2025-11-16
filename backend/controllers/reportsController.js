@@ -29,7 +29,7 @@ function buildFilterClauses(filters, params) {
   return clauses.length ? clauses.join(' AND ') : '';
 }
 
-/*
+
 //report for event volunteer assignments , has volunteer_history and event details
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
@@ -58,7 +58,7 @@ async function getVolunteerParticipation(filters = {}) {
     skills: r.skills || []
   }));
 }
-*/
+
 async function getEventVolunteerAssignments(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
@@ -203,8 +203,9 @@ async function getSkills(eventId = null) {
 }
 
 module.exports = {
+  getVolunteerParticipation,
   getEventVolunteerAssignments,
   getVolunteerHistory,
-  getEventManagement, 
+  getEventManagement,
   getSkills
 };

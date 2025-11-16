@@ -18,6 +18,7 @@ function requireAdmin(req, res, next) {
   return res.status(403).json({ message: 'Forbidden: admin access required' });
 }
 
+
 // GET volunteer participation
 router.get('/volunteer-participation', requireAdmin, async (req, res, next) => {
   try {
@@ -35,6 +36,7 @@ router.get('/volunteer-participation', requireAdmin, async (req, res, next) => {
     next(err);
   }
 });
+
 
 // GET volunteer history
 router.get('/volunteer-history', requireAdmin, async (req, res, next) => {
