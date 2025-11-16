@@ -27,13 +27,12 @@ const ReportingModule = ({ isLoggedIn, user }) => {
   const filters = {
     search: searchTerm,
     location: selectedLocation,
-    /*debugging for skills
      skill: selectedSkill && typeof selectedSkill === 'string' ? selectedSkill : null,
      skillId: selectedSkill && typeof selectedSkill === 'object' ? selectedSkill.skill_id : null,
-     */
+    /*debugging for skills
     skill: null,
     skillId: selectedSkill !== 'all' && selectedSkill?.skill_id ? selectedSkill.skill_id : null,
-
+    */
     startDate: dateRange.start,
     endDate: dateRange.end
   };
