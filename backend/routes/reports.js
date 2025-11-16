@@ -70,6 +70,25 @@ router.get('/event-management', requireAdmin, async (req, res, next) => {
   }
 });
 
+// GET event volunteer assignments
+router.get('/event-volunteers', requireAdmin, async (req, res, next) => {
+  try {
+    const filters = {
+      search: req.query.search || null,
+      location: req.query.location || null,
+      skill: req.query.skill || null,
+      skillId: req.query.skillId || null,
+      startDate: req.query.startDate || null,
+      endDate: req.query.endDate || null
+    };
+    const rows = await reports.getEventVolunteerAssignments(filters);
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+
 // GET skills (optionally for an event: ?eventId=123)
 router.get('/skills', requireAdmin, async (req, res, next) => {
   try {

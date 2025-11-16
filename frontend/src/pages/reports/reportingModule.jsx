@@ -204,7 +204,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
             )}
           </div>
         );
-
+/*
       case 'event-volunteers':
         return (
           <div>
@@ -238,6 +238,50 @@ const ReportingModule = ({ isLoggedIn, user }) => {
             )}
           </div>
         );
+        */
+       case 'event-volunteers':
+        return (
+          <div>
+            <h3 className="report-type-name">Event Volunteer Assignments</h3>
+            <div className="table-scroll">
+              <table className="report-table">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Event Location</th>
+                    <th>Volunteer Name</th>
+                    <th>Volunteer ID</th>
+                    <th>Email</th>
+                    <th>Volunteer City</th>
+                    <th>Skills</th>
+                    <th>Signup Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredEvents.flatMap(event =>
+                    (event.volunteers_assigned || []).map(volunteer => (
+                      <tr key={`${event.event_id}-${volunteer.volunteer_id}`}>
+                        <td>{event.event_name}</td>
+                        <td>{event.event_location}</td>
+                        <td>{volunteer.full_name}</td>
+                        <td>{volunteer.volunteer_id}</td>
+                        <td>{volunteer.email}</td>
+                        <td>{volunteer.volunteer_city}</td>
+                        <td>{(volunteer.skills || []).join(', ')}</td>
+                        <td>{volunteer.signup_date}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {((filteredEvents.flatMap(e => e.volunteers_assigned || [])).length === 0) && (
+              <p className="no-data-message">No volunteer assignments found matching the selected filters.</p>
+            )}
+          </div>
+        );
+
 
       default:
         return null;

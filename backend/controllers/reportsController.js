@@ -29,6 +29,7 @@ function buildFilterClauses(filters, params) {
   return clauses.length ? clauses.join(' AND ') : '';
 }
 
+/*
 //report for event volunteer assignments , has volunteer_history and event details
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
@@ -56,6 +57,67 @@ async function getVolunteerParticipation(filters = {}) {
     total_hours: Number(r.total_hours || 0),
     skills: r.skills || []
   }));
+}
+*/
+async function getEventVolunteerAssignments(filters = {}) {
+  const params = [];
+  const where = buildFilterClauses(filters, params);
+
+  const sql = `
+    SELECT 
+      ed.event_id,
+      ed.event_name,
+      ed.location AS event_location,
+      ed.event_date,
+      vp.volunteer_id,
+      vp.full_name,
+      ut.user_email AS email,
+      vp.city AS volunteer_city,
+      vh.signup_date,
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills
+    FROM eventdetails ed
+    LEFT JOIN volunteer_history vh ON ed.event_id = vh.event_id
+    LEFT JOIN volunteerprofile vp ON vh.volunteer_id = vp.volunteer_id
+    LEFT JOIN user_table ut ON vp.user_id = ut.user_id
+    LEFT JOIN volunteer_skills vs ON vp.volunteer_id = vs.volunteer_id
+    LEFT JOIN skills s ON vs.skill_id = s.skill_id
+    ${where ? `WHERE ${where}` : ""}
+    GROUP BY 
+      ed.event_id, ed.event_name, ed.location, ed.event_date,
+      vp.volunteer_id, vp.full_name, ut.user_email, vp.city, vh.signup_date
+    ORDER BY ed.event_date ASC, vp.full_name ASC
+  `;
+
+  const { rows } = await pool.query(sql, params);
+
+  const events = {};
+
+  for (const r of rows) {
+    // create event group if it doesn't exist
+    if (!events[r.event_id]) {
+      events[r.event_id] = {
+        event_id: r.event_id,
+        event_name: r.event_name,
+        event_location: r.event_location,
+        event_date: r.event_date ? new Date(r.event_date).toISOString().slice(0,10) : null,
+        volunteers_assigned: []
+      };
+    }
+
+    // only push volunteer if exists (LEFT JOIN means could be null)
+    if (r.volunteer_id) {
+      events[r.event_id].volunteers_assigned.push({
+        volunteer_id: r.volunteer_id,
+        full_name: r.full_name,
+        email: r.email,
+        volunteer_city: r.volunteer_city,
+        skills: r.skills || [],
+        signup_date: r.signup_date ? new Date(r.signup_date).toISOString().slice(0,10) : null
+      });
+    }
+  }
+
+  return Object.values(events);
 }
 
 
@@ -141,7 +203,7 @@ async function getSkills(eventId = null) {
 }
 
 module.exports = {
-  getVolunteerParticipation,
+  getEventVolunteerAssignments,
   getVolunteerHistory,
   getEventManagement, 
   getSkills
