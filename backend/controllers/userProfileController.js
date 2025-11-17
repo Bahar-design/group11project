@@ -229,7 +229,7 @@ async function updateUserProfile(req, res, next) {
       // Upsert VolunteerProfile (by user_id)
     const upsertVP = `
   INSERT INTO volunteerprofile (user_id, full_name, phone, address1, address2, city, state_code, zip_code, preferences, availability, has_transportation, emergency_contact)
-  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
         ON CONFLICT (user_id) DO UPDATE SET
           full_name = EXCLUDED.full_name,
           phone = EXCLUDED.phone,
