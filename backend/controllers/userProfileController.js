@@ -74,12 +74,6 @@ async function getUserProfile(req, res, next) {
                 hasTransportation: false,
                 primaryLocation: '',
                 userType: 'volunteer',
-                stats: {
-                  familiesHelped: 0,
-                  hoursVolunteered: 0,
-                  averageRating: 0,
-                  eventsJoined: 0
-                }
               };
               return res.json(out);
       }
@@ -117,12 +111,6 @@ async function getUserProfile(req, res, next) {
         hasTransportation: !!profile.has_transportation,
         primaryLocation: profile.primary_location || '',
         userType: 'volunteer',
-        stats: {
-          familiesHelped: 0,
-          hoursVolunteered: 0,
-          averageRating: 0,
-          eventsJoined: 0
-        }
       };
 
       return res.json(out);
@@ -154,12 +142,6 @@ async function getUserProfile(req, res, next) {
       emergencyContact: '',
       regions: [],
       userType: 'admin',
-      stats: {
-        eventsManaged: 0,
-        volunteersCoordinated: 0,
-        familiesImpacted: 0,
-        successRate: 0
-      }
     };
     return res.json(out);
         }
@@ -180,12 +162,6 @@ async function getUserProfile(req, res, next) {
         emergencyContact: profile.emergency_contact || '',
         regions: [],
         userType: 'admin',
-        stats: {
-          eventsManaged: 0,
-          volunteersCoordinated: 0,
-          familiesImpacted: 0,
-          successRate: 0
-        }
       };
 
       return res.json(out);
@@ -388,12 +364,6 @@ async function updateUserProfile(req, res, next) {
         travelRadius: value.travelRadius || '',
         hasTransportation: !!value.hasTransportation,
         userType: 'volunteer',
-        stats: {
-          familiesHelped: 0,
-          hoursVolunteered: 0,
-          averageRating: 0,
-          eventsJoined: 0
-        }
       };
 
       return res.json(out);
@@ -475,12 +445,6 @@ async function updateUserProfile(req, res, next) {
         emergencyContact: value.emergencyContact || '',
         regions: value.regions || [],
         userType: 'admin',
-        stats: {
-          eventsManaged: 0,
-          volunteersCoordinated: 0,
-          familiesImpacted: 0,
-          successRate: 0
-        }
       };
 
       return res.json(out);

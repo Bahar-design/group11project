@@ -120,23 +120,6 @@ export default function HomePage({ isLoggedIn, onLogout, user }) {
           </div>
         </div>
 
-        {/* Stats Section */}
-        <section className="stats py-5">
-          <div className="stats-container container d-flex flex-wrap justify-content-center gap-4">
-            {[
-              { number: "2,400+", label: "Families Helped" },
-              { number: "85", label: "Active Volunteers" },
-              { number: "12,000+", label: "Items Donated" },
-              { number: "98%", label: "Satisfaction Rate" },
-            ].map((stat, idx) => (
-              <div key={idx} className="stat-card">
-                <div className="stat-number">{stat.number}</div>
-                <div className="stat-label">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <div className="container my-5" style={{ backgroundColor: "white" }}>
           <div>
             <h2 className="mb-4 text-center" style={{ color: "var(--text-primary)", }}>

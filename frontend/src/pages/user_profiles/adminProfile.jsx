@@ -30,21 +30,8 @@ const AdminProfile = ({ user, isLoggedIn, onLogout }) => {
 
   if (!user) return <div>Loading...</div>;
 
-  const stats = user?.stats || { eventsManaged: 0, volunteersCoordinated: 0, familiesImpacted: 0, successRate: 0 };
-
   return (
     <div className="profile-container">
-      <ProfileHeader 
-        user={user}
-        role="⚡ Regional Administrator"
-        stats={[
-          { number: stats.eventsManaged ?? 0, label: 'Events Managed' },
-          { number: stats.volunteersCoordinated ?? 0, label: 'Volunteers Coordinated' },
-          { number: stats.familiesImpacted ?? 0, label: 'Families Impacted' },
-          { number: `${stats.successRate ?? 0}%`, label: 'Success Rate' }
-        ]}
-      />
-
       <ProfileTabs 
         tabs={tabs}
         activeTab={activeTab}

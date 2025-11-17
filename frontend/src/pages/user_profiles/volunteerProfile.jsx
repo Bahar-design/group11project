@@ -12,8 +12,6 @@ const VolunteerProfile = ({ user }) => {
     return <div>Loading volunteer profile...</div>;
   }
 
-  const stats = user?.stats || { familiesHelped: 0, hoursVolunteered: 0, averageRating: 0, eventsJoined: 0 };
-
   const tabs = [
     { id: 'personal-info', label: 'Personal Info' },
     { id: 'settings', label: 'Notifications' }
@@ -31,18 +29,7 @@ const VolunteerProfile = ({ user }) => {
   };
 
   return (
-    <div className="profile-container">
-      <ProfileHeader 
-        user={user}
-        role="Dedicated Volunteer"
-        stats={[
-          { number: stats.familiesHelped ?? 0, label: 'Families Helped' },
-          { number: stats.hoursVolunteered ?? 0, label: 'Hours Volunteered' },
-          { number: stats.averageRating ?? 0, label: 'Average Rating' },
-          { number: stats.eventsJoined ?? 0, label: 'Events Joined' }
-        ]}
-      />
-      
+    <div className="profile-container">  
       <ProfileTabs 
         tabs={tabs}
         activeTab={activeTab}

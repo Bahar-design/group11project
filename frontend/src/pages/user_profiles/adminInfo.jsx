@@ -88,12 +88,6 @@ const AdminInfo = ({ user, isLoggedIn, onLogout }) => {
   };
 
   const regions = ['Sugar Land', 'Katy', 'Southwest Houston'];
-  const monthlyStats = [
-    { icon: '📅', number: '12', label: 'Events This Month' },
-    { icon: '👥', number: '85', label: 'Active Volunteers' },
-    { icon: '⭐', number: '4.8', label: 'Avg Event Rating' },
-    { icon: '🚨', number: '3', label: 'Emergency Responses' }
-  ];
 
   if (loading) return <div>Loading...</div>;
 
@@ -190,18 +184,6 @@ const AdminInfo = ({ user, isLoggedIn, onLogout }) => {
               <button type="submit" className="btn-primary" style={{ marginTop: 16 }}>Save Profile</button>
             </form>
           </div>
-        </div>
-      </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        <div className="admin-stats-grid">
-          {monthlyStats.map((stat, index) => (
-            <div key={index} className="admin-stat-card">
-              <div className="admin-stat-icon">{stat.icon}</div>
-              <div className="admin-stat-number">{stat.number}</div>
-              <div className="admin-stat-label">{stat.label}</div>
-            </div>
-          ))}
         </div>
       </div>
     </div>

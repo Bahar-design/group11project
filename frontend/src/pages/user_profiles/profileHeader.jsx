@@ -8,7 +8,7 @@ const getInitials = (name) => {
   return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
 };
 
-const ProfileHeader = ({ user, role, stats }) => {
+const ProfileHeader = ({ user, role }) => {
   // Use user.initials if provided, else compute from name
   const initials = user.initials || getInitials(user.name);
   return (
@@ -17,14 +17,6 @@ const ProfileHeader = ({ user, role, stats }) => {
         <div className="profile-avatar-large">{initials}</div>
         <h1 className="profile-name">{user?.name || ''}</h1>
         <p className="profile-role">{role}</p>
-        <div className="profile-stats">
-          {(Array.isArray(stats) ? stats : []).map((stat, index) => (
-            <div key={index} className="profile-stat">
-              <div className="profile-stat-number">{stat?.number ?? ''}</div>
-              <div className="profile-stat-label">{stat?.label ?? ''}</div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

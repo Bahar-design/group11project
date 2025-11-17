@@ -261,14 +261,6 @@ body {
   margin-bottom: 1rem;
 }
 
-.profile-stats {
-  display: flex;
-  justify-content: center;
-  gap: 3rem;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-}
-
 .profile-stat {
   text-align: center;
 }
@@ -715,53 +707,6 @@ form .btn-primary {
   transform: translateX(24px);
 }
 
-/* Admin Specific Styles */
-.admin-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-
-.admin-stat-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: var(--shadow-soft);
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.admin-stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-medium);
-}
-
-.admin-stat-icon {
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, var(--primary-red), var(--accent-red));
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-  color: white;
-  font-size: 1.5rem;
-}
-
-.admin-stat-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.admin-stat-label {
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
 /* Chart Container */
 .chart-container {
   background: white;
@@ -851,21 +796,12 @@ form .btn-primary {
     grid-template-columns: 1fr;
   }
 
-  .profile-stats {
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
   .profile-tabs {
     flex-direction: column;
   }
 
   .container {
     padding: 1rem;
-  }
-
-  .admin-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 
   .toggle-container {
@@ -885,10 +821,6 @@ form .btn-primary {
 }
 
 @media (max-width: 480px) {
-  .admin-stats-grid {
-    grid-template-columns: 1fr;
-  }
-
   .profile-name {
     font-size: 2rem;
   }
@@ -897,10 +829,6 @@ form .btn-primary {
     width: 100px;
     height: 100px;
     font-size: 2rem;
-  }
-
-  .profile-stats {
-    gap: 1rem;
   }
 
   .profile-stat-number {
