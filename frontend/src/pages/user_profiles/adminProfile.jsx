@@ -32,6 +32,7 @@ const AdminProfile = ({ user, isLoggedIn, onLogout }) => {
 
   return (
     <div className="profile-container">
+      <ProfileHeader user={user} role="Administrator " />
       <ProfileTabs 
         tabs={tabs}
         activeTab={activeTab}

@@ -29,7 +29,8 @@ const VolunteerProfile = ({ user }) => {
   };
 
   return (
-    <div className="profile-container">  
+    <div className="profile-container">
+      <ProfileHeader user={user} role="Volunteer" />
       <ProfileTabs 
         tabs={tabs}
         activeTab={activeTab}
