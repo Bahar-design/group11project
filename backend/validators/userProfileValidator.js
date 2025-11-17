@@ -76,9 +76,7 @@ function validateUserProfile(data, type = 'volunteer') {
   value.emergencyContact = data.emergencyContact || '';
   value.regions = Array.isArray(data.regions) ? data.regions : [];
   value.preferences = typeof data.preferences === 'string' ? data.preferences : '';
-  value.travelRadius = data.travelRadius || '';
   value.hasTransportation = typeof data.hasTransportation === 'boolean' ? data.hasTransportation : true;
-  value.primaryLocation = typeof data.primaryLocation === 'string' ? data.primaryLocation.trim() : '';
   value.userType = data.userType || '';
 
   if (errors.length > 0) {

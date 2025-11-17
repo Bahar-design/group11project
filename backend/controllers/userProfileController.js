@@ -46,7 +46,7 @@ async function getUserProfile(req, res, next) {
     if (user.user_type === 'volunteer' && type === 'volunteer') {
       // Join VolunteerProfile and skills
       const vp = await pool.query(
-        `SELECT vp.volunteer_id, vt.user_email, vp.full_name, vp.phone, vp.address1, vp.address2, vp.city, vp.state_code, vp.zip_code, vp.preferences, vp.availability, vp.travel_radius, vp.has_transportation, vp.emergency_contact, vp.primary_location
+        `SELECT vp.volunteer_id, vt.user_email, vp.full_name, vp.phone, vp.address1, vp.address2, vp.city, vp.state_code, vp.zip_code, vp.preferences, vp.availability, vp.has_transportation, vp.emergency_contact
          FROM volunteerprofile vp
          JOIN user_table ut ON ut.user_id = vp.user_id
          JOIN user_table vt ON vt.user_id = ut.user_id
@@ -70,9 +70,7 @@ async function getUserProfile(req, res, next) {
                 skills: [],
                 preferences: '',
                 availability: [],
-                travelRadius: '',
                 hasTransportation: false,
-                primaryLocation: '',
                 userType: 'volunteer',
               };
               return res.json(out);
@@ -107,9 +105,7 @@ async function getUserProfile(req, res, next) {
         skills,
         preferences: profile.preferences || '',
         availability: profile.availability || [],
-        travelRadius: profile.travel_radius || '',
         hasTransportation: !!profile.has_transportation,
-        primaryLocation: profile.primary_location || '',
         userType: 'volunteer',
       };
 
@@ -232,7 +228,7 @@ async function updateUserProfile(req, res, next) {
     if (type === 'volunteer') {
       // Upsert VolunteerProfile (by user_id)
     const upsertVP = `
-  INSERT INTO volunteerprofile (user_id, full_name, phone, address1, address2, city, state_code, zip_code, preferences, availability, travel_radius, has_transportation, emergency_contact, primary_location)
+  INSERT INTO volunteerprofile (user_id, full_name, phone, address1, address2, city, state_code, zip_code, preferences, availability, has_transportation, emergency_contact)
   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
         ON CONFLICT (user_id) DO UPDATE SET
           full_name = EXCLUDED.full_name,
@@ -244,10 +240,8 @@ async function updateUserProfile(req, res, next) {
           zip_code = EXCLUDED.zip_code,
           preferences = EXCLUDED.preferences,
           availability = EXCLUDED.availability,
-          travel_radius = EXCLUDED.travel_radius,
           has_transportation = EXCLUDED.has_transportation,
-          emergency_contact = EXCLUDED.emergency_contact,
-          primary_location = EXCLUDED.primary_location
+          emergency_contact = EXCLUDED.emergency_contact
         RETURNING volunteer_id;
       `;
 
@@ -304,10 +298,8 @@ async function updateUserProfile(req, res, next) {
         value.zipCode,
         value.preferences || null,
         availabilityParam,
-        value.travelRadius || null,
         value.hasTransportation,
-        value.emergencyContact || null,
-        value.primaryLocation || null
+        value.emergencyContact || null
       ]);
 
       const volunteerId = vpRes.rows[0].volunteer_id;
@@ -361,7 +353,6 @@ async function updateUserProfile(req, res, next) {
         skills,
         preferences: value.preferences || '',
         availability: availabilityParam || [],
-        travelRadius: value.travelRadius || '',
         hasTransportation: !!value.hasTransportation,
         userType: 'volunteer',
       };

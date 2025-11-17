@@ -123,7 +123,7 @@ describe('updateUserProfile unit tests', () => {
 
   it('getUserProfile returns populated volunteer profile when DB has rows', async () => {
     mockDb.query.mockResolvedValueOnce({ rows: [{ user_id: 11, user_type: 'volunteer' }] }) // user
-      .mockResolvedValueOnce({ rows: [{ volunteer_id: 55, full_name: 'Jon Doe', phone: '123', address1: 'A', city: 'C', state_code: 'S', zip_code: 'Z', preferences: 'pref', availability: [], travel_radius: '10', has_transportation: true, emergency_contact: 'E', primary_location: 'Main' }] }) // vp
+      .mockResolvedValueOnce({ rows: [{ volunteer_id: 55, full_name: 'Jon Doe', phone: '123', address1: 'A', city: 'C', state_code: 'S', zip_code: 'Z', preferences: 'pref', availability: [], has_transportation: true, emergency_contact: 'E' }] }) // vp
       .mockResolvedValueOnce({ rows: [{ skill_name: 'Cooking' }, { skill_name: 'Driving' }] }); // skills
     const [req, res] = makeReqRes({ email: 'j@x.com', type: 'volunteer' });
     const { getUserProfile } = require('../controllers/userProfileController');

@@ -25,11 +25,9 @@ const PersonalInfo = ({ user }) => {
     state: '',
     zipCode: '',
     emergencyContact: '',
-    primaryLocation: '',
     skills: [],
     preferences: '',
     availability: [],
-    travelRadius: '20 miles',
     hasTransportation: true
   });
   const [availability, setAvailability] = useState([]);
@@ -140,12 +138,6 @@ const PersonalInfo = ({ user }) => {
     }
     if (!formData.zipCode || String(formData.zipCode).trim().length < 5) {
       setError('Zip Code must be at least 5 characters');
-      return;
-    }
-    // Validate travelRadius against allowed values in DB constraint
-    const allowedRadii = ['20 miles','30 miles','40 miles','50 miles'];
-    if (formData.travelRadius && !allowedRadii.includes(formData.travelRadius)) {
-      setError('Travel radius must be one of: ' + allowedRadii.join(', '));
       return;
     }
     // Convert DatePicker dates to YYYY-MM-DD strings
@@ -384,35 +376,7 @@ const PersonalInfo = ({ user }) => {
               />
             </div>
 
-            {/* Location, Preferences, Skills */}
-            <div className="form-group">
-              <label>Primary Location</label>
-              <select 
-                className="form-input"
-                name="primaryLocation"
-                value={formData.primaryLocation}
-                onChange={handleInputChange}
-              >
-                <option>Sugar Land</option>
-                <option>Downtown Houston</option>
-                <option>Katy</option>
-                <option>Cypress</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Travel Radius</label>
-              <select 
-                className="form-input"
-                name="travelRadius"
-                value={formData.travelRadius}
-                onChange={handleInputChange}
-              >
-                <option>20 miles</option>
-                <option>30 miles</option>
-                <option>40 miles</option>
-                <option>50 miles</option>
-              </select>
-            </div>
+            {/* Preferences & Skills */}
             <div className="form-group">
               <label>Skills*</label>
               <Select

@@ -63,7 +63,6 @@ describe('UserProfileController integration', () => {
       zipCode: '77001',
       skills: ['IntegrationSkill'],
       availability: [String(numericTs), '2025-12-01'],
-      travelRadius: '20 miles',
       hasTransportation: true
     };
 
