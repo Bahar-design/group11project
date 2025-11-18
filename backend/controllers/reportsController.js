@@ -41,7 +41,7 @@ async function getVolunteerParticipation(filters = {}) {
            COALESCE(SUM(vh.hours_worked),0) as total_hours,
            ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) as skills
     FROM volunteerprofile vp
-    LEFT JOIN volunteer_history vh ON vp.volunteer_id = vh.volunteer_id
+    LEFT JOIN volunteer_history vh ON vp.user_id = vh.volunteer_id
     LEFT JOIN volunteer_skills vs ON vp.volunteer_id = vs.volunteer_id
     LEFT JOIN skills s ON vs.skill_id = s.skill_id
     LEFT JOIN eventdetails ed ON vh.event_id = ed.event_id
@@ -135,9 +135,11 @@ async function getVolunteerHistory(filters = {}) {
   const where = buildFilterClauses(filters, params);
 
   const sql = `
-    SELECT vp.volunteer_id, vp.full_name, ed.event_id, ed.event_name, ed.location, ed.event_date, ed.urgency, vh.hours_worked, vh.signup_date, vh.notes
+    SELECT vp.volunteer_id, vp.full_name, ed.event_id, ed.event_name, ed.location, 
+          ed.event_date, ed.urgency, vh.hours_worked, vh.signup_date, vh.notes
     FROM volunteer_history vh
-    JOIN volunteerprofile vp ON vh.volunteer_id = vp.volunteer_id
+    JOIN user_table ut ON vh.volunteer_id = ut.user_id
+    JOIN volunteerprofile vp ON ut.user_id = vp.user_id
     JOIN eventdetails ed ON vh.event_id = ed.event_id
     ${where ? 'WHERE ' + where : ''}
     ORDER BY vp.volunteer_id, ed.event_date DESC
