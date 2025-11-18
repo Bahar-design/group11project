@@ -406,7 +406,8 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                 {reportTypes.map(report => (
                 <div
                     key={report.id}
-                    onClick={() => setReportType(report.id)}
+                    //onClick={() => setReportType(report.id)}
+                    onClick={() => setReportType(String(report.id).trim())}
                     className={`report-type-card ${reportType === report.id ? 'active' : ''}`}
                 >
                     <div className="report-type-icon">{report.icon}</div>
