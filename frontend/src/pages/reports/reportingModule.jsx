@@ -91,8 +91,20 @@ const ReportingModule = ({ isLoggedIn, user }) => {
   }, []);
 
   const renderReportTable = () => {
+    /*
   const filteredVolunteers = data || [];
   const filteredEvents = data || [];
+  */
+    let filteredVolunteers = [];
+    let filteredEvents = [];
+
+    if (reportType === 'volunteer-participation' || reportType === 'volunteer-history') {
+      filteredVolunteers = data || [];
+    }
+
+    if (reportType === 'event-management' || reportType === 'event-volunteers') {
+      filteredEvents = data || [];
+    }
 
     switch (reportType) {
       case 'volunteer-participation':
