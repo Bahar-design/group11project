@@ -37,9 +37,8 @@ async function getVolunteerParticipation(filters = {}) {
 
   const sql = `
     SELECT vp.volunteer_id, vp.full_name, vp.city, vp.state_code,
-           COUNT(vh.event_id) as total_events,
-           COALESCE(SUM(vh.hours_worked),0) as total_hours,
-           ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) as skills
+      COUNT(vh.event_id) as total_events,
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) as skills
     FROM volunteerprofile vp
     LEFT JOIN volunteer_history vh ON vp.user_id = vh.volunteer_id
     LEFT JOIN volunteer_skills vs ON vp.volunteer_id = vs.volunteer_id
@@ -54,7 +53,6 @@ async function getVolunteerParticipation(filters = {}) {
   return rows.map(r => ({
     ...r,
     total_events: Number(r.total_events || 0),
-    total_hours: Number(r.total_hours || 0),
     skills: r.skills || []
   }));
 }
@@ -64,66 +62,50 @@ async function getVolunteerParticipation(filters = {}) {
 async function getEventVolunteerAssignments(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
-
+  // Use a lateral subquery to fetch volunteer skills per volunteer to avoid
+  // duplicate rows caused by joining many-to-many skill tables.
   const sql = `
-    SELECT 
+    SELECT
       ed.event_id,
       ed.event_name,
       ed.location AS event_location,
       ed.event_date,
+      vh.history_id,
       vp.volunteer_id,
       vp.full_name,
       ut.user_email AS email,
       vp.city AS volunteer_city,
       vh.signup_date,
-      ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills
-    FROM eventdetails AS ed
-    LEFT JOIN volunteer_history AS vh 
-      ON ed.event_id = vh.event_id
-    LEFT JOIN user_table AS ut 
-      ON vh.volunteer_id = ut.user_id
-    LEFT JOIN volunteerprofile AS vp 
-      ON ut.user_id = vp.user_id
-    LEFT JOIN volunteer_skills AS vs 
-      ON vp.volunteer_id = vs.volunteer_id
-    LEFT JOIN skills AS s 
-      ON vs.skill_id = s.skill_id
+      COALESCE(vskills.skills, ARRAY[]::text[]) AS skills
+    FROM eventdetails ed
+    LEFT JOIN volunteer_history vh ON ed.event_id = vh.event_id
+    LEFT JOIN user_table ut ON vh.volunteer_id = ut.user_id
+    LEFT JOIN volunteerprofile vp ON ut.user_id = vp.user_id
+    LEFT JOIN LATERAL (
+      SELECT ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills
+      FROM volunteer_skills vss
+      JOIN skills s ON vss.skill_id = s.skill_id
+      WHERE vss.volunteer_id = vp.volunteer_id
+    ) vskills ON true
     ${where ? `WHERE ${where}` : ""}
-    GROUP BY 
-      ed.event_id, ed.event_name, ed.location, ed.event_date,
-      vp.volunteer_id, vp.full_name, ut.user_email, vp.city, vh.signup_date
     ORDER BY ed.event_date ASC, vp.full_name ASC;
-
   `;
 
   const { rows } = await pool.query(sql, params);
 
-  const events = {};
-
-  for (const r of rows) {
-    if (!events[r.event_id]) {
-      events[r.event_id] = {
-        event_id: r.event_id,
-        event_name: r.event_name,
-        event_location: r.event_location,
-        event_date: r.event_date ? new Date(r.event_date).toISOString().slice(0,10) : null,
-        volunteers_assigned: []
-      };
-    }
-
-    if (r.volunteer_id) {
-      events[r.event_id].volunteers_assigned.push({
-        volunteer_id: r.volunteer_id,
-        full_name: r.full_name,
-        email: r.email,
-        volunteer_city: r.volunteer_city,
-        skills: r.skills || [],
-        signup_date: r.signup_date ? new Date(r.signup_date).toISOString().slice(0,10) : null
-      });
-    }
-  }
-
-  return Object.values(events);
+  // Return one row per volunteer assignment (history_id); consumer expects an array of assignment rows
+  return rows.map(r => ({
+    event_id: r.event_id,
+    event_name: r.event_name,
+    event_location: r.event_location,
+    event_date: r.event_date ? new Date(r.event_date).toISOString().slice(0,10) : null,
+    volunteer_id: r.volunteer_id,
+    full_name: r.full_name,
+    email: r.email,
+    volunteer_city: r.volunteer_city,
+    skills: r.skills || [],
+    signup_date: r.signup_date ? new Date(r.signup_date).toISOString().slice(0,10) : null
+  }));
 }
 
 
@@ -136,7 +118,7 @@ async function getVolunteerHistory(filters = {}) {
 
   const sql = `
     SELECT vp.volunteer_id, vp.full_name, ed.event_id, ed.event_name, ed.location, 
-          ed.event_date, ed.urgency, vh.hours_worked, vh.signup_date, vh.notes
+          ed.event_date, ed.urgency, vh.signup_date
     FROM volunteer_history vh
     JOIN user_table ut ON vh.volunteer_id = ut.user_id
     JOIN volunteerprofile vp ON ut.user_id = vp.user_id
@@ -149,7 +131,6 @@ async function getVolunteerHistory(filters = {}) {
   const URGENCY_MAP_REVERSE = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Critical' };
   return rows.map(r => ({
     ...r,
-    hours_worked: r.hours_worked ? Number(r.hours_worked) : 0,
     // normalize dates to ISO date-only string when present
     event_date: r.event_date ? (new Date(r.event_date)).toISOString().slice(0,10) : null,
     signup_date: r.signup_date ? (new Date(r.signup_date)).toISOString().slice(0,10) : null,
@@ -163,11 +144,13 @@ async function getEventManagement(filters = {}) {
 
   const sql = `
     SELECT ed.event_id, ed.event_name, ed.description, ed.location, ed.event_date, ed.urgency,
-           COUNT(vh.volunteer_id) as total_volunteers,
-           COALESCE(SUM(vh.hours_worked),0) as total_hours,
-           ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) as required_skills
+      COUNT(DISTINCT vh.history_id) as total_volunteers,
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) as required_skills,
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT vp.full_name), NULL) as volunteers
     FROM eventdetails ed
     LEFT JOIN volunteer_history vh ON ed.event_id = vh.event_id
+    LEFT JOIN user_table ut ON vh.volunteer_id = ut.user_id
+    LEFT JOIN volunteerprofile vp ON ut.user_id = vp.user_id
     LEFT JOIN event_skills es ON ed.event_id = es.event_id
     LEFT JOIN skills s ON es.skill_id = s.skill_id
     ${where ? 'WHERE ' + where : ''}
@@ -180,8 +163,10 @@ async function getEventManagement(filters = {}) {
   const URGENCY_MAP_REVERSE = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Critical' };
   return rows.map(r => ({
     ...r,
-    total_volunteers: Number(r.total_volunteers || 0),
-    total_hours: Number(r.total_hours || 0),
+  total_volunteers: Number(r.total_volunteers || 0),
+  total_hours: Number(r.total_hours || 0),
+    // volunteers: array of volunteer full names (may be empty)
+    volunteers: r.volunteers || [],
     required_skills: r.required_skills || [],
     event_date: r.event_date ? (new Date(r.event_date)).toISOString().slice(0,10) : null,
     urgency: URGENCY_MAP_REVERSE[r.urgency] || r.urgency
