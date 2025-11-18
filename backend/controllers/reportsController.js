@@ -60,6 +60,7 @@ async function getVolunteerParticipation(filters = {}) {
 }
 
 //report for event volunteer assignments , has volunteer_history and event details
+//NOTE: volunteer_History table volunteer_id references user_id in user_table
 async function getEventVolunteerAssignments(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
@@ -76,22 +77,23 @@ async function getEventVolunteerAssignments(filters = {}) {
       vp.city AS volunteer_city,
       vh.signup_date,
       ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills
-    FROM eventdetails ed
-    LEFT JOIN volunteer_history vh 
+    FROM eventdetails AS ed
+    LEFT JOIN volunteer_history AS vh 
       ON ed.event_id = vh.event_id
-    LEFT JOIN user_table ut 
+    LEFT JOIN user_table AS ut 
       ON vh.volunteer_id = ut.user_id
-    LEFT JOIN volunteerprofile vp 
+    LEFT JOIN volunteerprofile AS vp 
       ON ut.user_id = vp.user_id
-    LEFT JOIN volunteer_skills vs 
+    LEFT JOIN volunteer_skills AS vs 
       ON vp.volunteer_id = vs.volunteer_id
-    LEFT JOIN skills s 
+    LEFT JOIN skills AS s 
       ON vs.skill_id = s.skill_id
     ${where ? `WHERE ${where}` : ""}
     GROUP BY 
       ed.event_id, ed.event_name, ed.location, ed.event_date,
       vp.volunteer_id, vp.full_name, ut.user_email, vp.city, vh.signup_date
     ORDER BY ed.event_date ASC, vp.full_name ASC;
+
   `;
 
   const { rows } = await pool.query(sql, params);
