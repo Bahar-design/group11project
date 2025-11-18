@@ -30,7 +30,7 @@ function buildFilterClauses(filters, params) {
 }
 
 
-//report for event volunteer assignments , has volunteer_history and event details
+
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
@@ -59,6 +59,7 @@ async function getVolunteerParticipation(filters = {}) {
   }));
 }
 
+//report for event volunteer assignments , has volunteer_history and event details
 async function getEventVolunteerAssignments(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);

@@ -253,13 +253,13 @@ const ReportingModule = ({ isLoggedIn, user }) => {
               <table className="report-table">
                 <thead>
                   <tr>
-                    <th>Event</th>
+                    <th>Event Name</th>
                     <th>Event Location</th>
                     <th>Volunteer Name</th>
                     <th>Volunteer ID</th>
-                    <th>Email</th>
+                    <th>Volunteeer Email</th>
                     <th>Volunteer City</th>
-                    <th>Skills</th>
+                    <th>Volunteer Skills</th>
                     <th>Signup Date</th>
                   </tr>
                 </thead>
