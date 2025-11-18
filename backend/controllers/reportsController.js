@@ -77,16 +77,21 @@ async function getEventVolunteerAssignments(filters = {}) {
       vh.signup_date,
       ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills
     FROM eventdetails ed
-    LEFT JOIN volunteer_history vh ON ed.event_id = vh.event_id
-    LEFT JOIN volunteerprofile vp ON vh.volunteer_id = vp.volunteer_id
-    LEFT JOIN user_table ut ON vp.user_id = ut.user_id
-    LEFT JOIN volunteer_skills vs ON vp.volunteer_id = vs.volunteer_id
-    LEFT JOIN skills s ON vs.skill_id = s.skill_id
+    LEFT JOIN volunteer_history vh 
+      ON ed.event_id = vh.event_id
+    LEFT JOIN user_table ut 
+      ON vh.volunteer_id = ut.user_id
+    LEFT JOIN volunteerprofile vp 
+      ON ut.user_id = vp.user_id
+    LEFT JOIN volunteer_skills vs 
+      ON vp.volunteer_id = vs.volunteer_id
+    LEFT JOIN skills s 
+      ON vs.skill_id = s.skill_id
     ${where ? `WHERE ${where}` : ""}
     GROUP BY 
       ed.event_id, ed.event_name, ed.location, ed.event_date,
       vp.volunteer_id, vp.full_name, ut.user_email, vp.city, vh.signup_date
-    ORDER BY ed.event_date ASC, vp.full_name ASC
+    ORDER BY ed.event_date ASC, vp.full_name ASC;
   `;
 
   const { rows } = await pool.query(sql, params);
@@ -94,7 +99,6 @@ async function getEventVolunteerAssignments(filters = {}) {
   const events = {};
 
   for (const r of rows) {
-    // create event group if it doesn't exist
     if (!events[r.event_id]) {
       events[r.event_id] = {
         event_id: r.event_id,
@@ -105,7 +109,6 @@ async function getEventVolunteerAssignments(filters = {}) {
       };
     }
 
-    // only push volunteer if exists (LEFT JOIN means could be null)
     if (r.volunteer_id) {
       events[r.event_id].volunteers_assigned.push({
         volunteer_id: r.volunteer_id,
@@ -120,6 +123,7 @@ async function getEventVolunteerAssignments(filters = {}) {
 
   return Object.values(events);
 }
+
 
 
 
