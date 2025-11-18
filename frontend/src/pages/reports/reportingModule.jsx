@@ -45,6 +45,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
   const fetchReport = async (type) => {
     setLoading(true);
     setError(null);
+    setData([]);      //trying to fix reporting issue
     try {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([k,v]) => { if (v !== null && v !== undefined && v !== '') params.append(k, v); });
@@ -406,8 +407,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                 {reportTypes.map(report => (
                 <div
                     key={report.id}
-                    //onClick={() => setReportType(report.id)}
-                    onClick={() => setReportType(String(report.id).trim())}
+                    onClick={() => setReportType(report.id)}
                     className={`report-type-card ${reportType === report.id ? 'active' : ''}`}
                 >
                     <div className="report-type-icon">{report.icon}</div>
