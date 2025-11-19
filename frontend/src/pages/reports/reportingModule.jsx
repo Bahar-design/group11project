@@ -323,10 +323,10 @@ const ReportingModule = ({ isLoggedIn, user }) => {
         });
         filename = `event_management_${new Date().toISOString().slice(0,10)}.csv`;
       } else if (reportType === 'event-volunteers') {
-        csvContent = 'Event ID,Event Name,Volunteer ID,Volunteer Name,Hours,Signup Date\n';
-        (data || []).forEach(e => { (e.volunteers_assigned || []).forEach(v => {
-          csvContent += `${e.event_id || ''},"${e.event_name || ''}",${v.volunteer_id || ''},"${v.full_name || ''}",${v.hours_worked || 0},"${v.signup_date || ''}"\n`;
-        })});
+        csvContent = 'Event ID,Event Name,Event Location,Volunteer ID,Volunteer Name,Volunteer Email,Volunteer City,Volunteer Skills,Signup Date\n';
+        (data || []).forEach(r => {
+          csvContent += `${r.event_id || ''},"${r.event_name || ''}","${r.event_location || ''}",${r.volunteer_id || ''},"${r.full_name || ''}","${r.email || ''}","${r.volunteer_city || ''}","${(r.skills||[]).join('; ')}","${r.signup_date || ''}"\n`;
+        });
         filename = `event_volunteers_${new Date().toISOString().slice(0,10)}.csv`;
       }
 

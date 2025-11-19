@@ -71,10 +71,11 @@ async function getEventVolunteerAssignments(filters = {}) {
       ed.location AS event_location,
       ed.event_date,
       vh.history_id,
-      vp.volunteer_id,
-      vp.full_name,
+      ut.user_id AS user_id,
+      vp.volunteer_id AS volunteer_profile_id,
+      COALESCE(vp.full_name, ut.user_email) AS full_name,
       ut.user_email AS email,
-      vp.city AS volunteer_city,
+      COALESCE(vp.city, '') AS volunteer_city,
       vh.signup_date,
       COALESCE(vskills.skills, ARRAY[]::text[]) AS skills
     FROM eventdetails ed
@@ -99,7 +100,10 @@ async function getEventVolunteerAssignments(filters = {}) {
     event_name: r.event_name,
     event_location: r.event_location,
     event_date: r.event_date ? new Date(r.event_date).toISOString().slice(0,10) : null,
-    volunteer_id: r.volunteer_id,
+    // expose both ids: prefer volunteer profile id where available, otherwise show user_id
+    volunteer_id: r.volunteer_profile_id || r.user_id,
+    volunteer_profile_id: r.volunteer_profile_id || null,
+    user_id: r.user_id,
     full_name: r.full_name,
     email: r.email,
     volunteer_city: r.volunteer_city,
@@ -146,7 +150,7 @@ async function getEventManagement(filters = {}) {
     SELECT ed.event_id, ed.event_name, ed.description, ed.location, ed.event_date, ed.urgency,
       COUNT(DISTINCT vh.history_id) as total_volunteers,
       ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) as required_skills,
-      ARRAY_REMOVE(ARRAY_AGG(DISTINCT vp.full_name), NULL) as volunteers
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT COALESCE(vp.full_name, ut.user_email)), NULL) as volunteers
     FROM eventdetails ed
     LEFT JOIN volunteer_history vh ON ed.event_id = vh.event_id
     LEFT JOIN user_table ut ON vh.volunteer_id = ut.user_id
@@ -164,7 +168,6 @@ async function getEventManagement(filters = {}) {
   return rows.map(r => ({
     ...r,
   total_volunteers: Number(r.total_volunteers || 0),
-  total_hours: Number(r.total_hours || 0),
     // volunteers: array of volunteer full names (may be empty)
     volunteers: r.volunteers || [],
     required_skills: r.required_skills || [],
