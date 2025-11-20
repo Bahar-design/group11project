@@ -152,9 +152,13 @@
   padding: 12px;
   text-align: left;
   border-bottom: 2px solid #e2e8f0;
-  background: #f8fafc;
+  background: #f8fafc;    
   font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
+
 
 .report-table td {
   padding: 12px;
@@ -162,10 +166,11 @@
 }
 
 .table-scroll {
-  /* allow both horizontal and vertical scrolling, hide scrollbars for clean UI */
-  overflow: auto;
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  overflow: auto;              
+  max-height: 600px;           
+  border: 1px solid #e2e8f0;   
+  border-radius: 8px;         
+  background: white;          
 }
 .table-scroll::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
