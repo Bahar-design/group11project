@@ -101,7 +101,10 @@ async function getEventVolunteerAssignments(filters = {}) {
       JOIN skills s ON vss.skill_id = s.skill_id
       WHERE vss.volunteer_id = vp.volunteer_id
     ) vskills ON true
-    ${where ? `WHERE ${where}` : ""}
+    ${where 
+      ? `WHERE ${where} AND vh.history_id IS NOT NULL`
+      : `WHERE vh.history_id IS NOT NULL`
+    }
     ORDER BY ed.event_date ASC, vp.full_name ASC;
   `;
 
@@ -122,6 +125,7 @@ async function getEventVolunteerAssignments(filters = {}) {
     signup_date: r.signup_date ? new Date(r.signup_date).toISOString().slice(0,10) : null
   }));
 }
+
 
 async function getEventManagement(filters = {}) {
   const params = [];
