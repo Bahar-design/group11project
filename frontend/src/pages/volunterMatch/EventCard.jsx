@@ -44,10 +44,21 @@ export default function EventCard({ event }) {
           <Chip>{event.matchScore}% Perfect Match</Chip>  {/*this is were in the future we will insert the percentage! also the children object is the content wrapped inside of <Chip>*/}
           {/* to add rounded corners added ! to overide parent or component library styling */}
           <button
-            onClick={ () => setJoined(!joined)}
+            onClick={async () => {
+              setJoined(true);
+
+              await fetch(`${API_BASE}/api/volunteer-history`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  volunteer_id: user.volunteer_id,
+                  event_id: event.event_id
+                })
+              });
+            }}
             className={`!rounded-full px-6 py-3 text-sm font-semibold text-white transition
             ${ joined ? "bg-green-500 hover:bg-green-600" : "bg-rose-500 hover:bg-rose-600"}`}
-            >
+          >
             {joined ? "Drive Joined!" : "Join The Drive!"}
           </button>
         </div>

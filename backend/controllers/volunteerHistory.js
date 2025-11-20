@@ -41,7 +41,7 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
   }
 };
 
-// POST create a new volunteer record
+//POST create a new volunteer record
 exports.createVolunteerRecord = async (req, res) => {
   try {
     const { volunteer_id, event_id } = req.body;
@@ -50,21 +50,94 @@ exports.createVolunteerRecord = async (req, res) => {
       return res.status(400).json({ error: 'volunteer_id and event_id are required.' });
     }
 
-    const result = await pool.query(
+    //Insert volunteer 
+    const insertResult = await pool.query(
       `INSERT INTO volunteer_history (volunteer_id, event_id)
        VALUES ($1, $2)
        RETURNING *`,
       [volunteer_id, event_id]
     );
 
-    res.status(201).json(result.rows[0]);
+    //Increment event volunteer count
+    await pool.query(
+      `UPDATE eventdetails
+       SET volunteers = COALESCE(volunteers, 0) + 1
+       WHERE event_id = $1`,
+      [event_id]
+    );
+
+    //Fetch volunteer name and email
+    const volRes = await pool.query(
+      `SELECT vp.full_name, ut.user_email 
+       FROM volunteerprofile vp
+       JOIN user_table ut ON vp.user_id = ut.user_id
+       WHERE vp.volunteer_id = $1`,
+      [volunteer_id]
+    );
+
+    const volunteerName = volRes.rows[0]?.full_name || "Volunteer";
+    const volunteerEmail = volRes.rows[0]?.user_email;
+
+    // 4) Fetch event name, location, date
+    const eventRes = await pool.query(
+      `SELECT event_name, location, event_date 
+       FROM eventdetails
+       WHERE event_id = $1`,
+      [event_id]
+    );
+
+    const eventName = eventRes.rows[0]?.event_name;
+    const eventLocation = eventRes.rows[0]?.location;
+    const rawDate = eventRes.rows[0]?.event_date;
+    const eventDate = rawDate ? rawDate.toISOString().slice(0, 10) : null;
+
+    // 5) Get admin emails
+    const adminRes = await pool.query(
+      `SELECT user_email 
+       FROM user_table 
+       WHERE user_type = 'admin'`
+    );
+
+    const adminEmails = adminRes.rows.map(a => a.user_email);
+
+    //Notify admins
+    for (const adminEmail of adminEmails) {
+      await pool.query(
+        `INSERT INTO notifications (message_from, message_to, message_text, message_sent)
+         VALUES ($1, $2, $3, TRUE)`,
+        [
+          "system",
+          adminEmail,
+          `${volunteerName} has volunteered for ${eventName} scheduled on ${eventDate}.`
+        ]
+      );
+    }
+
+    //Notify volunteer
+    await pool.query(
+      `INSERT INTO notifications (message_from, message_to, message_text, message_sent)
+       VALUES ($1, $2, $3, TRUE)`,
+      [
+        "system",
+        volunteerEmail,
+        `Congratulations ${volunteerName}! You have successfully volunteered for ${eventName}.
+Location of event: ${eventLocation}
+Date of event: ${eventDate}`
+      ]
+    );
+
+    //Return created volunteer history record
+    res.status(201).json(insertResult.rows[0]);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create volunteer record.' });
   }
 };
 
-// PUT update an existing record
+
+
+//PUT update an existing record
 exports.updateVolunteerRecord = async (req, res) => {
   try {
     const { id } = req.params;
