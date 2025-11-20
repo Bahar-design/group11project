@@ -186,47 +186,49 @@ const ReportingModule = ({ isLoggedIn, user }) => {
             )}
           </div>
         );
-       case 'event-volunteers':
-        return (
-          <div>
-            <h3 className="report-type-name">Event Volunteer Assignments</h3>
-            <div className="table-scroll">
-              <table className="report-table">
-                <thead>
-                  <tr>
-                    <th>Event Name</th>
-                    <th>Event Location</th>
-                    <th>Volunteer Name</th>
-                    <th>Volunteer ID</th>
-                    <th>Volunteer Email</th>
-                    <th>Volunteer's Location</th>
-                    <th>Volunteer Skills</th>
-                    <th>Signup Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(data || []).map(row => (
-                    <tr key={`${row.event_id || ''}-${row.volunteer_id || ''}-${row.signup_date || ''}`}>
-                      <td>{row.event_name}</td>
-                      <td>{row.event_location}</td>
-                      <td>{row.full_name}</td>
-                      <td>{row.volunteer_id}</td>
-                      <td>{row.email}</td>
-                      <td>{row.volunteer_city}</td>
-                      <td>{(row.skills || []).join(', ')}</td>
-                      <td>{row.signup_date}</td>
+
+        case 'event-volunteers':
+          return (
+            <div>
+              <h3 className="report-type-name">Event Volunteer Assignments</h3>
+              <div className="table-scroll">
+                <table className="report-table">
+                  <thead>
+                    <tr>
+                      <th>Event Name</th>
+                      <th>Event ID</th>
+                      <th>Event Location</th>
+                      <th>Volunteer Name</th>
+                      <th>Volunteer ID</th>
+                      <th>Volunteer Email</th>
+                      <th>Volunteer City</th>
+                      <th>Volunteer Skills</th>
+                      <th>Signup Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {(data || []).map(row => (
+                      <tr key={`${row.event_id || ''}-${row.volunteer_id || ''}-${row.signup_date || ''}`}>
+                        <td>{row.event_name}</td>
+                        <td>{row.event_id}</td>
+                        <td>{row.event_location}</td>
+                        <td>{row.full_name}</td>
+                        <td>{row.volunteer_id}</td>
+                        <td>{row.email}</td>
+                        <td>{row.volunteer_city}</td>
+                        <td>{(row.skills || []).join(', ')}</td>
+                        <td>{row.signup_date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {((data || []).length === 0) && (
+                <p className="no-data-message">No volunteer assignments found matching the selected filters.</p>
+              )}
             </div>
-
-            {((data || []).length === 0) && (
-              <p className="no-data-message">No volunteer assignments found matching the selected filters.</p>
-            )}
-          </div>
-        );
-
+          );
 
       default:
         return null;
