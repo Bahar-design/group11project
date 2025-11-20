@@ -1,32 +1,55 @@
 const pool = require('../db');
 
-function buildFilterClauses(filters, params) {
+ function buildFilterClauses(filters, params, reportType) {
   const clauses = [];
-  if (filters.search) {
-    params.push(`%${filters.search.toLowerCase()}%`);
-    clauses.push('LOWER(vp.full_name) LIKE $' + params.length);
-  }
-  if (filters.location && filters.location !== 'all') {
-    params.push(filters.location);
-    clauses.push('vp.city = $' + params.length);
-  }
-  if (filters.skillId && filters.skillId !== 'all') {
-    params.push(Number(filters.skillId));
-    clauses.push('s.skill_id = $' + params.length);
-  } else if (filters.skill && filters.skill !== 'all') {
-    params.push(filters.skill);
-    clauses.push('s.skill_name = $' + params.length);
-  }
+
+  // --- SHARED: Date range filters ---
   if (filters.startDate) {
     params.push(filters.startDate);
     clauses.push('ed.event_date >= $' + params.length);
   }
+
   if (filters.endDate) {
     params.push(filters.endDate);
     clauses.push('ed.event_date <= $' + params.length);
   }
+
+  if (filters.search && filters.search.trim() !== '') {
+    const term = `%${filters.search.toLowerCase()}%`;
+    params.push(term);
+
+    if (reportType === 'volunteer-participation') {
+      clauses.push(`(LOWER(vp.full_name) LIKE $${params.length} 
+                     OR LOWER(vp.city) LIKE $${params.length})`);
+    }
+
+    else if (reportType === 'event-volunteers') {
+      clauses.push(`(LOWER(ed.event_name) LIKE $${params.length}
+                     OR LOWER(ed.location) LIKE $${params.length}
+                     OR LOWER(vp.full_name) LIKE $${params.length}
+                     OR CAST(ed.event_date AS TEXT) LIKE $${params.length})`);
+    }
+
+    else if (reportType === 'event-management') {
+      clauses.push(`(LOWER(ed.event_name) LIKE $${params.length}
+                     OR LOWER(ed.location) LIKE $${params.length}
+                     OR CAST(ed.event_date AS TEXT) LIKE $${params.length})`);
+    }
+  }
+
+  if (filters.location && filters.location !== 'all') {
+    params.push(filters.location);
+    clauses.push('ed.location = $' + params.length);
+  }
+
+  if (filters.skillId && filters.skillId !== 'all') {
+    params.push(Number(filters.skillId));
+    clauses.push('s.skill_id = $' + params.length);
+  }
+
   return clauses.length ? clauses.join(' AND ') : '';
 }
+
 
 /*
 async function getVolunteerParticipation(filters = {}) {
@@ -78,7 +101,8 @@ async function getVolunteerParticipation(filters = {}) {
 
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
-  const where = buildFilterClauses(filters, params);
+  const where = buildFilterClauses(filters, params, 'volunteer-participation');
+
 
   const sql = `
     SELECT 
@@ -135,7 +159,10 @@ async function getVolunteerParticipation(filters = {}) {
 
 async function getEventVolunteerAssignments(filters = {}) {
   const params = [];
-  const where = buildFilterClauses(filters, params);
+  
+  const where = buildFilterClauses(filters, params, 'event-volunteers');
+
+
 
   const sql = `
     SELECT
@@ -189,7 +216,8 @@ async function getEventVolunteerAssignments(filters = {}) {
 
 async function getEventManagement(filters = {}) {
   const params = [];
-  const where = buildFilterClauses(filters, params);
+  const where = buildFilterClauses(filters, params, 'event-management');
+
 
   const sql = `
     SELECT ed.event_id, ed.event_name, ed.description, ed.location, ed.event_date, ed.urgency,
