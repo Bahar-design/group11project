@@ -134,7 +134,7 @@ export default function EventsPage({ isLoggedIn, user }) {
                 <div style={{ marginBottom: '0.3em' }}><strong>Date:</strong> {event.date}</div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Urgency:</strong> <span style={{ color: 'var(--primary-red)', fontWeight: 500 }}>{event.urgency}</span></div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Skills:</strong> {(event.requiredSkills || []).map(skill => <span className="skill-chip" key={skill}>{skill}</span>)}</div>
-                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {event.volunteers} volunteers signed up</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {(event.volunteersList ? event.volunteersList.length : (event.volunteers || 0))} volunteers signed up</div>
                   {event.createdByName && (
                     <div style={{ marginBottom: '0.3em' }}><strong>Created by:</strong> {event.createdByName}</div>
                   )}
@@ -142,7 +142,7 @@ export default function EventsPage({ isLoggedIn, user }) {
                 {user && user.userType === 'admin' && (
                   <div style={{ marginTop: '0.5em' }}>
                     <button className="btn-secondary" onClick={() => toggleVolunteers(event.id)}>
-                      {openVolunteers[event.id] ? 'Hide participants' : `View participants (${event.volunteers || 0})`}
+                      {openVolunteers[event.id] ? 'Hide participants' : `View participants (${event.volunteersList ? event.volunteersList.length : (event.volunteers || 0)})`}
                     </button>
                     {openVolunteers[event.id] && (
                       <div style={{ marginTop: '0.5em' }}>
@@ -203,7 +203,30 @@ export default function EventsPage({ isLoggedIn, user }) {
                 <div style={{ marginBottom: '0.3em' }}><strong>Date:</strong> {event.date}</div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Urgency:</strong> <span style={{ color: 'var(--primary-red)', fontWeight: 500 }}>{event.urgency}</span></div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Skills:</strong> {(event.requiredSkills || []).map(skill => <span className="skill-chip" key={skill}>{skill}</span>)}</div>
-                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {event.volunteers} volunteers signed up</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {(event.volunteersList ? event.volunteersList.length : (event.volunteers || 0))} volunteers signed up</div>
+                {/* Admin-only participants control (fetches volunteers) for past events too */}
+                {user && user.userType === 'admin' && (
+                  <div style={{ marginTop: '0.5em' }}>
+                    <button className="btn-secondary" onClick={() => toggleVolunteers(event.id)}>
+                      {openVolunteers[event.id] ? 'Hide participants' : `View participants (${event.volunteersList ? event.volunteersList.length : (event.volunteers || 0)})`}
+                    </button>
+                    {openVolunteers[event.id] && (
+                      <div style={{ marginTop: '0.5em' }}>
+                        {(event.volunteersList && event.volunteersList.length > 0) ? (
+                          <div style={{ maxHeight: '220px', overflowY: 'auto', border: '1px solid var(--muted)', padding: '0.5rem', borderRadius: '6px' }}>
+                            <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+                              {event.volunteersList.map((v, i) => (
+                                <li key={i} style={{ padding: '0.25rem 0' }}>{v.full_name || v.name || v.email}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <div style={{ color: 'var(--text-secondary)' }}>No participants yet</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="event-card-actions">
                 <button className="btn-secondary" disabled title="Past events are read-only">Manage</button>
