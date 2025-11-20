@@ -30,7 +30,7 @@ function buildFilterClauses(filters, params) {
 }
 
 
-
+/*
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
@@ -56,6 +56,54 @@ async function getVolunteerParticipation(filters = {}) {
     skills: r.skills || []
   }));
 }
+  */
+
+
+async function getVolunteerParticipation(filters = {}) {
+  const params = [];
+  const where = buildFilterClauses(filters, params);
+
+  const sql = `
+    SELECT 
+      vp.volunteer_id AS volunteer_id,
+      vp.full_name AS full_name,
+      ut.user_email AS email,
+      vp.city AS city,
+      vp.state_code AS state_code,
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills,
+      ARRAY_REMOVE(ARRAY_AGG(DISTINCT ed.event_name), NULL) AS events_worked,
+      COUNT(DISTINCT vh.event_id) AS total_events
+    FROM volunteerprofile AS vp
+    JOIN user_table AS ut 
+      ON vp.user_id = ut.user_id
+    LEFT JOIN volunteer_history AS vh 
+      ON ut.user_id = vh.volunteer_id
+    LEFT JOIN eventdetails AS ed
+      ON vh.event_id = ed.event_id
+    LEFT JOIN volunteer_skills AS vs 
+      ON vp.volunteer_id = vs.volunteer_id
+    LEFT JOIN skills AS s 
+      ON vs.skill_id = s.skill_id
+    ${where ? 'WHERE ' + where : ''}
+    GROUP BY 
+      vp.volunteer_id, 
+      vp.full_name, 
+      ut.user_email, 
+      vp.city, 
+      vp.state_code
+    ORDER BY vp.full_name ASC
+  `;
+
+  const { rows } = await pool.query(sql, params);
+
+  return rows.map(r => ({
+    ...r,
+    total_events: Number(r.total_events || 0),
+    skills: r.skills || [],
+    events_worked: r.events_worked || []
+  }));
+}
+
 
 //report for event volunteer assignments , has volunteer_history and event details
 //NOTE: volunteer_History table volunteer_id references user_id in user_table
@@ -113,34 +161,6 @@ async function getEventVolunteerAssignments(filters = {}) {
 }
 
 
-
-
-
-async function getVolunteerHistory(filters = {}) {
-  const params = [];
-  const where = buildFilterClauses(filters, params);
-
-  const sql = `
-    SELECT vp.volunteer_id, vp.full_name, ed.event_id, ed.event_name, ed.location, 
-          ed.event_date, ed.urgency, vh.signup_date
-    FROM volunteer_history vh
-    JOIN user_table ut ON vh.volunteer_id = ut.user_id
-    JOIN volunteerprofile vp ON ut.user_id = vp.user_id
-    JOIN eventdetails ed ON vh.event_id = ed.event_id
-    ${where ? 'WHERE ' + where : ''}
-    ORDER BY vp.volunteer_id, ed.event_date DESC
-  `;
-
-  const { rows } = await pool.query(sql, params);
-  const URGENCY_MAP_REVERSE = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Critical' };
-  return rows.map(r => ({
-    ...r,
-    // normalize dates to ISO date-only string when present
-    event_date: r.event_date ? (new Date(r.event_date)).toISOString().slice(0,10) : null,
-    signup_date: r.signup_date ? (new Date(r.signup_date)).toISOString().slice(0,10) : null,
-    urgency: URGENCY_MAP_REVERSE[r.urgency] || r.urgency
-  }));
-}
 
 async function getEventManagement(filters = {}) {
   const params = [];
@@ -202,7 +222,6 @@ async function getSkills(eventId = null) {
 module.exports = {
   getVolunteerParticipation,
   getEventVolunteerAssignments,
-  getVolunteerHistory,
   getEventManagement,
   getSkills
 };

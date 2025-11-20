@@ -14,8 +14,8 @@ const ReportingModule = ({ isLoggedIn, user }) => {
   const reportRef = useRef();
 
   const reportTypes = [
-    { id: 'volunteer-participation', icon: '👥', title: 'Volunteer Participation', desc: 'Summary of all volunteers and their participation statistics' },
-    { id: 'volunteer-history', icon: '📋', title: 'Detailed Volunteer History', desc: 'Complete history of each volunteer\'s event participation' },
+    { id: 'volunteer-participation', icon: '👥', title: 'Volunteer Participation History', desc: 'History of each volunteer\'s event participation' },
+   // { id: 'volunteer-history', icon: '📋', title: 'Detailed Volunteer History', desc: 'History of each volunteer\'s event participation' },
     { id: 'event-management', icon: '📅', title: 'Event Management', desc: 'Overview of all events and their details' },
     { id: 'event-volunteers', icon: '🤝', title: 'Event Volunteer Assignments', desc: 'Detailed list of volunteer assignments per event' }
   ];
@@ -99,9 +99,10 @@ const ReportingModule = ({ isLoggedIn, user }) => {
     let filteredVolunteers = [];
     let filteredEvents = [];
 
-    if (reportType === 'volunteer-participation' || reportType === 'volunteer-history') {
-      filteredVolunteers = data || [];
+    if (reportType === 'volunteer-participation') {
+    filteredVolunteers = data || [];
     }
+
 
     if (reportType === 'event-management' || reportType === 'event-volunteers') {
       filteredEvents = data || [];
@@ -116,11 +117,12 @@ const ReportingModule = ({ isLoggedIn, user }) => {
               <table className="report-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Location</th>
-                    <th>Skills</th>
+                    <th>Volunteer ID</th>
+                    <th>Volunteer Name</th>
+                    <th>Volunteer Email</th>
+                    <th>Volunteer's Location</th>
+                    <th>Volunteer's Skills</th>
+                    <th>List of Event's Worked</th>
                     <th>Total Events</th>
                   </tr>
                 </thead>
@@ -140,40 +142,6 @@ const ReportingModule = ({ isLoggedIn, user }) => {
             </div>
             {filteredVolunteers.length === 0 && (
               <p className="no-data-message">No volunteers found matching the selected filters.</p>
-            )}
-          </div>
-        );
-
-      case 'volunteer-history':
-        return (
-          <div>
-            <h3 className="report-type-name">Detailed Volunteer History</h3>
-            <div className="table-scroll">
-              <table className="report-table">
-                <thead>
-                  <tr>
-                    <th>Volunteer</th>
-                    <th>Event</th>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Urgency</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredVolunteers.map(item => (
-                    <tr key={`${item.volunteer_id}-${item.event_id || Math.random()}`}>
-                      <td>{item.full_name}</td>
-                      <td>{item.event_name || ''}</td>
-                      <td>{item.event_date || ''}</td>
-                      <td>{item.location || ''}</td>
-                      <td>{item.urgency || ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            { (filteredVolunteers.length === 0) && (
-              <p className="no-data-message">No volunteer history found matching the selected filters.</p>
             )}
           </div>
         );
@@ -310,13 +278,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
           csvContent += `${v.volunteer_id || ''},"${v.full_name || ''}","${v.email || ''}","${v.city || ''}","${v.state_code || ''}","${(v.skills||[]).join('; ')}",${v.total_events || 0}\n`;
         });
         filename = `volunteer_participation_${new Date().toISOString().slice(0,10)}.csv`;
-      } else if (reportType === 'volunteer-history') {
-        csvContent = 'Volunteer ID,Full Name,Email,Event ID,Event Name,Event Date,Location,Signup Date\n';
-        (data || []).forEach(r => {
-          csvContent += `${r.volunteer_id || ''},"${r.full_name || ''}","${r.email || ''}",${r.event_id || ''},"${r.event_name || ''}","${r.event_date || ''}","${r.location || ''}","${r.signup_date || ''}"\n`;
-        });
-        filename = `volunteer_history_${new Date().toISOString().slice(0,10)}.csv`;
-      } else if (reportType === 'event-management') {
+      }else if (reportType === 'event-management') {
         csvContent = 'Event ID,Event Name,Description,Location,Date,Urgency,Total Volunteers,Required Skills,Volunteers\n';
         (data || []).forEach(e => {
           csvContent += `${e.event_id || ''},"${e.event_name || ''}","${e.description || ''}","${e.location || ''}","${e.event_date || ''}","${e.urgency || ''}",${e.total_volunteers || 0},"${(e.required_skills||[]).join('; ')}","${(Array.isArray(e.volunteers)?e.volunteers.join('; '):e.volunteers) || ''}"\n`;
