@@ -174,7 +174,7 @@
   background: white;
 
 
-  scrollbar-color: #fbcfe8 #fde7ef;
+  scrollbar-color: #ef4444 #ffffff;
 }
 
 
@@ -189,13 +189,13 @@
 }
 
 .table-scroll::-webkit-scrollbar-thumb {
-  background: #f9a8d4;   
+  background: #ef4444;   
   border-radius: 10px;
-  border: 3px solid #fde7ef; 
+  border: 3px solid #ffffff; 
 }
 
 .table-scroll::-webkit-scrollbar-thumb:hover {
-  background: #f472b6;  
+  background: #ef4444;  
 }
 
 
