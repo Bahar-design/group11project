@@ -201,7 +201,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                       <th>Volunteer Name</th>
                       <th>Volunteer ID</th>
                       <th>Volunteer Email</th>
-                      <th>Volunteer City</th>
+                      <th>Volunteer's City</th>
                       <th>Volunteer Skills</th>
                       <th>Signup Date</th>
                     </tr>
