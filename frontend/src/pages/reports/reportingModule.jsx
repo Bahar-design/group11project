@@ -238,10 +238,10 @@ const ReportingModule = ({ isLoggedIn, user }) => {
     try {
       let csvContent = '';
       let filename = '';
-      if (reportType === 'volunteer-participation') {
-        csvContent = 'Volunteer ID,Full Name,Email,City,State,Skills,Total Events\n';
+        if (reportType === 'volunteer-participation') {
+        csvContent = 'Volunteer ID,Full Name,Email,City,State,Skills,Events Worked,Total Events\n';
         (data || []).forEach(v => {
-          csvContent += `${v.volunteer_id || ''},"${v.full_name || ''}","${v.email || ''}","${v.city || ''}","${v.state_code || ''}","${(v.skills||[]).join('; ')}",${v.total_events || 0}\n`;
+          csvContent += `${v.volunteer_id || ''},"${v.full_name || ''}","${v.email || ''}","${v.city || ''}","${v.state_code || ''}","${(v.skills||[]).join('; ')}","${(v.events_worked||[]).join('; ')}",${v.total_events || 0}\n`;
         });
         filename = `volunteer_participation_${new Date().toISOString().slice(0,10)}.csv`;
       }else if (reportType === 'event-management') {
