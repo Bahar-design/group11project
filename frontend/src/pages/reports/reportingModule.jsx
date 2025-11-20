@@ -122,7 +122,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                     <th>Volunteer Email</th>
                     <th>Volunteer's Location</th>
                     <th>Volunteer's Skills</th>
-                    <th>List of Event's Worked</th>
+                    <th>Event's Worked</th>
                     <th>Total Events</th>
                   </tr>
                 </thead>
@@ -134,6 +134,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                       <td>{volunteer.email || ''}</td>
                       <td>{volunteer.city || ''}, {volunteer.state_code || ''}</td>
                       <td>{(volunteer.skills || []).join(', ')}</td>
+                      <td>{(volunteer.events_worked || []).join(', ')}</td>
                       <td>{volunteer.total_events}</td>
                     </tr>
                   ))}
@@ -185,41 +186,6 @@ const ReportingModule = ({ isLoggedIn, user }) => {
             )}
           </div>
         );
-/*
-      case 'event-volunteers':
-        return (
-          <div>
-            <h3 className="report-type-name">Event Volunteer Assignments</h3>
-            <div className="table-scroll">
-              <table className="report-table">
-                <thead>
-                  <tr>
-                    <th>Event</th>
-                    <th>Volunteer</th>
-                    <th>Skills</th>
-                    <th>Hours Worked</th>
-                    <th>Signup Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEvents.flatMap(event => (event.volunteers_assigned || []).map(volunteer => (
-                    <tr key={`${event.event_id}-${volunteer.volunteer_id}`}>
-                      <td>{event.event_name}</td>
-                      <td>{volunteer.full_name}</td>
-                      <td>{(volunteer.skills || []).join(', ')}</td>
-                      <td>{volunteer.hours_worked}</td>
-                      <td>{volunteer.signup_date}</td>
-                    </tr>
-                  )))}
-                </tbody>
-              </table>
-            </div>
-            {((filteredEvents.flatMap(e => e.volunteers_assigned || [])).length === 0) && (
-              <p className="no-data-message">No volunteer assignments found matching the selected filters.</p>
-            )}
-          </div>
-        );
-        */
        case 'event-volunteers':
         return (
           <div>

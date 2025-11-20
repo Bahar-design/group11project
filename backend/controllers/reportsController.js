@@ -10,7 +10,6 @@ function buildFilterClauses(filters, params) {
     params.push(filters.location);
     clauses.push('vp.city = $' + params.length);
   }
-  // accept either skillName (legacy) or skillId (preferred)
   if (filters.skillId && filters.skillId !== 'all') {
     params.push(Number(filters.skillId));
     clauses.push('s.skill_id = $' + params.length);
@@ -29,36 +28,6 @@ function buildFilterClauses(filters, params) {
   return clauses.length ? clauses.join(' AND ') : '';
 }
 
-
-/*
-async function getVolunteerParticipation(filters = {}) {
-  const params = [];
-  const where = buildFilterClauses(filters, params);
-
-  const sql = `
-    SELECT vp.volunteer_id, vp.full_name, vp.city, vp.state_code,
-      COUNT(vh.event_id) as total_events,
-      ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) as skills
-    FROM volunteerprofile vp
-    LEFT JOIN volunteer_history vh ON vp.user_id = vh.volunteer_id
-    LEFT JOIN volunteer_skills vs ON vp.volunteer_id = vs.volunteer_id
-    LEFT JOIN skills s ON vs.skill_id = s.skill_id
-    LEFT JOIN eventdetails ed ON vh.event_id = ed.event_id
-    ${where ? 'WHERE ' + where : ''}
-    GROUP BY vp.volunteer_id, vp.full_name, vp.city, vp.state_code
-    ORDER BY vp.full_name ASC
-  `;
-
-  const { rows } = await pool.query(sql, params);
-  return rows.map(r => ({
-    ...r,
-    total_events: Number(r.total_events || 0),
-    skills: r.skills || []
-  }));
-}
-  */
-
-
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
@@ -72,7 +41,7 @@ async function getVolunteerParticipation(filters = {}) {
       vp.state_code AS state_code,
       ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills,
       ARRAY_REMOVE(ARRAY_AGG(DISTINCT ed.event_name), NULL) AS events_worked,
-      COUNT(DISTINCT vh.event_id) AS total_events
+      COUNT(vh.history_id) AS total_events
     FROM volunteerprofile AS vp
     JOIN user_table AS ut 
       ON vp.user_id = ut.user_id
@@ -104,14 +73,10 @@ async function getVolunteerParticipation(filters = {}) {
   }));
 }
 
-
-//report for event volunteer assignments , has volunteer_history and event details
-//NOTE: volunteer_History table volunteer_id references user_id in user_table
 async function getEventVolunteerAssignments(filters = {}) {
   const params = [];
   const where = buildFilterClauses(filters, params);
-  // Use a lateral subquery to fetch volunteer skills per volunteer to avoid
-  // duplicate rows caused by joining many-to-many skill tables.
+
   const sql = `
     SELECT
       ed.event_id,
@@ -142,13 +107,11 @@ async function getEventVolunteerAssignments(filters = {}) {
 
   const { rows } = await pool.query(sql, params);
 
-  // Return one row per volunteer assignment (history_id); consumer expects an array of assignment rows
   return rows.map(r => ({
     event_id: r.event_id,
     event_name: r.event_name,
     event_location: r.event_location,
     event_date: r.event_date ? new Date(r.event_date).toISOString().slice(0,10) : null,
-    // expose both ids: prefer volunteer profile id where available, otherwise show user_id
     volunteer_id: r.volunteer_profile_id || r.user_id,
     volunteer_profile_id: r.volunteer_profile_id || null,
     user_id: r.user_id,
@@ -159,8 +122,6 @@ async function getEventVolunteerAssignments(filters = {}) {
     signup_date: r.signup_date ? new Date(r.signup_date).toISOString().slice(0,10) : null
   }));
 }
-
-
 
 async function getEventManagement(filters = {}) {
   const params = [];
@@ -183,12 +144,11 @@ async function getEventManagement(filters = {}) {
   `;
 
   const { rows } = await pool.query(sql, params);
-  // Map urgency numeric -> label using existing mapping where possible
   const URGENCY_MAP_REVERSE = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Critical' };
+
   return rows.map(r => ({
     ...r,
-  total_volunteers: Number(r.total_volunteers || 0),
-    // volunteers: array of volunteer full names (may be empty)
+    total_volunteers: Number(r.total_volunteers || 0),
     volunteers: r.volunteers || [],
     required_skills: r.required_skills || [],
     event_date: r.event_date ? (new Date(r.event_date)).toISOString().slice(0,10) : null,
@@ -197,7 +157,6 @@ async function getEventManagement(filters = {}) {
 }
 
 async function getSkills(eventId = null) {
-  // If eventId provided, return skills required for that event; otherwise return all skills
   if (eventId) {
     const sql = `
       SELECT s.skill_id, s.skill_name
