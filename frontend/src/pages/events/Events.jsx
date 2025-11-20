@@ -122,10 +122,10 @@ export default function EventsPage({ isLoggedIn, user }) {
             </div>
           )}
 
-          {/* Existing Events Section */}
+          {/* Events — split into Existing (upcoming) and Past */}
           <div className="events-section-header" style={{ marginTop: '3rem', marginBottom: '2rem' }}>Existing Events</div>
           {loading && <div>Loading events...</div>}
-          {events.map(event => (
+          {events.filter(e => new Date(e.date) >= new Date()).map(event => (
             <div className="event-card fade-in" key={event.id}>
               <div className="event-card-title">{event.name}</div>
               <div className="event-card-details">
@@ -138,23 +138,41 @@ export default function EventsPage({ isLoggedIn, user }) {
                   {event.createdByName && (
                     <div style={{ marginBottom: '0.3em' }}><strong>Created by:</strong> {event.createdByName}</div>
                   )}
-                {event.volunteersList && event.volunteersList.length > 0 && (
+                {/* Admin-only participants control (fetches volunteers) */}
+                {user && user.userType === 'admin' && (
                   <div style={{ marginTop: '0.5em' }}>
                     <button className="btn-secondary" onClick={() => toggleVolunteers(event.id)}>
-                      {openVolunteers[event.id] ? 'Hide volunteers' : `Show ${event.volunteers} volunteers`}
+                      {openVolunteers[event.id] ? 'Hide participants' : `View participants (${event.volunteers || 0})`}
                     </button>
                     {openVolunteers[event.id] && (
                       <div style={{ marginTop: '0.5em' }}>
-                        <select size={Math.min(6, event.volunteersList.length)} style={{ width: '100%' }}>
-                          {event.volunteersList.map((v, i) => <option key={i}>{v.name}</option>)}
-                        </select>
+                        {/* show either a simple list or a select box */}
+                        {(event.volunteersList && event.volunteersList.length > 0) ? (
+                          <div style={{ maxHeight: '220px', overflowY: 'auto', border: '1px solid var(--muted)', padding: '0.5rem', borderRadius: '6px' }}>
+                            <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+                              {event.volunteersList.map((v, i) => (
+                                <li key={i} style={{ padding: '0.25rem 0' }}>{v.full_name || v.name || v.email}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <div style={{ color: 'var(--text-secondary)' }}>No participants yet</div>
+                        )}
                       </div>
                     )}
                   </div>
                 )}
               </div>
               <div className="event-card-actions">
-                <button className="btn-secondary" style={{ border: '1.5px solid var(--primary-red)', color: 'var(--primary-red)', background: 'var(--white)', fontWeight: 600 }} onClick={() => setEditingEventId(event.id)}>Manage</button>
+                <button
+                  className="btn-secondary"
+                  style={{ border: '1.5px solid var(--primary-red)', color: 'var(--primary-red)', background: 'var(--white)', fontWeight: 600 }}
+                  onClick={() => setEditingEventId(event.id)}
+                  disabled={new Date(event.date) < new Date()}
+                  title={new Date(event.date) < new Date() ? 'Past events are read-only (delete only)' : 'Manage event'}
+                >
+                  Manage
+                </button>
                 <button className="btn-danger" style={{ marginLeft: '0.5rem' }} onClick={() => handleDelete(event.id)}>Delete</button>
                 <button className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--primary-red), var(--accent-red))', border: 'none', fontWeight: 600, marginLeft: '0.5rem' }} onClick={() => handlePrintReport(event)}>Print Report</button>
               </div>
@@ -170,6 +188,28 @@ export default function EventsPage({ isLoggedIn, user }) {
                   />
                 </div>
               )}
+            </div>
+          ))}
+
+          {/* Past Events Section */}
+          <div className="events-section-header" style={{ marginTop: '3rem', marginBottom: '2rem' }}>Past Events</div>
+          {events.filter(e => new Date(e.date) < new Date()).length === 0 && (<div style={{ color: 'var(--text-secondary)' }}>No past events</div>)}
+          {events.filter(e => new Date(e.date) < new Date()).map(event => (
+            <div className="event-card fade-in" key={`past-${event.id}`}>
+              <div className="event-card-title">{event.name}</div>
+              <div className="event-card-details">
+                <div style={{ marginBottom: '0.3em' }}><strong>Description:</strong> {event.description}</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Location:</strong> {event.location}</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Date:</strong> {event.date}</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Urgency:</strong> <span style={{ color: 'var(--primary-red)', fontWeight: 500 }}>{event.urgency}</span></div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Skills:</strong> {(event.requiredSkills || []).map(skill => <span className="skill-chip" key={skill}>{skill}</span>)}</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {event.volunteers} volunteers signed up</div>
+              </div>
+              <div className="event-card-actions">
+                <button className="btn-secondary" disabled title="Past events are read-only">Manage</button>
+                <button className="btn-danger" style={{ marginLeft: '0.5rem' }} onClick={() => handleDelete(event.id)}>Delete</button>
+                <button className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--primary-red), var(--accent-red))', border: 'none', fontWeight: 600, marginLeft: '0.5rem' }} onClick={() => handlePrintReport(event)}>Print Report</button>
+              </div>
             </div>
           ))}
         </div>

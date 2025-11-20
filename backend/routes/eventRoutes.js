@@ -327,20 +327,37 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// GET volunteers for an event (requires event_signups table and volunteerprofile/user_table)
+// GET volunteers for an event (joins volunteer_history -> user_table -> volunteerprofile)
 router.get('/:id/volunteers', async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid event id' });
+
     const q = await pool.query(
-      `SELECT vp.volunteer_id, vp.full_name, u.user_email FROM event_signups es JOIN volunteerprofile vp ON es.volunteer_id = vp.volunteer_id JOIN user_table u ON vp.user_id = u.user_id WHERE es.event_id = $1`,
+      `SELECT vh.history_id, vh.signup_date, ut.user_id, ut.user_email, vp.volunteer_id AS volunteer_profile_id, vp.full_name, vp.city
+       FROM volunteer_history vh
+       JOIN user_table ut ON vh.volunteer_id = ut.user_id
+       LEFT JOIN volunteerprofile vp ON ut.user_id = vp.user_id
+       WHERE vh.event_id = $1
+       ORDER BY vh.signup_date ASC, COALESCE(vp.full_name, ut.user_email) ASC`,
       [id]
     );
-    const list = q.rows.map(r => ({ id: r.volunteer_id, name: r.full_name || r.user_email }));
-    res.json(list);
+
+    const list = q.rows.map(r => ({
+      history_id: r.history_id,
+      user_id: r.user_id,
+      volunteer_profile_id: r.volunteer_profile_id || null,
+      full_name: r.full_name || r.user_email,
+      email: r.user_email,
+      city: r.city || null,
+      signup_date: r.signup_date ? r.signup_date.toISOString() : null,
+    }));
+
+    return res.json(list);
   } catch (err) {
-    // if table doesn't exist or other error, return empty list to frontend
-    console.error('Get event volunteers error (may be missing table):', err.message);
-    res.json([]);
+    // Preserve previous frontend/tests behavior: on DB error return empty list (200)
+    console.error('Get event volunteers error (DB error) - returning empty list to frontend:', err.message || err);
+    return res.json([]);
   }
 });
 

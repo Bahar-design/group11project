@@ -132,6 +132,23 @@ describe('eventRoutes basic flows', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
+  it('GET /api/events/:id/volunteers returns joined volunteer rows when DB returns data', async () => {
+    // simulate volunteer_history join rows
+    const rows = [
+      { history_id: 5, signup_date: new Date('2025-11-01T10:00:00Z'), user_id: 42, user_email: 'v1@example.com', volunteer_profile_id: 100, full_name: 'Volunteer One', city: 'Houston' },
+      { history_id: 6, signup_date: new Date('2025-11-02T12:00:00Z'), user_id: 43, user_email: 'v2@example.com', volunteer_profile_id: null, full_name: null, city: null },
+    ];
+    mockDb.query.mockResolvedValueOnce({ rows });
+    const res = await request(app).get('/api/events/10/volunteers');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0]).toHaveProperty('history_id', 5);
+    expect(res.body[0]).toHaveProperty('user_id', 42);
+    expect(res.body[0]).toHaveProperty('volunteer_profile_id', 100);
+    expect(res.body[0]).toHaveProperty('full_name', 'Volunteer One');
+    expect(res.body[1]).toHaveProperty('full_name', 'v2@example.com'); // fallback to email
+  });
+
   it('PUT returns 500 when DB update fails', async () => {
     mockDb.query.mockRejectedValueOnce(new Error('DB down for update'));
     const res = await request(app).put('/api/events/1').send({ name: 'Fallback Updated' });

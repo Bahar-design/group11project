@@ -56,8 +56,8 @@ const Footer = () => {
               <span className="footer-brand-name">Houston Hearts</span>
             </div>
             <p className="footer-description">
-              Connecting hearts through clothing donations. Every item shared is a story of hope,
-              dignity, and community care across Houston.
+              Connecting volunteers with meaningful opportunities. Every act of service strengthens
+              hope, dignity, and community across Houston.
             </p>
           </div>
 
