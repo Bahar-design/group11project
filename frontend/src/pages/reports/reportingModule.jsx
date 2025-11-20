@@ -158,8 +158,8 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                     <th>Event ID</th>
                     <th>Event Name</th>
                     <th>Description</th>
-                    <th>Location</th>
-                    <th>Date</th>
+                    <th>Event Location</th>
+                    <th>Event Date</th>
                     <th>Urgency</th>
                     <th>Volunteers</th>
                     <th>Event Skills</th>
