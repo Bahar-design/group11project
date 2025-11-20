@@ -123,7 +123,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                     <th>Volunteer's Location</th>
                     <th>Volunteer's Skills</th>
                     <th>Event's Worked</th>
-                    <th>Total Events</th>
+                    <th>Total Events worked</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -157,7 +157,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                   <tr>
                     <th>Event ID</th>
                     <th>Event Name</th>
-                    <th>Description</th>
+                    <th>Event Description</th>
                     <th>Event Location</th>
                     <th>Event Date</th>
                     <th>Urgency</th>
@@ -199,7 +199,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
                     <th>Volunteer Name</th>
                     <th>Volunteer ID</th>
                     <th>Volunteer Email</th>
-                    <th>Volunteer City</th>
+                    <th>Volunteer's Location</th>
                     <th>Volunteer Skills</th>
                     <th>Signup Date</th>
                   </tr>
