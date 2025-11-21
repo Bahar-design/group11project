@@ -203,9 +203,12 @@ const PersonalInfo = ({ user }) => {
     console.log('Submit data to send:', JSON.stringify(submitData, null, 2));
 
     try {
-      const base = API_BASE.replace(/\/$/, '');
-      const emailQuery = formData.email ? `&email=${encodeURIComponent(formData.email)}` : '';
-      const res = await axios.post(`${base}/api/user-profile?type=volunteer${emailQuery}`, submitData);
+  const base = API_BASE.replace(/\/$/, '');
+  // Use the originally-provided user.email as the identifying query param when available.
+  // The edited email remains in the request body (submitData.email) so backend can update it.
+  const identifyingEmail = user?.email || formData.email || '';
+  const emailQuery = identifyingEmail ? `&email=${encodeURIComponent(identifyingEmail)}` : '';
+  const res = await axios.post(`${base}/api/user-profile?type=volunteer${emailQuery}`, submitData);
       setFormData(prev => ({ ...prev, ...res.data }));
       if (setUserProfile) {
         setUserProfile(res.data);
