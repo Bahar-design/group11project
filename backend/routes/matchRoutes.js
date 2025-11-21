@@ -75,45 +75,60 @@ router.get("/:volunteerId", async (req, res) => {
       skills: volunteerSkills,
     };
 
-    // 3. Get all events with their date + location + skill
-    const { rows: eventRows } = await pool.query(`
-      SELECT 
-        e.event_id,
-        e.event_name,
-        e.location,
-        e.event_date,
-        e.time_slot,
-        e.volunteers,
-        s.skill_name AS skill_name
-      FROM eventdetails e
-      LEFT JOIN skills s ON e.skill_id = s.skill_id;
-    `);
+    // 3. Get all events with their date + location + skill names (via skill_id integer[])
+      const { rows: eventRows } = await pool.query(`
+        SELECT 
+          e.event_id,
+          e.event_name,
+          e.location,
+          e.event_date,
+          e.urgency,
+          e.volunteers,
+          COALESCE(
+            array_agg(s.skill_name) FILTER (WHERE s.skill_name IS NOT NULL),
+            '{}'::text[]
+          ) AS skill_names
+        FROM eventdetails e
+        -- unnest the integer[] skill_id into individual ids
+        LEFT JOIN LATERAL unnest(e.skill_id) AS sid(skill_id) ON true
+        LEFT JOIN skills s ON s.skill_id = sid.skill_id
+        GROUP BY
+          e.event_id,
+          e.event_name,
+          e.location,
+          e.event_date,
+          e.urgency,
+          e.volunteers;
+      `);
 
     // 4. Score each event
     const scoredEvents = eventRows.map((ev) => {
+      const skillNames = Array.isArray(ev.skill_names) ? ev.skill_names : [];
+    
       const event = {
         id: ev.event_id,
         title: ev.event_name,
         location: ev.location,
         date: ev.event_date,
-        skillsNeeded: ev.skill_name ? [ev.skill_name] : [],
-
-        time: ev.time_slot || "",
+        skillsNeeded: skillNames,        // used by matchBySkills
+    
+        // display fields:
         volunteers: ev.volunteers || 0,
-        skills: ev.skill_name ? [ev.skill_name] : [],
-        priority: "LOW",
+        skills: skillNames,              // for frontend display
+        priority: "LOW",                 // you can map from urgency later if you want
+        urgency: ev.urgency,
       };
-
+    
       const locScore = matchByLocation(user, event);
       const skillScore = matchBySkills(user, event);
       const dateScore = matchByDate(user, event);
-
+    
       const matchScore = totalMatchPercentage(
         locScore,
         skillScore,
         dateScore
       );
-
+    
       return { ...event, matchScore };
     });
 
