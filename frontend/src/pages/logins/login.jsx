@@ -101,7 +101,7 @@ export default function Login({ onLogin, isLoggedIn, user }) {
             Don’t have an account? <Link to="/register">Register</Link>
           </p>
           <p>
-            Forgot your password? <Link to="/change-password">Change Password</Link>
+            Need to change your password? <Link to="/change-password">Change Password</Link>
           </p>
         </div>
       </main>
