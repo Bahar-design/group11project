@@ -16,7 +16,6 @@ router.get("/:volunteerId", async (req, res) => {
 
   try {
     // 1. Get volunteer profile (city + availability)
-    // availability = string of dates: "12/12/2026, 12/14/2026"
     const { rows: vrows } = await pool.query(
       `
       SELECT 
@@ -35,10 +34,26 @@ router.get("/:volunteerId", async (req, res) => {
 
     const volunteer = vrows[0];
 
-    // Convert availability string → array of dates
-    const preferredDates = volunteer.availability
-      ? volunteer.availability.split(",").map((s) => s.trim())
-      : [];
+    // 🔥 Normalize availability -> preferredDates[]
+    let preferredDates = [];
+
+    if (typeof volunteer.availability === "string") {
+      // "12/12/2026, 12/14/2026"
+      preferredDates = volunteer.availability
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    } else if (volunteer.availability instanceof Date) {
+      // single DATE column
+      preferredDates = [volunteer.availability.toISOString().slice(0, 10)];
+    } else if (Array.isArray(volunteer.availability)) {
+      // if it's a Postgres array of dates
+      preferredDates = volunteer.availability.map((d) =>
+        d instanceof Date ? d.toISOString().slice(0, 10) : String(d)
+      );
+    } else {
+      preferredDates = [];
+    }
 
     // 2. Get all volunteer skills
     const { rows: skillRows } = await pool.query(
@@ -56,7 +71,7 @@ router.get("/:volunteerId", async (req, res) => {
     // Build user object for match functions
     const user = {
       preferredLocations: volunteer.city ? [volunteer.city] : [],
-      preferredDates: preferredDates,  // e.g. ["12/12/2026", "12/17/2026"]
+      preferredDates, // normalized array
       skills: volunteerSkills,
     };
 
