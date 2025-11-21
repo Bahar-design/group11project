@@ -9,7 +9,8 @@ const router = express.Router();
 router.post("/", login);
 
 // POST /api/login/change-password
-router.post("/change-password", changePassword);
+//router.post("/change-password", changePassword);
+router.put("/change-password", changePassword);
 
 module.exports = router;
 
