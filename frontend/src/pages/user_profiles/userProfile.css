@@ -949,11 +949,6 @@ form .btn-primary {
   font-size: 0.95rem;
 }
 
-.report-event-print-btn {
-  font-size: 0.95rem;
-  padding: 0.5rem 1rem;
-}
-
 .report-event-details {
   margin-top: 1.25rem;
   color: var(--text-secondary);

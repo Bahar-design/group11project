@@ -99,7 +99,7 @@ const Footer = () => {
 
         <div className="footer-bottom">
           <p className="footer-copyright">
-            &copy; {currentYear} Houston Hearts Clothing Drive. Making a difference, one family at a time.
+            &copy; {currentYear} Houston Hearts. Making a difference, one family at a time.
           </p>
         </div>
       </div>

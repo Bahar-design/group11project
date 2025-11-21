@@ -101,10 +101,6 @@ export default function EventsPage({ isLoggedIn, user, onLogout }) {
     }
   }
 
-  const handlePrintReport = (event) => {
-    window.print(); // For now, just print the page
-  };
-
   return (
   <Layout currentPage="events" user={user} isLoggedIn={isLoggedIn} onLogout={onLogout}>
       <div className="events-bg fade-in" style={{ minHeight: '100vh', width: '100%' }}>
@@ -177,7 +173,6 @@ export default function EventsPage({ isLoggedIn, user, onLogout }) {
                   Manage
                 </button>
                 <button className="btn-danger" style={{ marginLeft: '0.5rem' }} onClick={() => handleDelete(event.id)}>Delete</button>
-                <button className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--primary-red), var(--accent-red))', border: 'none', fontWeight: 600, marginLeft: '0.5rem' }} onClick={() => handlePrintReport(event)}>Print Report</button>
               </div>
               {/* Edit Form (inline, not popup) */}
               {editingEventId === event.id && (
@@ -234,7 +229,6 @@ export default function EventsPage({ isLoggedIn, user, onLogout }) {
               <div className="event-card-actions">
                 <button className="btn-secondary" disabled title="Past events are read-only">Manage</button>
                 <button className="btn-danger" style={{ marginLeft: '0.5rem' }} onClick={() => handleDelete(event.id)}>Delete</button>
-                <button className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--primary-red), var(--accent-red))', border: 'none', fontWeight: 600, marginLeft: '0.5rem' }} onClick={() => handlePrintReport(event)}>Print Report</button>
               </div>
             </div>
           ))}
