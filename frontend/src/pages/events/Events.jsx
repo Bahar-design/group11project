@@ -25,21 +25,38 @@ export default function EventsPage({ isLoggedIn, user }) {
     try {
       const res = await fetch(`${API_BASE}/api/events`);
       const data = await res.json();
-      // Fetch a lightweight participant count for each event in parallel to show correct Status quickly.
-      // Full volunteer lists will be fetched on-demand when the admin clicks "View participants".
-      const counts = await Promise.allSettled((data || []).map(async (evt) => {
-        try {
-          const r = await fetch(`${API_BASE}/api/events/${evt.id}/volunteers?countOnly=true`);
-          if (!r.ok) return { ...evt };
-          const js = await r.json();
-          const count = (js && typeof js.count === 'number') ? js.count : (evt.volunteers || 0);
-          return { ...evt, volunteers: count };
-        } catch (err) {
-          return { ...evt };
+      // Fetch counts for all events in one call to reduce many small requests
+      try {
+        const cRes = await fetch(`${API_BASE}/api/events/counts/all`);
+        if (cRes.ok) {
+          const countsArr = await cRes.json();
+          // make a map for quick lookup
+          const countsMap = (countsArr || []).reduce((acc, cur) => { acc[cur.event_id] = Number(cur.count || 0); return acc; }, {});
+          const merged = (data || []).map(evt => ({ ...evt, volunteers: countsMap[evt.id] != null ? countsMap[evt.id] : (evt.volunteers || 0) }));
+          setEvents(merged);
+        } else {
+          setEvents(data);
         }
-      }));
-      const finalEvents = counts.map((p, i) => p.status === 'fulfilled' ? p.value : data[i]);
-      setEvents(finalEvents);
+      } catch (err) {
+        // if counts endpoint fails, fall back to per-event counts (previous behavior)
+        const counts = await Promise.allSettled((data || []).map(async (evt) => {
+          try {
+            const r = await fetch(`${API_BASE}/api/events/${evt.id}/volunteers?countOnly=true`);
+            if (!r.ok) return { ...evt };
+            const js = await r.json();
+            let count = evt.volunteers || 0;
+            if (js && js.count != null) {
+              const n = Number(js.count);
+              if (!Number.isNaN(n)) count = n;
+            }
+            return { ...evt, volunteers: count };
+          } catch (err2) {
+            return { ...evt };
+          }
+        }));
+        const finalEvents = counts.map((p, i) => p.status === 'fulfilled' ? p.value : data[i]);
+        setEvents(finalEvents);
+      }
     } catch (err) {
       console.error('Failed to load events', err);
     } finally {

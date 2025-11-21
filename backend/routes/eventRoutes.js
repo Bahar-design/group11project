@@ -371,4 +371,17 @@ router.get('/:id/volunteers', async (req, res) => {
   }
 });
 
+// GET counts for all events (single-query endpoint to optimize initial page loads)
+router.get('/counts/all', async (req, res) => {
+  try {
+    // group counts by event_id
+    const q = await pool.query('SELECT event_id, COUNT(*)::int AS count FROM volunteer_history GROUP BY event_id');
+    // return as array of { event_id, count }
+    res.json(q.rows.map(r => ({ event_id: r.event_id, count: r.count })));
+  } catch (err) {
+    console.error('GET /api/events/counts error:', err.message || err);
+    return res.status(500).json({ error: 'Failed to fetch event counts' });
+  }
+});
+
 module.exports = router;

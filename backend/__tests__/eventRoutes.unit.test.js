@@ -156,6 +156,16 @@ describe('eventRoutes basic flows', () => {
     expect(res.body).toHaveProperty('count', 2);
   });
 
+  it('GET /api/events/counts/all returns counts for events', async () => {
+    // simulate DB returning two rows
+    mockDb.query.mockResolvedValueOnce({ rows: [{ event_id: 10, count: 2 }, { event_id: 11, count: 0 }] });
+    const res = await request(app).get('/api/events/counts/all');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0]).toHaveProperty('event_id', 10);
+    expect(res.body[0]).toHaveProperty('count', 2);
+  });
+
   it('PUT returns 500 when DB update fails', async () => {
     mockDb.query.mockRejectedValueOnce(new Error('DB down for update'));
     const res = await request(app).put('/api/events/1').send({ name: 'Fallback Updated' });

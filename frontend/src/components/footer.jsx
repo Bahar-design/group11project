@@ -56,8 +56,8 @@ const Footer = () => {
               <span className="footer-brand-name">Houston Hearts</span>
             </div>
             <p className="footer-description">
-              Connecting volunteers with meaningful opportunities. Every act of service strengthens
-              hope, dignity, and community across Houston.
+              Connecting volunteers with meaningful opportunities. 
+              Every act of service strengthens hope, dignity, and community across Houston.
             </p>
           </div>
 
