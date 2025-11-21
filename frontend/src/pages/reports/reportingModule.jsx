@@ -4,7 +4,7 @@ import './reportingModule.css';
 import API_BASE from '../../lib/apiBase';
 import Layout from '../../components/layout.jsx';
 
-const ReportingModule = ({ isLoggedIn, user }) => {
+const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
   const [reportType, setReportType] = useState('volunteer-participation');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -317,7 +317,7 @@ const ReportingModule = ({ isLoggedIn, user }) => {
   };
 
   return (
-    <Layout currentPage="reports" user={user} isLoggedIn={isLoggedIn}>
+    <Layout currentPage="reports" user={user} isLoggedIn={isLoggedIn} onLogout={onLogout}>
       <div className="reporting-container">
         <div className="reporting-wrapper">
             <h1 className="reporting-title">

@@ -73,15 +73,15 @@ export default function App() {
 
           <Route path="/about" element={<About isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
 
-          <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} />} />
-          <Route path="/reports" element={<ReportingModule isLoggedIn={isLoggedIn} user={user} />} />
+          <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />} />
+          <Route path="/reports" element={<ReportingModule isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />} />
           <Route path="/user-profiles" element={
           <ProtectedRoute isLoggedIn={isLoggedIn} authChecked={authChecked}>
             <UserProfiles isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
           </ProtectedRoute>
           } />
           <Route path="/calendar" element={<Calendar isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
-          <Route path="/match-making" element={<MatchMaking isLoggedIn={isLoggedIn} user={user} />} />
+          <Route path="/match-making" element={<MatchMaking isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />} />
         </Routes>
       </Router>
     );
