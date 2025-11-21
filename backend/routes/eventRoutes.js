@@ -120,18 +120,9 @@ router.get('/', async (req, res) => {
     for (const r of rows) {
       const skillIds = r.skill_id || [];
       const skills = await skillNamesForIds(skillIds);
-      // Try to fetch volunteer names via an "event_signups" table if present
-      let volunteersList = [];
-      try {
-        const vq = await pool.query(
-          `SELECT vp.full_name, u.user_email FROM event_signups es JOIN volunteerprofile vp ON es.volunteer_id = vp.volunteer_id JOIN user_table u ON vp.user_id = u.user_id WHERE es.event_id = $1`,
-          [r.event_id]
-        );
-        volunteersList = vq.rows.map(v => ({ name: v.full_name || v.user_email }));
-      } catch (err) {
-        // event_signups may not exist yet; ignore and fallback to volunteers count column
-        volunteersList = [];
-      }
+      // Do not attempt to fetch volunteer names here in the events list.
+      // Participant name lists are provided by the /api/events/:id/volunteers endpoint.
+      const volunteersList = [];
 
       // lookup creator name if available
       let createdByName = null;
@@ -153,8 +144,8 @@ router.get('/', async (req, res) => {
         location: r.location,
         urgency: URGENCY_MAP_REVERSE[r.urgency] || r.urgency,
         date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
-        // Prefer the aggregated volunteer_count from the DB, fall back to provided volunteers or volunteersList
-        volunteers: Number(r.volunteer_count) || Number(r.volunteers) || (volunteersList.length),
+  // Use the aggregated volunteer_count from the DB as authoritative
+  volunteers: Number(r.volunteer_count || 0),
         volunteersList,
         skillIds,
         requiredSkills: skills,

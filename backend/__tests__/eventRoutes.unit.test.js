@@ -40,16 +40,16 @@ describe('eventRoutes basic flows', () => {
   });
 
   it('GET /api/events returns DB events when pool returns rows', async () => {
-  const eventRow = { event_id: 10, event_name: 'DB Event', description: 'd', location: '321 Elm St, Cypress, TX', urgency: 2, event_date: new Date('2025-12-01'), volunteers: 5, skill_id: [7] };
-    mockDb.query.mockResolvedValueOnce({ rows: [eventRow] }) // select * from eventdetails
-      .mockResolvedValueOnce({ rows: [{ skill_name: 'Sewing' }] }) // skillNamesForIds
-      .mockResolvedValueOnce({ rows: [{ full_name: 'Vol A', user_email: 'a@v' }] }); // volunteers select
+  const eventRow = { event_id: 10, event_name: 'DB Event', description: 'd', location: '321 Elm St, Cypress, TX', urgency: 2, event_date: new Date('2025-12-01'), volunteer_count: 5, skill_id: [7] };
+    mockDb.query.mockResolvedValueOnce({ rows: [eventRow] }) // select * from eventdetails (with aggregated volunteer_count)
+      .mockResolvedValueOnce({ rows: [{ skill_name: 'Sewing' }] }); // skillNamesForIds
 
     const res = await request(app).get('/api/events');
     expect(res.status).toBe(200);
     expect(res.body.length).toBeGreaterThan(0);
     expect(res.body[0].requiredSkills).toContain('Sewing');
-    expect(res.body[0].volunteersList.length).toBeGreaterThan(0);
+    // volunteers now come from the aggregated volunteer_count in the events response
+    expect(res.body[0].volunteers).toBeGreaterThan(0);
   });
 
   it('GET /api/events/:id returns 404 when not found', async () => {
@@ -109,10 +109,9 @@ describe('eventRoutes basic flows', () => {
   });
 
   it('GET /api/events handles skillNamesForIds failure and still returns events', async () => {
-  const eventRow = { event_id: 40, event_name: 'Bad Skills', description: 'd', location: '900 Galveston Ave, Galveston, TX', urgency: 2, event_date: new Date('2025-12-01'), time_slots: null, volunteers: 0, skill_id: [7] };
+  const eventRow = { event_id: 40, event_name: 'Bad Skills', description: 'd', location: '900 Galveston Ave, Galveston, TX', urgency: 2, event_date: new Date('2025-12-01'), time_slots: null, volunteer_count: 0, skill_id: [7] };
     mockDb.query.mockResolvedValueOnce({ rows: [eventRow] }) // select * from eventdetails
       .mockRejectedValueOnce(new Error('skills query failure')) // skillNamesForIds will reject
-      .mockResolvedValueOnce({ rows: [] }); // volunteer select
     const res = await request(app).get('/api/events');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
