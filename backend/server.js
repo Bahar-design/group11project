@@ -30,6 +30,9 @@ app.get("/api/db-check", async (req, res) => {
 // ✅ Main route for events
 app.use("/api/events", require("./routes/eventRoutes.js"));
 
+// ✅ Main route for matches
+app.use("/api/matches", require("./routes/matchRoutes.js"));
+
 // ✅ Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log("API running on", PORT));
