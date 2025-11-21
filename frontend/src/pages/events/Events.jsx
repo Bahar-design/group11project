@@ -7,7 +7,7 @@ import './events.css';
 
 // Events page uses backend API
 
-export default function EventsPage({ isLoggedIn, user }) {
+export default function EventsPage({ isLoggedIn, user, onLogout }) {
   const [events, setEvents] = useState([]);
   const [editingEventId, setEditingEventId] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(true);
@@ -106,7 +106,7 @@ export default function EventsPage({ isLoggedIn, user }) {
   };
 
   return (
-  <Layout currentPage="events" user={user} isLoggedIn={isLoggedIn}>
+  <Layout currentPage="events" user={user} isLoggedIn={isLoggedIn} onLogout={onLogout}>
       <div className="events-bg fade-in" style={{ minHeight: '100vh', width: '100%' }}>
         <div className="container" style={{ maxWidth: '1100px', margin: '0 auto', padding: '2.5rem 1rem' }}>
           <div className="events-hero-header">Event Management</div>

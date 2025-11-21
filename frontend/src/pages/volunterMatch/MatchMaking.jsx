@@ -10,9 +10,9 @@ import Layout from "../../components/layout.jsx";
 import './MatchMaking.css';
 
 
-export default function MatchMaking({ isLoggedIn, user }) {
+export default function MatchMaking({ isLoggedIn, user, onLogout }) {
   return (
-  <Layout currentPage="volunteer" user={user} isLoggedIn={isLoggedIn}>
+  <Layout currentPage="volunteer" user={user} isLoggedIn={isLoggedIn} onLogout={onLogout}>
       <div className="min-h-screen bg-slate-50">
         <Hero />
         <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
