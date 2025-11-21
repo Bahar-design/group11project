@@ -86,7 +86,7 @@ router.get("/:volunteerId", async (req, res) => {
         e.volunteers,
         s.skill_name AS skill_name
       FROM eventdetails e
-      LEFT JOIN skills s ON e.skills_needed = s.skill_id;
+      LEFT JOIN skills s ON e.skill_id = s.skill_id;
     `);
 
     // 4. Score each event
