@@ -3,27 +3,29 @@
 // --- Helpers ------------------------------------------------------
 
 // Normalize strings (lowercase, trimmed)
+const norm = (s) => String(s).trim().toLowerCase();
+
+// Normalize dates to 'YYYY-MM-DD'
 function normDate(value) {
   if (!value) return "";
 
   const raw = String(value).trim();
 
-  // If it's already YYYY-MM-DD, just return it
+  // Already YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
     return raw;
   }
 
-  // If it's YY-MM-DD (2-digit year), normalize to 20YY-MM-DD
+  // YY-MM-DD -> assume 20YY
   if (/^\d{2}-\d{2}-\d{2}$/.test(raw)) {
     const [yy, mm, dd] = raw.split("-");
-    const fullYear = Number(yy) <= 49 ? `20${yy}` : `19${yy}`; // assume 20xx for small years
+    const fullYear = Number(yy) <= 49 ? `20${yy}` : `19${yy}`;
     return `${fullYear}-${mm}-${dd}`;
   }
 
-  // Fallback: let JS parse it and force YYYY-MM-DD
+  // Fallback: let JS parse it
   const d = new Date(raw);
   if (Number.isNaN(d.getTime())) {
-    // If parsing fails, just compare raw strings
     return raw;
   }
   return d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
@@ -35,6 +37,7 @@ function normDate(value) {
  * Location match:
  *  - user.preferredLocations: array of city names, e.g. ["Katy", "Fulshear", "Woodlands"]
  *  - event.location: full address string.
+ *
  * Returns:
  *  - 1 if ANY preferred city appears as a substring of event.location (case-insensitive)
  *  - 0 otherwise
@@ -68,6 +71,7 @@ function matchByLocation(user, event) {
  * Skills match:
  *  - user.skills: array of skill names
  *  - event.skillsNeeded: array of skill names
+ *
  * Returns:
  *  - fraction between 0 and 1 of event skills that user has
  */
@@ -94,6 +98,7 @@ function matchBySkills(user, event) {
  * Date match:
  *  - user.preferredDates: array of dates (strings or Date-like)
  *  - event.date: single date (string or Date-like)
+ *
  * Returns:
  *  - 1 if any preferred date equals the event date
  *  - 0 otherwise
@@ -136,6 +141,7 @@ function totalMatchPercentage(locScore, skillScore, dateScore) {
 
 /**
  * Utility: score and sort a list of events for a given user.
+ * Not required by the API, but handy for tests or reuse.
  */
 function rankEventsByMatch(user, events) {
   const scoredEvents = events.map((event) => {
