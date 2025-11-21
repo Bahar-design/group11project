@@ -107,7 +107,15 @@ async function resolveAdminId(inputVal) {
 // GET all events (with skill names and volunteers count)
 router.get('/', async (req, res) => {
   try {
-    const { rows } = await pool.query(`SELECT * FROM ${TABLE} ORDER BY event_date ASC`);
+    // Fetch events and include volunteer counts in a single query using a LEFT JOIN
+    const { rows } = await pool.query(
+      `SELECT e.*, COALESCE(v.count, 0) AS volunteer_count
+       FROM ${TABLE} e
+       LEFT JOIN (
+         SELECT event_id, COUNT(*)::int AS count FROM volunteer_history GROUP BY event_id
+       ) v ON e.event_id = v.event_id
+       ORDER BY e.event_date ASC`
+    );
     const out = [];
     for (const r of rows) {
       const skillIds = r.skill_id || [];
@@ -145,7 +153,8 @@ router.get('/', async (req, res) => {
         location: r.location,
         urgency: URGENCY_MAP_REVERSE[r.urgency] || r.urgency,
         date: r.event_date ? r.event_date.toISOString().slice(0, 10) : null,
-        volunteers: Number(r.volunteers) || (volunteersList.length),
+        // Prefer the aggregated volunteer_count from the DB, fall back to provided volunteers or volunteersList
+        volunteers: Number(r.volunteer_count) || Number(r.volunteers) || (volunteersList.length),
         volunteersList,
         skillIds,
         requiredSkills: skills,

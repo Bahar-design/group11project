@@ -25,38 +25,10 @@ export default function EventsPage({ isLoggedIn, user }) {
     try {
       const res = await fetch(`${API_BASE}/api/events`);
       const data = await res.json();
-      // Fetch counts for all events in one call to reduce many small requests
-      try {
-        const cRes = await fetch(`${API_BASE}/api/events/counts/all`);
-        if (cRes.ok) {
-          const countsArr = await cRes.json();
-          // make a map for quick lookup
-          const countsMap = (countsArr || []).reduce((acc, cur) => { acc[cur.event_id] = Number(cur.count || 0); return acc; }, {});
-          const merged = (data || []).map(evt => ({ ...evt, volunteers: countsMap[evt.id] != null ? countsMap[evt.id] : (evt.volunteers || 0) }));
-          setEvents(merged);
-        } else {
-          setEvents(data);
-        }
-      } catch (err) {
-        // if counts endpoint fails, fall back to per-event counts (previous behavior)
-        const counts = await Promise.allSettled((data || []).map(async (evt) => {
-          try {
-            const r = await fetch(`${API_BASE}/api/events/${evt.id}/volunteers?countOnly=true`);
-            if (!r.ok) return { ...evt };
-            const js = await r.json();
-            let count = evt.volunteers || 0;
-            if (js && js.count != null) {
-              const n = Number(js.count);
-              if (!Number.isNaN(n)) count = n;
-            }
-            return { ...evt, volunteers: count };
-          } catch (err2) {
-            return { ...evt };
-          }
-        }));
-        const finalEvents = counts.map((p, i) => p.status === 'fulfilled' ? p.value : data[i]);
-        setEvents(finalEvents);
-      }
+      // Server returns volunteer counts as part of the events response (volunteers field)
+      // Use that directly to avoid extra network calls and speed up loading.
+      const normalized = (data || []).map(evt => ({ ...evt, volunteers: (typeof evt.volunteers === 'number') ? evt.volunteers : Number(evt.volunteers || 0) }));
+      setEvents(normalized);
     } catch (err) {
       console.error('Failed to load events', err);
     } finally {
