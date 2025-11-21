@@ -3,16 +3,28 @@
 // --- Helpers ------------------------------------------------------
 
 // Normalize strings (lowercase, trimmed)
-const norm = (s) => String(s).trim().toLowerCase();
-
-// Normalize dates to 'YYYY-MM-DD'
 function normDate(value) {
   if (!value) return "";
-  const d = new Date(value);
+
+  const raw = String(value).trim();
+
+  // If it's already YYYY-MM-DD, just return it
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  // If it's YY-MM-DD (2-digit year), normalize to 20YY-MM-DD
+  if (/^\d{2}-\d{2}-\d{2}$/.test(raw)) {
+    const [yy, mm, dd] = raw.split("-");
+    const fullYear = Number(yy) <= 49 ? `20${yy}` : `19${yy}`; // assume 20xx for small years
+    return `${fullYear}-${mm}-${dd}`;
+  }
+
+  // Fallback: let JS parse it and force YYYY-MM-DD
+  const d = new Date(raw);
   if (Number.isNaN(d.getTime())) {
-    // If it’s some string like '12/12/2026' and Date can’t parse,
-    // we just compare raw trimmed strings.
-    return String(value).trim();
+    // If parsing fails, just compare raw strings
+    return raw;
   }
   return d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
 }
