@@ -25,7 +25,21 @@ export default function EventsPage({ isLoggedIn, user }) {
     try {
       const res = await fetch(`${API_BASE}/api/events`);
       const data = await res.json();
-      setEvents(data);
+      // Fetch a lightweight participant count for each event in parallel to show correct Status quickly.
+      // Full volunteer lists will be fetched on-demand when the admin clicks "View participants".
+      const counts = await Promise.allSettled((data || []).map(async (evt) => {
+        try {
+          const r = await fetch(`${API_BASE}/api/events/${evt.id}/volunteers?countOnly=true`);
+          if (!r.ok) return { ...evt };
+          const js = await r.json();
+          const count = (js && typeof js.count === 'number') ? js.count : (evt.volunteers || 0);
+          return { ...evt, volunteers: count };
+        } catch (err) {
+          return { ...evt };
+        }
+      }));
+      const finalEvents = counts.map((p, i) => p.status === 'fulfilled' ? p.value : data[i]);
+      setEvents(finalEvents);
     } catch (err) {
       console.error('Failed to load events', err);
     } finally {

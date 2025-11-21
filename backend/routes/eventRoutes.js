@@ -332,6 +332,16 @@ router.get('/:id/volunteers', async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid event id' });
+    // support lightweight count-only mode for initial page loads
+    if (req.query && (req.query.countOnly === 'true' || req.query.countOnly === '1')) {
+      try {
+        const cnt = await pool.query('SELECT COUNT(*)::int AS count FROM volunteer_history WHERE event_id = $1', [id]);
+        return res.json({ count: cnt.rows[0].count });
+      } catch (err) {
+        console.error('Volunteer count query failed:', err.message || err);
+        return res.json({ count: 0 });
+      }
+    }
 
     const q = await pool.query(
       `SELECT vh.history_id, vh.signup_date, ut.user_id, ut.user_email, vp.volunteer_id AS volunteer_profile_id, vp.full_name, vp.city

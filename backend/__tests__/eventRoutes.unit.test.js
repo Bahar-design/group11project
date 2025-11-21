@@ -149,6 +149,13 @@ describe('eventRoutes basic flows', () => {
     expect(res.body[1]).toHaveProperty('full_name', 'v2@example.com'); // fallback to email
   });
 
+  it('GET /api/events/:id/volunteers?countOnly=true returns count', async () => {
+    mockDb.query.mockResolvedValueOnce({ rows: [{ count: 2 }] });
+    const res = await request(app).get('/api/events/10/volunteers?countOnly=true');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('count', 2);
+  });
+
   it('PUT returns 500 when DB update fails', async () => {
     mockDb.query.mockRejectedValueOnce(new Error('DB down for update'));
     const res = await request(app).put('/api/events/1').send({ name: 'Fallback Updated' });
