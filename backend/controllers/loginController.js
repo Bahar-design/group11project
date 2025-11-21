@@ -72,6 +72,55 @@ const users = [
   { name: 'Maria Delgado', email: 'maria.d@houstonhearts.org', password: '5678', type: 'admin' },
 ];
 
-module.exports = { login, users };
+// CHANGE PASSWORD
+async function changePassword(req, res) {
+  const { email, oldPassword, newPassword } = req.body;
+
+  if (!email || !oldPassword || !newPassword) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  try {
+    // 1. Find the user
+    const result = await pool.query(
+      `SELECT user_id, user_password FROM user_table WHERE user_email = $1`,
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ message: "Email does not exist." });
+    }
+
+    const user = result.rows[0];
+
+    // 2. Verify old password matches
+    if (oldPassword !== user.user_password) {
+      return res.status(401).json({ message: "Old password is incorrect." });
+    }
+
+    // 3. Update password
+    const update = await pool.query(
+      `UPDATE user_table 
+       SET user_password = $1 
+       WHERE user_email = $2 
+       RETURNING user_id, user_email`,
+      [newPassword, email]
+    );
+
+    return res.status(200).json({
+      message: "Password updated successfully.",
+      user: update.rows[0]
+    });
+
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({ message: "Server error updating password" });
+  }
+}
+
+
+
+module.exports = { login, changePassword, users };
+
 
 

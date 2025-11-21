@@ -15,6 +15,7 @@ function ProtectedRoute({ isLoggedIn, authChecked, children }) {
 
 import Header from './components/header.jsx';
 import Login from './pages/logins/login';
+import PasswordChange from './pages/logins/passwordChange.jsx';
 import Registration from './pages/registrations/registration';
 import Calendar from './pages/calendar/calendar';
 import MatchMaking from "./pages/volunterMatch/MatchMaking";
@@ -68,6 +69,8 @@ export default function App() {
           <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} /> 
           <Route path="/login" element={<Login onLogin={handleLogin} isLoggedIn={isLoggedIn} user={user} />} /> 
           <Route path="/register" element={<Registration isLoggedIn={isLoggedIn} user={user} onLogin={handleLogin} />} />
+          <Route path="/change-password" element={<PasswordChange isLoggedIn={isLoggedIn} user={user} />} />
+
           <Route path="/about" element={<About isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
 
           <Route path="/events" element={<EventsPage isLoggedIn={isLoggedIn} user={user} />} />
