@@ -11,7 +11,7 @@ app.use(
       process.env.FRONTEND_ORIGIN,
       "http://localhost:5173"
     ],
-    credential : true,
+    credentials: true,
   })
 );
 app.use(express.json());
