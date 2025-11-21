@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../../components/layout.jsx";
 import API_BASE from "../../lib/apiBase";
-import "./login.css";  // reuse login styles
+import "./login.css"; 
 import { useNavigate, Link } from "react-router-dom";
 
 export default function PasswordChange({ isLoggedIn, user }) {
@@ -22,7 +22,7 @@ export default function PasswordChange({ isLoggedIn, user }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/change-password`, {
+      const res = await fetch(`${API_BASE}/api/login/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, oldPassword, newPassword }),
@@ -31,13 +31,12 @@ export default function PasswordChange({ isLoggedIn, user }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setMessage(data.message || "Error changing password");
+        setMessage(data.message || "Error changing password.");
         return;
       }
 
       setMessage("Password updated! Redirecting to login...");
       setTimeout(() => navigate("/login"), 1500);
-
     } catch (err) {
       setMessage("Server error");
     }
@@ -80,7 +79,7 @@ export default function PasswordChange({ isLoggedIn, user }) {
             <label>Confirm New Password</label>
             <input
               type="password"
-              placeholder="Confirm new password"
+              placeholder="Confirm your new password"
               value={confirmNew}
               onChange={(e) => setConfirmNew(e.target.value)}
               required
