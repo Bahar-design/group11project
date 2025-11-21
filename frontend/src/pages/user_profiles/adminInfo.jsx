@@ -68,11 +68,13 @@ const AdminInfo = ({ user, isLoggedIn, onLogout }) => {
     setSuccess(false);
 
     try {
-      const apiBase = API_BASE.replace(/\/$/, '') || '';
-      const emailToUse = formData.email || user?.email;
-      const emailQuery = emailToUse ? `&email=${encodeURIComponent(emailToUse)}` : '';
+  const apiBase = API_BASE.replace(/\/$/, '') || '';
+  // Use the originally-provided user.email as the identifying query param when available.
+  // Send the edited email in the request body (formData.email) so backend can update it.
+  const identifyingEmail = user?.email || formData.email || '';
+  const emailQuery = identifyingEmail ? `&email=${encodeURIComponent(identifyingEmail)}` : '';
 
-      const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
+  const res = await axios.post(`${apiBase}/api/user-profile?type=admin${emailQuery}`, formData);
       setFormData(prev => ({ ...prev, ...res.data }));
 
       if (setUserProfile) {

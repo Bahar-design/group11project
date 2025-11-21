@@ -190,6 +190,35 @@ describe('updateUserProfile unit tests', () => {
     expect(sent).toHaveProperty('name', 'V');
   });
 
+  it('updateUserProfile updates user_table email when changed', async () => {
+    // validator returns a different email than query email
+    mockValidator.mockReturnValue({ value: { name: 'V', address1: 'A', city: 'C', state: 'S', zipCode: 'Z', availability: [], skills: [], email: 'new-email@example.test' } });
+    const mockClient = {
+      query: jest.fn()
+        .mockResolvedValueOnce() // BEGIN
+        .mockResolvedValueOnce({ rows: [{ user_id: 202, user_email: 'old@example.test' }] }) // SELECT user_id, user_email
+        .mockResolvedValueOnce() // UPDATE user_table SET user_type
+        .mockResolvedValueOnce() // UPDATE user_table SET user_email
+        .mockResolvedValueOnce({ rows: [{ volunteer_id: 202 }] }) // upsertVP RETURNING volunteer_id
+        .mockResolvedValueOnce() // DELETE volunteer_skills
+        .mockResolvedValueOnce({ rows: [] }) // SELECT skills
+        .mockResolvedValueOnce() // COMMIT
+      , release: jest.fn()
+    };
+    mockDb.connect.mockResolvedValue(mockClient);
+    mockDb.query.mockResolvedValueOnce({ rows: [] });
+
+    const [req, res] = makeReqRes({ email: 'old@example.test', type: 'volunteer' }, { name: 'V', address1: 'A', city: 'C', state: 'S', zipCode: 'Z', availability: [], skills: [], email: 'new-email@example.test' });
+    const { updateUserProfile } = require('../controllers/userProfileController');
+    await updateUserProfile(req, res, jest.fn());
+    expect(mockClient.query).toHaveBeenCalled();
+    // the 4th call is the email update in our mock sequence
+    expect(mockClient.query.mock.calls[3][0]).toMatch(/UPDATE user_table SET user_email/);
+    expect(res.json).toHaveBeenCalled();
+    const sent = res.json.mock.calls[0][0];
+    expect(sent.email).toBe('new-email@example.test');
+  });
+
   it('updateUserProfile admin flow creates missing adminprofile and returns admin profile', async () => {
     mockValidator.mockReturnValue({ value: { name: 'Admin', address1: 'A', city: 'C', state: 'S', zipCode: 'Z' } });
     const mockClient = {

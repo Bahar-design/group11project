@@ -44,6 +44,9 @@ function validateUserProfile(data, type = 'volunteer') {
   // Email format
   if (data.email && !/^\S+@\S+\.\S+$/.test(data.email)) {
     errors.push('Invalid email format.');
+  } else if (data.email) {
+    // copy normalized email into value when present
+    value.email = data.email.trim();
   }
 
   // Phone format (simple US) — optional
@@ -78,6 +81,15 @@ function validateUserProfile(data, type = 'volunteer') {
   value.preferences = typeof data.preferences === 'string' ? data.preferences : '';
   value.hasTransportation = typeof data.hasTransportation === 'boolean' ? data.hasTransportation : true;
   value.userType = data.userType || '';
+
+  // For volunteer profiles, enforce that city is exactly one of the allowed Houston-area cities
+  // (use the same list as eventValidator but require strict equality, case-insensitive)
+  const allowedCities = ['Katy', 'Cypress', 'Sugar Land', 'Tomball', 'Galveston', 'The Woodlands', 'Houston'];
+  if (type === 'volunteer') {
+    if (value.city && !allowedCities.some(c => c.toLowerCase() === String(value.city).toLowerCase())) {
+      errors.push('City must be one of: ' + allowedCities.join(', '));
+    }
+  }
 
   if (errors.length > 0) {
     return { error: new Error(errors.join(' ')), value: null };

@@ -76,7 +76,9 @@ async function getUserProfile(req, res, next) {
               return res.json(out);
       }
 
-      const profile = vp.rows[0];
+  const profile = vp.rows[0];
+  // prefer the email found in the joined user_table row so we return the canonical DB email
+  if (profile.user_email) email = profile.user_email;
 
       // fetch skills
         const skillsRes = await pool.query(
@@ -142,7 +144,9 @@ async function getUserProfile(req, res, next) {
     return res.json(out);
         }
 
-      const profile = ap.rows[0];
+  const profile = ap.rows[0];
+  // prefer canonical DB email from joined user_table
+  if (profile.user_email) email = profile.user_email;
       const out = {
         name: profile.full_name,
         email: email,
@@ -216,14 +220,30 @@ async function updateUserProfile(req, res, next) {
 
     // Require that the associated user account already exists in user_table.
     // Do NOT auto-create users here — user registration/login should create the user row.
-    const userRes = await client.query('SELECT user_id FROM user_table WHERE user_email = $1', [email]);
+    const userRes = await client.query('SELECT user_id, user_email FROM user_table WHERE user_email = $1', [email]);
     if (userRes.rows.length === 0) {
       await client.query('ROLLBACK');
       return res.status(404).json({ message: 'User not found' });
     }
     const userId = userRes.rows[0].user_id;
+    const dbEmail = userRes.rows[0].user_email;
     // ensure user_type is correct
     await client.query('UPDATE user_table SET user_type = $1 WHERE user_id = $2', [type, userId]);
+
+    // If the request body contains an email and it's different from the identifying email, update user_table
+    // Note: value.email comes from validator and is already trimmed
+    if (value.email && value.email !== dbEmail) {
+      try {
+        await client.query('UPDATE user_table SET user_email = $1 WHERE user_id = $2', [value.email, userId]);
+        // reflect the new email for response building
+        email = value.email;
+      } catch (emailErr) {
+        // Handle unique constraint violation or other DB errors
+        await client.query('ROLLBACK');
+        console.error('Failed to update user email:', emailErr.message || emailErr);
+        return res.status(400).json({ message: 'Failed to update email. It may already be in use.' });
+      }
+    }
 
     if (type === 'volunteer') {
       // Upsert VolunteerProfile (by user_id)
