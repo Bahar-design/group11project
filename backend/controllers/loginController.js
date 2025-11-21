@@ -2,7 +2,7 @@
 
 /*
 const users = [
-  { name: "Sarah Johnson", email: 'sarah.j@email.com', password: '1234', type: 'volunteer' },
+  { name: "Sarah Johnson", email: '', password: '1234', type: 'volunteer' },
   { name: "Maria Delgado", email: "maria.d@houstonhearts.org", password: "5678", type: 'admin' },
 ];
 
