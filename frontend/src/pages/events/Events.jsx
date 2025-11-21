@@ -137,7 +137,7 @@ export default function EventsPage({ isLoggedIn, user }) {
                 <div style={{ marginBottom: '0.3em' }}><strong>Date:</strong> {event.date}</div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Urgency:</strong> <span style={{ color: 'var(--primary-red)', fontWeight: 500 }}>{event.urgency}</span></div>
                 <div style={{ marginBottom: '0.3em' }}><strong>Skills:</strong> {(event.requiredSkills || []).map(skill => <span className="skill-chip" key={skill}>{skill}</span>)}</div>
-                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {(event.volunteersList ? event.volunteersList.length : (event.volunteers || 0))} volunteers signed up</div>
+                <div style={{ marginBottom: '0.3em' }}><strong>Status:</strong> {(typeof event.volunteers === 'number' ? event.volunteers : (event.volunteersList ? event.volunteersList.length : 0))} volunteers signed up</div>
                   {event.createdByName && (
                     <div style={{ marginBottom: '0.3em' }}><strong>Created by:</strong> {event.createdByName}</div>
                   )}
@@ -145,7 +145,7 @@ export default function EventsPage({ isLoggedIn, user }) {
                 {user && user.userType === 'admin' && (
                   <div style={{ marginTop: '0.5em' }}>
                     <button className="btn-secondary" onClick={() => toggleVolunteers(event.id)}>
-                      {openVolunteers[event.id] ? 'Hide participants' : `View participants (${event.volunteersList ? event.volunteersList.length : (event.volunteers || 0)})`}
+                      {openVolunteers[event.id] ? 'Hide participants' : `View participants (${typeof event.volunteers === 'number' ? event.volunteers : (event.volunteersList ? event.volunteersList.length : 0)})`}
                     </button>
                     {openVolunteers[event.id] && (
                       <div style={{ marginTop: '0.5em' }}>
