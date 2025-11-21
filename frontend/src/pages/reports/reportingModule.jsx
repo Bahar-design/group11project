@@ -24,13 +24,13 @@ const ReportingModule = ({ isLoggedIn, user }) => {
   const [locations, setLocations] = useState(['all']);
   const [skills, setSkills] = useState(['all']);
 
+  /*
+
   const filters = {
     search: searchTerm,
     location: selectedLocation,
-     /*debugging for skills
-     skill: selectedSkill && typeof selectedSkill === 'string' ? selectedSkill : null,
-     skillId: selectedSkill && typeof selectedSkill === 'object' ? selectedSkill.skill_id : null,
-     */
+
+   
 
     skill: null,
     skillId: selectedSkill !== 'all' && selectedSkill?.skill_id ? selectedSkill.skill_id : null,
@@ -38,6 +38,15 @@ const ReportingModule = ({ isLoggedIn, user }) => {
     startDate: dateRange.start,
     endDate: dateRange.end
   };
+
+  */
+
+  const filters = {
+  volunteer: searchTerm,
+  event: searchTerm,
+  date: dateRange.start,
+};
+
 
   const [data, setData] = React.useState([]);
   const [error, setError] = React.useState(null);

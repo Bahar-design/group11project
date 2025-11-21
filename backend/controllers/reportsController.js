@@ -1,5 +1,31 @@
 const pool = require('../db');
 
+function buildFilterClauses(filters, params) {
+  const clauses = [];
+
+  // volunteer name filter
+  if (filters.volunteer && filters.volunteer.trim() !== "") {
+    params.push(`%${filters.volunteer.toLowerCase()}%`);
+    clauses.push(`LOWER(vp.full_name) LIKE $${params.length}`);
+  }
+
+  // event name filter
+  if (filters.event && filters.event.trim() !== "") {
+    params.push(`%${filters.event.toLowerCase()}%`);
+    clauses.push(`LOWER(ed.event_name) LIKE $${params.length}`);
+  }
+
+  // event date filter
+  if (filters.date && filters.date.trim() !== "") {
+    params.push(filters.date);
+    clauses.push(`ed.event_date = $${params.length}`);
+  }
+
+  return clauses.length ? clauses.join(" AND ") : "";
+}
+
+
+/*
  function buildFilterClauses(filters, params, reportType) {
   const clauses = [];
 
@@ -49,6 +75,8 @@ const pool = require('../db');
 
   return clauses.length ? clauses.join(' AND ') : '';
 }
+
+/*
 
 
 /*
@@ -101,7 +129,7 @@ async function getVolunteerParticipation(filters = {}) {
 
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
-  const where = buildFilterClauses(filters, params, 'volunteer-participation');
+  const where = buildFilterClauses(filters, params);
 
 
   const sql = `
@@ -160,7 +188,7 @@ async function getVolunteerParticipation(filters = {}) {
 async function getEventVolunteerAssignments(filters = {}) {
   const params = [];
   
-  const where = buildFilterClauses(filters, params, 'event-volunteers');
+  const where = buildFilterClauses(filters, params);
 
 
 
@@ -216,7 +244,7 @@ async function getEventVolunteerAssignments(filters = {}) {
 
 async function getEventManagement(filters = {}) {
   const params = [];
-  const where = buildFilterClauses(filters, params, 'event-management');
+  const where = buildFilterClauses(filters, params);
 
 
   const sql = `
