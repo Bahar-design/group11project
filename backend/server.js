@@ -11,7 +11,7 @@ app.use(
       process.env.FRONTEND_ORIGIN,
       "http://localhost:5173"
     ],
-    credential : true,
+    credentials: true,
   })
 );
 app.use(express.json());
@@ -29,6 +29,9 @@ app.get("/api/db-check", async (req, res) => {
 
 // ✅ Main route for events
 app.use("/api/events", require("./routes/eventRoutes.js"));
+
+// ✅ Main route for matches
+app.use("/api/matches", require("./routes/matchRoutes.js"));
 
 // ✅ Start server
 const PORT = process.env.PORT || 4000;

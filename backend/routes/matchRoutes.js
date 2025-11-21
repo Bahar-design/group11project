@@ -15,16 +15,14 @@ router.get("/:volunteerId", async (req, res) => {
   const volunteerId = req.params.volunteerId;
 
   try {
-    // 1. Get volunteer profile, including city + preferred work date.
-    //    ⚠️ Adjust column names if yours differ:
-    //      - city            → user's chosen city (e.g. 'Katy')
-    //      - preferred_date  → date selected in calendar
+    // 1. Get volunteer profile (city + availability)
+    // availability = string of dates: "12/12/2026, 12/14/2026"
     const { rows: vrows } = await pool.query(
       `
       SELECT 
         volunteer_id,
         city,
-        preferred_date
+        availability
       FROM volunteerprofile
       WHERE volunteer_id = $1
       `,
@@ -37,7 +35,12 @@ router.get("/:volunteerId", async (req, res) => {
 
     const volunteer = vrows[0];
 
-    // 2. Get volunteer skills (by name)
+    // Convert availability string → array of dates
+    const preferredDates = volunteer.availability
+      ? volunteer.availability.split(",").map((s) => s.trim())
+      : [];
+
+    // 2. Get all volunteer skills
     const { rows: skillRows } = await pool.query(
       `
       SELECT s.skill_name
@@ -50,55 +53,45 @@ router.get("/:volunteerId", async (req, res) => {
 
     const volunteerSkills = skillRows.map((r) => r.skill_name);
 
-    // Build "user" object consumed by match functions
+    // Build user object for match functions
     const user = {
-      // e.g. ["Katy"]
       preferredLocations: volunteer.city ? [volunteer.city] : [],
-      // e.g. ["2026-12-12"]
-      preferredDates: volunteer.preferred_date ? [volunteer.preferred_date] : [],
-      // e.g. ["Cooking", "Childcare"]
+      preferredDates: preferredDates,  // e.g. ["12/12/2026", "12/17/2026"]
       skills: volunteerSkills,
     };
 
-    // 3. Get all events with their address + required skill
-    //    ⚠️ Adjust column names as needed:
-    //      - event_id
-    //      - event_name
-    //      - location        (full address string)
-    //      - event_date
-    //      - skills_needed   (FK → skills.skill_id)
+    // 3. Get all events with their date + location + skill
     const { rows: eventRows } = await pool.query(`
       SELECT 
         e.event_id,
         e.event_name,
         e.location,
         e.event_date,
-        e.time_slot,           -- kept for display ONLY (not used for scoring)
+        e.time_slot,
         e.volunteers,
         s.skill_name AS skill_name
       FROM eventdetails e
       LEFT JOIN skills s ON e.skills_needed = s.skill_id;
     `);
 
-    // 4. Normalize events and compute match scores
+    // 4. Score each event
     const scoredEvents = eventRows.map((ev) => {
       const event = {
         id: ev.event_id,
         title: ev.event_name,
-        location: ev.location,                  // full address string
-        date: ev.event_date,                    // used by matchByDate
+        location: ev.location,
+        date: ev.event_date,
         skillsNeeded: ev.skill_name ? [ev.skill_name] : [],
 
-        // Extra fields for frontend display:
         time: ev.time_slot || "",
         volunteers: ev.volunteers || 0,
         skills: ev.skill_name ? [ev.skill_name] : [],
-        priority: "LOW", // placeholder if you want to use this later
+        priority: "LOW",
       };
 
-      const locScore   = matchByLocation(user, event);  // 0 or 1 (city substring)
-      const skillScore = matchBySkills(user, event);    // 0..1 (fraction)
-      const dateScore  = matchByDate(user, event);      // 0 or 1
+      const locScore = matchByLocation(user, event);
+      const skillScore = matchBySkills(user, event);
+      const dateScore = matchByDate(user, event);
 
       const matchScore = totalMatchPercentage(
         locScore,
@@ -109,7 +102,7 @@ router.get("/:volunteerId", async (req, res) => {
       return { ...event, matchScore };
     });
 
-    // 5. Sort by matchScore descending (best matches first)
+    // 5. Sort best → worst match
     scoredEvents.sort((a, b) => b.matchScore - a.matchScore);
 
     res.json(scoredEvents);
