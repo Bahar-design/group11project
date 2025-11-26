@@ -33,6 +33,8 @@ app.use("/api/events", require("./routes/eventRoutes.js"));
 // ✅ Main route for matches
 app.use("/api/matches", require("./routes/matchRoutes.js"));
 
+
+app.use("/api/volunteer-history", require("./routes/historyRoutes.js"));
 // ✅ Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log("API running on", PORT));
