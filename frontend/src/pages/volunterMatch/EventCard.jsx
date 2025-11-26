@@ -45,11 +45,9 @@ export default function EventCard({ event, user }) {
       return;
     }
 
-    const volunteerId = user.volunteer_id;
-    if (!volunteerId) {
-      setError(
-        "No volunteer profile found. Please complete your volunteer profile first."
-      );
+    const userId = user.id || user.user_id;
+    if (!userId) {
+      setError("No user id found. Please log in again.");
       return;
     }
 
@@ -100,7 +98,7 @@ export default function EventCard({ event, user }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          volunteer_id: volunteerId,
+          user_id: userId,
           event_id: eventId,
         }),
       });

@@ -72,7 +72,12 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
           <div>
             {/* 🔽 pass events + loading + error into EventsPanel */}
-            <EventsPanel events={events} loading={loading} error={error} />
+            <EventsPanel 
+              events={events} 
+              loading={loading} 
+              error={error} 
+              user={user}
+            />
             <ImpactPanel />
             {/* <SkillsAvailability /> */}
           </div>

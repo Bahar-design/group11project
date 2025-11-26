@@ -3,7 +3,7 @@ import React from "react";
 import SectionCard from "./SectionCard";
 import EventCard from "./EventCard";
 
-export default function EventsPanel({ events = [], loading, error }) {
+export default function EventsPanel({ events = [], loading, error, user }) {
   return (
     <SectionCard
       title={
@@ -29,7 +29,7 @@ export default function EventsPanel({ events = [], loading, error }) {
         {!loading &&
           !error &&
           events.length > 0 &&
-          events.map((e, i) => <EventCard key={e.id ?? i} event={e} />)}
+          events.map((e, i) => <EventCard key={e.id ?? i} event={e} user={user}/>)}
       </div>
     </SectionCard>
   );
