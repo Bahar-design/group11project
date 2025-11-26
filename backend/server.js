@@ -33,6 +33,12 @@ app.use("/api/events", require("./routes/eventRoutes.js"));
 // ✅ Main route for matches
 app.use("/api/matches", require("./routes/matchRoutes.js"));
 
+//! newly added lines of code
+app.use("/api/login", require("./routes/loginRoutes"));//add this line for 
+
+app.use("/api/user-profile", require("./routes/userProfile"));
+
+//!!!!!!!!! 
 
 app.use("/api/volunteer-history", require("./routes/historyRoutes.js"));
 // ✅ Start server
