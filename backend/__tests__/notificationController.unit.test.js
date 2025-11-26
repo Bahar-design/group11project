@@ -191,3 +191,60 @@ describe('notificationController - unit tests', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });
+
+test('getVolunteers uses fallback when DB returns empty', async () => {
+  pool.query.mockResolvedValueOnce({ rows: [] });
+
+  const [req, res] = mockReqRes();
+  await notif.getVolunteers(req, res);
+
+  expect(res.status).toHaveBeenCalledWith(200);
+  expect(res.json.mock.calls[0][0].length).toBeGreaterThan(0); // uses loginController.users fallback
+});
+
+test('getAdmins uses fallback when DB empty', async () => {
+  pool.query.mockResolvedValueOnce({ rows: [] });
+
+  const [req, res] = mockReqRes();
+  await notif.getAdmins(req, res);
+
+  expect(res.status).toHaveBeenCalledWith(200);
+  expect(res.json.mock.calls[0][0].length).toBeGreaterThan(0);
+});
+
+test('getAdminInbox falls back to in-memory messages when DB admin not found', async () => {
+  // DB returns user not found
+  pool.query.mockResolvedValueOnce({ rows: [] });
+
+  // create an in-memory message for an admin
+  notif.__getMessages().push({
+    id: 1,
+    from: "volunteer@test.com",
+    to: "admin@test.com",
+    message: "hello"
+  });
+
+  const [req, res] = mockReqRes({ params: { adminId: "2" } });
+  await notif.getAdminInbox(req, res);
+
+  expect(res.status).toHaveBeenCalledWith(200);
+  expect(Array.isArray(res.json.mock.calls[0][0])).toBe(true);
+});
+
+test('getVolunteerInbox falls back to in-memory messages when DB user not found', async () => {
+  pool.query.mockResolvedValueOnce({ rows: [] });
+
+  notif.__getMessages().push({
+    id: 1,
+    from: "admin@test.com",
+    to: "vol@test.com",
+    message: "welcome"
+  });
+
+  const [req, res] = mockReqRes({ params: { volunteerId: "1" } });
+  await notif.getVolunteerInbox(req, res);
+
+  expect(res.status).toHaveBeenCalledWith(200);
+  expect(res.json.mock.calls[0][0].length).toBeGreaterThan(0);
+});
+
