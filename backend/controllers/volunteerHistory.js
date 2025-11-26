@@ -168,6 +168,7 @@ exports.deleteVolunteerRecord = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // 1) Delete and get the row back so we know event_id
     const result = await pool.query(
       'DELETE FROM volunteer_history WHERE history_id = $1 RETURNING *',
       [id]
@@ -177,7 +178,19 @@ exports.deleteVolunteerRecord = async (req, res) => {
       return res.status(404).json({ error: 'Volunteer record not found.' });
     }
 
-    res.status(200).json(result.rows[0]);
+    const deleted = result.rows[0];
+
+    // 2) Decrement the volunteer count on the event, but not below 0
+    await pool.query(
+      `
+      UPDATE eventdetails
+      SET volunteers = GREATEST(COALESCE(volunteers, 0) - 1, 0)
+      WHERE event_id = $1
+      `,
+      [deleted.event_id]
+    );
+
+    res.status(200).json(deleted);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to delete volunteer record.' });
