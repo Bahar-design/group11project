@@ -1,43 +1,30 @@
-// frontend/src/pages/volunteer/EventCard.jsx
 import React, { useState } from "react";
-import API_BASE from "../../lib/apiBase"; // adjust relative path if needed
 import Chip from "./Chip";
+import API_BASE from "../../lib/apiBase"; // adjust path if needed
 
 export default function EventCard({ event, user }) {
-  const [status, setStatus] = useState("idle");
   // "idle" | "joining" | "joined" | "can-unjoin" | "unjoining" | "unjoined"
+  const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const [historyId, setHistoryId] = useState(null);
 
-  const dateStr = event.date
-    ? new Date(event.date).toLocaleDateString()
-    : "Date TBA";
+  // derive eventId safely (matches what backend sends)
+  const eventId = event.id ?? event.event_id;
 
-  const matchLabel =
-    event.matchScore != null ? `${event.matchScore}% match` : "Match N/A";
+  const joinedLike =
+    status === "joining" ||
+    status === "joined" ||
+    status === "can-unjoin" ||
+    status === "unjoining";
 
-  const urgencyLabel = (() => {
-    switch (event.urgency) {
-      case 4:
-        return "Critical";
-      case 3:
-        return "High";
-      case 2:
-        return "Medium";
-      case 1:
-      default:
-        return "Low";
-    }
-  })();
-
-  let buttonText = "Join The Drive";
+  let buttonText = "Join The Drive!";
   let disabled = false;
 
   if (status === "joining") {
     buttonText = "Joining...";
     disabled = true;
   } else if (status === "joined") {
-    buttonText = "Drive Joined";
+    buttonText = "Drive Joined!";
     disabled = true;
   } else if (status === "can-unjoin") {
     buttonText = "Unjoin";
@@ -58,10 +45,11 @@ export default function EventCard({ event, user }) {
       return;
     }
 
-    // IMPORTANT: use volunteer_id for this table, not user_id
     const volunteerId = user.volunteer_id;
     if (!volunteerId) {
-      setError("No volunteer profile found. Please complete your volunteer profile first.");
+      setError(
+        "No volunteer profile found. Please complete your volunteer profile first."
+      );
       return;
     }
 
@@ -74,20 +62,23 @@ export default function EventCard({ event, user }) {
 
       try {
         setStatus("unjoining");
-        const res = await fetch(`${API_BASE}/api/volunteer-history/${historyId}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        });
+
+        const res = await fetch(
+          `${API_BASE}/api/volunteer-history/${historyId}`,
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
         if (!res.ok) {
           const text = await res.text();
           throw new Error(text || "Unjoin failed");
         }
 
-        // Optionally we could remove this event from the UI here if you want.
         setStatus("unjoined");
 
-        // after 10 seconds, reset back to "Join The Drive"
+        // After 10 seconds, reset back to initial state
         setTimeout(() => {
           setStatus("idle");
           setHistoryId(null);
@@ -101,7 +92,7 @@ export default function EventCard({ event, user }) {
       return;
     }
 
-    // Otherwise, we are joining
+    // Otherwise we are JOINING
     try {
       setStatus("joining");
 
@@ -110,7 +101,7 @@ export default function EventCard({ event, user }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           volunteer_id: volunteerId,
-          event_id: event.id,
+          event_id: eventId,
         }),
       });
 
@@ -120,10 +111,11 @@ export default function EventCard({ event, user }) {
       }
 
       const created = await res.json();
-      setHistoryId(created.history_id); // so we know what to DELETE later
+      setHistoryId(created.history_id); // used later for DELETE
+
       setStatus("joined");
 
-      // after 10 seconds, allow unjoin
+      // After 10 seconds, allow unjoin
       setTimeout(() => {
         setStatus("can-unjoin");
       }, 10000);
@@ -135,47 +127,63 @@ export default function EventCard({ event, user }) {
   }
 
   return (
-    <article className="rounded-xl bg-white p-4 shadow-sm border border-slate-200">
-      <header className="flex items-center justify-between gap-3 mb-1">
-        <h2 className="font-semibold text-lg">{event.title}</h2>
-        <div className="flex items-center gap-2">
-          <Chip label={matchLabel} type="match" />
-          <Chip label={urgencyLabel} type="urgency" />
+    <div className="rounded-xl border border-slate-200 p-4 transition-colors hover:bg-red-400">
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <div>
+          <h4 className="text-sm font-semibold text-slate-900 ">
+            {event.title}
+          </h4>
+          <div className="mt-10 flex flex-wrap items-center text-xs text-slate-500">
+            <div className="flex items-center gap-1">
+              <span className="i">📍</span>
+              <span>{event.location}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="i">🕒</span>
+              <span>{event.time}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="i">👥</span>
+              <span>{event.volunteers} volunteers</span>
+            </div>
+          </div>
         </div>
-      </header>
+        {event.priority && (
+          <span
+            className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
+              event.priority === "HIGH"
+                ? "bg-rose-100 text-rose-700"
+                : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            {event.priority} PRIORITY
+          </span>
+        )}
+      </div>
 
-      <p className="text-sm text-slate-600 mb-1">{event.location}</p>
-      <p className="text-xs text-slate-500 mb-2">{dateStr}</p>
+      <div className="mt-2 text-xs text-slate-600">
+        <span className="font-medium text-slate-700">Skills Needed:</span>{" "}
+        {event.skills.join(", ")}
+      </div>
 
-      {Array.isArray(event.skills) && event.skills.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {event.skills.map((skill) => (
-            <Chip key={skill} label={skill} type="skill" />
-          ))}
-        </div>
-      )}
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Chip>{event.matchScore}% Perfect Match</Chip>
 
-      <div className="flex items-center justify-between mt-2">
         <button
           type="button"
           onClick={handleJoinClick}
-          disabled={disabled}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-            disabled
-              ? "bg-slate-300 text-slate-700 cursor-not-allowed"
-              : status === "can-unjoin"
-              ? "bg-red-500 text-white hover:bg-red-600"
-              : "bg-emerald-500 text-white hover:bg-emerald-600"
-          }`}
+          disabled={status === "joining" || status === "unjoining"}
+          className={`!rounded-full px-6 py-3 text-sm font-semibold text-white transition
+            ${
+              joinedLike
+                ? status === "can-unjoin"
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-green-500 hover:bg-green-600"
+                : "bg-rose-500 hover:bg-rose-600"
+            }`}
         >
           {buttonText}
         </button>
-
-        {typeof event.volunteers === "number" && (
-          <span className="text-xs text-slate-500">
-            {event.volunteers} volunteers
-          </span>
-        )}
       </div>
 
       {error && (
@@ -183,6 +191,6 @@ export default function EventCard({ event, user }) {
           {error}
         </p>
       )}
-    </article>
+    </div>
   );
 }
