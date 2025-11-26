@@ -14,6 +14,10 @@ export default function Login({ onLogin, isLoggedIn, user }) {
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    localStorage.removeItem("user");
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("hh_userProfile");
+    
     if (!email || !password) {
       setMessage("Error: type in Email and Password");
       return;
