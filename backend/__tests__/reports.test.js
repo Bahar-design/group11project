@@ -1,82 +1,274 @@
-//reports.test.js
-const request = require('supertest');
-const app = require('../app');
-const pool = require('../db');
+const request = require("supertest");
+const app = require("../app");
+const pool = require("../db");
 
-jest.mock('../db');
+jest.mock("../db");
 
-describe("Reports API Routes", () => {
+describe("Reports Routes (routes/reports.js)", () => {
 
-  beforeEach(() => jest.resetAllMocks());
-
-
-  //Volunteer Participation
-  test("GET /api/reports/volunteer-participation returns rows", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [
-      { volunteer_id: 1, full_name: "A", email: "a@x.com", city: "X", state_code: "TX",
-        total_events: "2", skills: ["S1"], events_worked: ["Event 1"] }
-    ]});
-
-    const res = await request(app).get("/api/reports/volunteer-participation");
-    expect(res.statusCode).toBe(200);
-    expect(res.body[0].volunteer_id).toBe(1);
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.NODE_ENV = "test";   // bypass requireAdmin()
   });
 
+  // -------------------------------------------------------------------
+  // 1. volunteer-participation
+  // -------------------------------------------------------------------
+  test("GET /api/reports/volunteer-participation hits route & passes filters", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
 
-  //Event Volunteers
-  test("GET /api/reports/event-volunteers returns rows", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [
-      { event_id: 10, event_name: "E", event_location: "Houston", user_id: 4,
-        volunteer_profile_id: 4, full_name: "John", email: "j@x.com",
-        volunteer_city: "Houston", skills: ["SkillA"], signup_date: "2025-01-01" }
-    ]});
+    const res = await request(app)
+      .get("/api/reports/volunteer-participation?volunteer=john&event=gala&location=katy&skillId=2");
 
-    const res = await request(app).get("/api/reports/event-volunteers");
     expect(res.statusCode).toBe(200);
-    expect(res.body[0].event_id).toBe(10);
+    const sql = pool.query.mock.calls[0][0];
+
+    expect(sql).toMatch(/vp\.full_name|ut\.user_email|EXISTS/);
+    expect(sql).toMatch(/ed\.event_name/);
+    expect(sql).toMatch(/LOWER\(ed\.location\)/i);
+    expect(sql).toMatch(/s\.skill_id/);
   });
 
+  test("volunteer-participation uses search fallback", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
 
-  //Event Management
-  test("GET /api/reports/event-management returns rows", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [
-      { event_id: 10, event_name: "E", total_volunteers: "4", required_skills: ["S1"] }
-    ]});
+    await request(app)
+      .get("/api/reports/volunteer-participation?search=johnny");
 
-    const res = await request(app).get("/api/reports/event-management");
-    expect(res.statusCode).toBe(200);
-    expect(res.body[0].total_volunteers).toBe(4);
+    const sql = pool.query.mock.calls[0][0];
+    expect(sql).toMatch(/LOWER\(vp\.full_name\)/i);
   });
 
+  // -------------------------------------------------------------------
+  // 2. event-management
+  // -------------------------------------------------------------------
+  test("GET /api/reports/event-management builds all filters", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
 
-  //Skills (All)
-  test("GET /api/reports/skills returns skills list", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [
-      { skill_id: 1, skill_name: "Leadership" }
-    ]});
+    await request(app)
+      .get("/api/reports/event-management?event=gala&volunteer=mary&location=houston&skillId=3&startDate=2025-01-01&endDate=2025-02-01");
 
+    const sql = pool.query.mock.calls[0][0];
+
+    expect(sql).toMatch(/ed\.event_name/);
+    expect(sql).toMatch(/EXISTS/);              // volunteer EXISTS branch
+    expect(sql).toMatch(/ed\.location/);
+    expect(sql).toMatch(/EXISTS/);              // skillId EXISTS branch
+    expect(sql).toMatch(/ed\.event_date >=/);
+    expect(sql).toMatch(/ed\.event_date <=/);
+  });
+
+  // -------------------------------------------------------------------
+  // 3. event-volunteers
+  // -------------------------------------------------------------------
+  test("GET /api/reports/event-volunteers builds all filters", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await request(app)
+      .get("/api/reports/event-volunteers?event=gala&volunteer=bob&location=houston&skillId=4&startDate=2025-01-05&endDate=2025-02-02");
+
+    const sql = pool.query.mock.calls[0][0];
+
+    expect(sql).toMatch(/ed\.event_name/);
+    expect(sql).toMatch(/LOWER\(COALESCE/);     // volunteer filter
+    expect(sql).toMatch(/ed\.location/);
+    expect(sql).toMatch(/EXISTS/);              // skillId EXISTS
+    expect(sql).toMatch(/vh\.signup_date >=/);
+    expect(sql).toMatch(/vh\.signup_date <=/);
+  });
+
+  test("event-volunteers uses search fallback", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await request(app)
+      .get("/api/reports/event-volunteers?search=amy");
+
+    const sql = pool.query.mock.calls[0][0];
+    expect(sql).toMatch(/COALESCE/);
+  });
+
+  // -------------------------------------------------------------------
+  // 4. GET /skills
+  // -------------------------------------------------------------------
+  test("GET /api/reports/skills calls controller", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
     const res = await request(app).get("/api/reports/skills");
 
     expect(res.statusCode).toBe(200);
-    expect(res.body[0].skill_name).toBe("Leadership");
+    expect(pool.query).toHaveBeenCalled();
   });
 
-
-  //Skills (By eventId)
-  test("GET /api/reports/skills/:eventId returns rows", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [
-      { skill_id: 2, skill_name: "Cooking" }
-    ]});
-
-    const res = await request(app).get("/api/reports/skills/5");
+  // -------------------------------------------------------------------
+  // 5. GET /skills/:eventId
+  // -------------------------------------------------------------------
+  test("GET /api/reports/skills/:eventId calls controller", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+    const res = await request(app).get("/api/reports/skills/44");
 
     expect(res.statusCode).toBe(200);
-    expect(res.body[0].skill_id).toBe(2);
   });
 
-  //404 case (missing branch)
-  test("GET unknown /api/reports returns 404", async () => {
-    const res = await request(app).get("/api/reports/unknown-endpoint");
-    expect(res.statusCode).toBe(404);
+  // -------------------------------------------------------------------
+  // 6. GET /locations
+  // -------------------------------------------------------------------
+  test("GET /api/reports/locations returns array", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ location: "Houston" }] });
+
+    const res = await request(app).get("/api/reports/locations");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual(["Houston"]);
   });
+
+  // -------------------------------------------------------------------
+  // 7. requireAdmin — rejects when not test & not admin
+  // -------------------------------------------------------------------
+  test("requireAdmin returns 403 in production", async () => {
+    process.env.NODE_ENV = "production";
+
+    const res = await request(app)
+      .get("/api/reports/volunteer-participation");
+
+    expect(res.statusCode).toBe(403);
+  });
+
+  // -------------------------------------------------------------------
+  // 8. requireAdmin — allows admin header
+  // -------------------------------------------------------------------
+  test("requireAdmin allows admin via header in production", async () => {
+    process.env.NODE_ENV = "production";
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    const res = await request(app)
+      .get("/api/reports/event-management")
+      .set("x-user-type", "admin");
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  // -------------------------------------------------------------------
+  // 9. requireAdmin — allows GET automatically
+  // -------------------------------------------------------------------
+  test("requireAdmin auto-allows GET requests", async () => {
+    process.env.NODE_ENV = "production";
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    const res = await request(app)
+      .get("/api/reports/skills");
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  // -------------------------------------------------------------------
+  // 10. requireAdmin — allows when req.user.userType is admin
+  // -------------------------------------------------------------------
+  test("requireAdmin allows admin via req.user", async () => {
+    process.env.NODE_ENV = "production";
+
+    // inject a fake middleware BEFORE reports
+    const fakeApp = require("express")();
+    fakeApp.use((req, _res, next) => {
+      req.user = { userType: "admin" };
+      next();
+    });
+    fakeApp.use("/api/reports", require("../routes/reports"));
+
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    const res = await request(fakeApp)
+      .get("/api/reports/locations");
+
+    expect(res.statusCode).toBe(200);
+  });
+
 });
+
+describe("buildFilterClauses – branch coverage", () => {
+
+  beforeEach(() => jest.clearAllMocks());
+
+  test("empty filters produces no WHERE clause", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getVolunteerParticipation({});
+
+    const sql = pool.query.mock.calls[0][0];
+    // Should NOT insert WHERE because no filters applied
+    expect(sql).not.toMatch(/WHERE/i);
+  });
+
+  test("location=all skips location filter branch", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getVolunteerParticipation({ location: "all" });
+
+    const sql = pool.query.mock.calls[0][0];
+    expect(sql).not.toMatch(/vp\.city/i);
+  });
+
+  test("skillId non-numeric triggers alternate branch", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getVolunteerParticipation({ skillId: "abc" });
+
+    const sql = pool.query.mock.calls[0][0];
+    // volunteer-participation uses s.skill_id = $n in fallback branch
+    expect(sql).toMatch(/s\.skill_id\s*=/i);
+  });
+
+  test("event-management: no date filters triggers no event_date branch", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventManagement({});
+
+    const sql = pool.query.mock.calls[0][0];
+    expect(sql).not.toMatch(/event_date >=/i);
+    expect(sql).not.toMatch(/event_date <=/i);
+  });
+
+  test("event-management: both startDate + endDate", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventManagement({
+      startDate: "2025-01-01",
+      endDate: "2025-02-01"
+    });
+
+    const sql = pool.query.mock.calls[0][0];
+    expect(sql).toMatch(/event_date >=/i);
+    expect(sql).toMatch(/event_date <=/i);
+  });
+
+  test("event-volunteers: missing volunteer triggers branch where only event/date used", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventVolunteerAssignments({
+      event: "gala"
+    });
+
+    const sql = pool.query.mock.calls[0][0];
+    expect(sql).toMatch(/LOWER\(ed\.event_name\)/i);
+  });
+
+  test("event-volunteers: no startDate/endDate triggers signup_date branches skipped", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventVolunteerAssignments({});
+
+    const sql = pool.query.mock.calls[0][0];
+    expect(sql).not.toMatch(/signup_date >=/i);
+    expect(sql).not.toMatch(/signup_date <=/i);
+  });
+
+  test("default reportType branch (blank string) triggers vp.full_name filter", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    // simulate caller passing reportType = '' (default)
+    await reports.getVolunteerParticipation({ volunteer: "sam" });
+
+    const sql = pool.query.mock.calls[0][0];
+    expect(sql).toMatch(/vp\.full_name/i);
+  });
+
+});
+

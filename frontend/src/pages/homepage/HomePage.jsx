@@ -101,8 +101,8 @@ export default function HomePage({ isLoggedIn, onLogout, user }) {
               >
                 Join Us Today
               </Link>
-              <a
-                href="#about"
+              <Link
+                to="/about"
                 className="btn btn-secondary"
                 style={{
                   background: "#fff",
@@ -111,10 +111,11 @@ export default function HomePage({ isLoggedIn, onLogout, user }) {
                   padding: "1rem 2rem",
                   borderRadius: "12px",
                   fontWeight: 600,
+                  textDecoration: "none",
                 }}
               >
                 Learn More
-              </a>
+              </Link>
               < img  className="logo-img" src= {logo} alt="volunteer"/>
             </div>
           </div>
