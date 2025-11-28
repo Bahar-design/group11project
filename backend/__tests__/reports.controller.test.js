@@ -144,6 +144,57 @@ describe("reportsController", () => {
     const sql = pool.query.mock.calls[0][0];
     expect(sql).toMatch(/WHERE es\.event_id/i);
   });
+
+  test("event-management: volunteer filter uses EXISTS volunteer_history subquery", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventManagement({ volunteer: 'mary' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/EXISTS\s*\(SELECT 1 FROM volunteer_history vh2/i);
+  });
+
+  test("event-volunteers: volunteer filter uses COALESCE volunteer name/email", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventVolunteerAssignments({ volunteer: 'amy' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/LOWER\(COALESCE\(vp\.full_name, ut\.user_email\)\)/i);
+  });
+
+  test("volunteer-participation: event filter builds EXISTS event_history subquery", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getVolunteerParticipation({ event: 'gala' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/EXISTS\s*\(SELECT 1 FROM volunteer_history vh2 JOIN eventdetails ed2/i);
+  });
+
+  test("event-management: startDate and endDate add event_date clauses", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventManagement({ startDate: '2025-01-01', endDate: '2025-01-31' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/ed\.event_date >=/i);
+    expect(sql).toMatch(/ed\.event_date <=/i);
+  });
+
+  test("volunteer-participation: non-empty location applies vp.city filter", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getVolunteerParticipation({ location: 'Houston' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/LOWER\(vp\.city\)/i);
+  });
 });
   test("filter: volunteer only", async () => {
     pool.query.mockResolvedValueOnce({ rows: [] });
@@ -164,4 +215,86 @@ describe("reportsController", () => {
   const lastCall2 = pool.query.mock.calls[pool.query.mock.calls.length - 1];
   const sql2 = lastCall2 ? lastCall2[0] : '';
   expect(sql2).toMatch(/LOWER\(ed\.event_name\)/i);
+  });
+
+
+  test("skillId non-numeric in volunteer-participation uses volunteer skills branch (s.skill_id)", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getVolunteerParticipation({ skillId: 'abc' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/s\.skill_id\s*=\s*\$/i);
+  });
+
+  test("skillId numeric in event-management uses event_skills EXISTS branch", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventManagement({ skillId: '4' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/EXISTS\s*\(SELECT 1 FROM event_skills/i);
+  });
+
+  test("location='all' skips location filter for volunteer-participation", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getVolunteerParticipation({ location: 'all' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).not.toMatch(/LOWER\(vp\.city\)/i);
+  });
+
+  test("event-volunteers startDate/endDate produce signup_date clauses", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventVolunteerAssignments({ startDate: '2025-01-01', endDate: '2025-02-01' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/vh\.signup_date >=/i);
+    expect(sql).toMatch(/vh\.signup_date <=/i);
+  });
+
+  test("getLocations returns array of strings", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ location: 'Austin' }, { location: 'Katy' }] });
+
+    const res = await reports.getLocations();
+    expect(Array.isArray(res)).toBe(true);
+    expect(res).toEqual(['Austin', 'Katy']);
+  });
+
+  test("buildFilterClauses default branch for volunteer (no reportType)", () => {
+    // Load the controller source, replace the db require with a dummy pool to avoid side effects,
+    // then evaluate only the buildFilterClauses function so we can test the default branch.
+    const fs = require('fs');
+    const path = require('path');
+
+    const srcPath = path.resolve(__dirname, '../controllers/reportsController.js');
+    let src = fs.readFileSync(srcPath, 'utf8');
+    // replace the top-level require('../db') with a dummy pool so require won't fail
+    src = src.replace("const pool = require('../db');", "const pool = { query: () => ({ rows: [] }) }; ");
+
+    // extract the buildFilterClauses function text
+    const fnMatch = src.match(/function buildFilterClauses\([\s\S]*?\n}\n/);
+    expect(fnMatch).toBeTruthy();
+    // eslint-disable-next-line no-eval
+    const buildFilterClauses = eval('(' + fnMatch[0] + ')');
+
+    const params = [];
+    const sql = buildFilterClauses({ volunteer: 'Bob' }, params, '');
+    expect(sql).toMatch(/LOWER\(vp\.full_name\)/i);
+  });
+
+  test("event-volunteers: date equality produces vh.signup_date = clause", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    await reports.getEventVolunteerAssignments({ date: '2025-01-05' });
+
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
+    expect(sql).toMatch(/vh\.signup_date\s*=\s*\$/i);
   });

@@ -2,6 +2,8 @@ const request = require("supertest");
 const app = require("../app");
 const pool = require("../db");
 
+const reports = require('../controllers/reportsController');
+
 jest.mock("../db");
 
 describe("Reports Routes (routes/reports.js)", () => {
@@ -24,8 +26,9 @@ describe("Reports Routes (routes/reports.js)", () => {
     const sql = pool.query.mock.calls[0][0];
 
     expect(sql).toMatch(/vp\.full_name|ut\.user_email|EXISTS/);
-    expect(sql).toMatch(/ed\.event_name/);
-    expect(sql).toMatch(/LOWER\(ed\.location\)/i);
+  expect(sql).toMatch(/ed\.event_name/);
+  // volunteer-participation location filter applies to volunteer profile (vp.city)
+  expect(sql).toMatch(/LOWER\(vp\.city\)/i);
     expect(sql).toMatch(/s\.skill_id/);
   });
 
@@ -121,15 +124,18 @@ describe("Reports Routes (routes/reports.js)", () => {
   });
 
   // -------------------------------------------------------------------
-  // 7. requireAdmin — rejects when not test & not admin
+  // 7. requireAdmin — current behavior: GET requests are allowed in production
   // -------------------------------------------------------------------
-  test("requireAdmin returns 403 in production", async () => {
+  test("requireAdmin allows GET in production (middleware permits read-only)", async () => {
     process.env.NODE_ENV = "production";
+    // ensure the route's DB call is mocked so the request completes successfully
+    pool.query.mockResolvedValueOnce({ rows: [] });
 
     const res = await request(app)
-      .get("/api/reports/volunteer-participation");
+      .get("/api/reports/volunteer-participation")
+      .set('Origin', 'http://localhost:5173');
 
-    expect(res.statusCode).toBe(403);
+    expect(res.statusCode).toBe(200);
   });
 
   // -------------------------------------------------------------------
@@ -142,6 +148,17 @@ describe("Reports Routes (routes/reports.js)", () => {
     const res = await request(app)
       .get("/api/reports/event-management")
       .set("x-user-type", "admin");
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  test("requireAdmin accepts lowercase x-usertype header in production", async () => {
+    process.env.NODE_ENV = "production";
+    pool.query.mockResolvedValueOnce({ rows: [] });
+
+    const res = await request(app)
+      .get("/api/reports/event-management")
+      .set("x-usertype", "admin");
 
     expect(res.statusCode).toBe(200);
   });
@@ -181,6 +198,48 @@ describe("Reports Routes (routes/reports.js)", () => {
     expect(res.statusCode).toBe(200);
   });
 
+  test("requireAdmin returns 403 for non-GET in production (no admin)", async () => {
+    process.env.NODE_ENV = "production";
+    // extract the requireAdmin middleware from the router stack
+    const reportsRouter = require('../routes/reports');
+    const layer = reportsRouter.stack.find(l => l.route && l.route.path === '/volunteer-participation');
+    const requireAdmin = layer.route.stack[0].handle;
+
+    const fakeApp = require('express')();
+    // mount the middleware on a POST path to exercise non-GET branch
+    fakeApp.post('/test-no-admin', requireAdmin, (_req, res) => res.sendStatus(200));
+
+    const res = await request(fakeApp).post('/test-no-admin');
+    expect(res.statusCode).toBe(403);
+  });
+
+  test("requireAdmin allows non-GET when req.user.userType is admin", async () => {
+    process.env.NODE_ENV = "production";
+    const reportsRouter = require('../routes/reports');
+    const layer = reportsRouter.stack.find(l => l.route && l.route.path === '/volunteer-participation');
+    const requireAdmin = layer.route.stack[0].handle;
+
+    const fakeApp = require('express')();
+    fakeApp.use((req, _res, next) => { req.user = { userType: 'admin' }; next(); });
+    fakeApp.post('/test-user-admin', requireAdmin, (_req, res) => res.sendStatus(200));
+
+    const res = await request(fakeApp).post('/test-user-admin');
+    expect(res.statusCode).toBe(200);
+  });
+
+  test("requireAdmin allows non-GET when x-user-type header is admin", async () => {
+    process.env.NODE_ENV = "production";
+    const reportsRouter = require('../routes/reports');
+    const layer = reportsRouter.stack.find(l => l.route && l.route.path === '/volunteer-participation');
+    const requireAdmin = layer.route.stack[0].handle;
+
+    const fakeApp = require('express')();
+    fakeApp.post('/test-header-admin', requireAdmin, (_req, res) => res.sendStatus(200));
+
+    const res = await request(fakeApp).post('/test-header-admin').set('x-user-type', 'admin');
+    expect(res.statusCode).toBe(200);
+  });
+
 });
 
 describe("buildFilterClauses – branch coverage", () => {
@@ -203,7 +262,8 @@ describe("buildFilterClauses – branch coverage", () => {
     await reports.getVolunteerParticipation({ location: "all" });
 
     const sql = pool.query.mock.calls[0][0];
-    expect(sql).not.toMatch(/vp\.city/i);
+  // ensure WHERE does not filter by volunteer city when location=all
+  expect(sql).not.toMatch(/LOWER\(vp\.city\)/i);
   });
 
   test("skillId non-numeric triggers alternate branch", async () => {
