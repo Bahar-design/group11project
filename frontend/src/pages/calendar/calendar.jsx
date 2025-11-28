@@ -145,14 +145,12 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   );
 }
 */
-
 import React, { useState, useEffect } from "react";
 import { Calendar as Calendars, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import Modal from "react-modal";
 import Footer from "../../components/footer.jsx";
 import Header from "../../components/header.jsx";
-import API_BASE from "../../lib/apiBase";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
 
@@ -169,16 +167,14 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Only fetch the calendar table
-        const res = await fetch(`${API_BASE}/api/calendar`);
+        // HARD-CODE backend base URL because .env cannot be changed
+        const res = await fetch(`http://localhost:4000/api/calendar`);
         const data = await res.json();
 
-        // If backend returned an error object
         if (!Array.isArray(data)) {
           throw new Error("Invalid response");
         }
 
-        // Reformat rows from DB to event objects for react-big-calendar
         const formatted = data.map(ev => ({
           id: ev.event_id,
           title: ev.event_name,
@@ -232,10 +228,7 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
         onRequestClose={() => setModalOpen(false)}
         contentLabel="Event Details"
         style={{
-          overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1000
-          },
+          overlay: { backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1000 },
           content: {
             top: "20%",
             left: "25%",
