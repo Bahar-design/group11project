@@ -136,7 +136,7 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
                     <th>Volunteer Email</th>
                     <th>Volunteer's Location</th>
                     <th>Volunteer's Skills</th>
-                    <th>Event's Worked</th>
+                    <th>Name of Events Worked</th>
                     <th>Total Events worked</th>
                   </tr>
                 </thead>

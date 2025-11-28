@@ -43,6 +43,8 @@ router.get('/event-management', requireAdmin, async (req, res, next) => {
   try {
     const filters = {
       event: req.query.event || req.query.search || null,
+      // allow filtering events by volunteer name/email (frontend sends 'volunteer')
+      volunteer: req.query.volunteer || req.query.search || null,
       location: req.query.location || null,
       skillId: req.query.skillId || null,
       startDate: req.query.startDate || null,
