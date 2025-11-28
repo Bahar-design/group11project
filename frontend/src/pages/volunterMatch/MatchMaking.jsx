@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import Hero from "./Hero.jsx";
 import EventsPanel from "./EventsPanel.jsx";
-import SkillsAvailability from "./SkillsAvailability.jsx";
 import ImpactPanel from "./ImpactPanel.jsx";
 import Layout from "../../components/layout.jsx";
 import API_BASE from "../../lib/apiBase";
@@ -16,7 +15,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // get user either from props or from localStorage (after refresh)
+    // 1️⃣ Get current user (props or localStorage)
     let currentUser = user;
     if (!currentUser) {
       try {
@@ -32,12 +31,31 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       return;
     }
 
-    // ✅ Prefer volunteer_id (the volunteerprofile PK used by /api/matches and /api/volunteer-history/my)
-    const volunteerId =
-      currentUser.volunteer_id || currentUser.id || currentUser.user_id;
+    // 2️⃣ Try to find volunteer_id from multiple places
+    let volunteerId = currentUser.volunteer_id || null;
+
+    // Fallback: check cached profile if your app stores it
+    if (!volunteerId) {
+      try {
+        const cachedProfile = JSON.parse(
+          localStorage.getItem("hh_userProfile")
+        );
+        if (cachedProfile?.volunteer_id) {
+          volunteerId = cachedProfile.volunteer_id;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // Final fallback: use user.id / user.user_id like you had originally.
+    // This matches the behavior from when matches were already working.
+    if (!volunteerId) {
+      volunteerId = currentUser.id || currentUser.user_id;
+    }
 
     if (!volunteerId) {
-      setError("No volunteer profile found. Please complete your profile.");
+      setError("No volunteer identifier found. Please log in again.");
       setLoading(false);
       return;
     }
@@ -47,7 +65,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         setLoading(true);
         setError("");
 
-        // 1️⃣ Fetch matched events for this volunteer
+        // 3️⃣ Fetch matched events (this was already working before)
         const matchesRes = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
         if (!matchesRes.ok) {
           const text = await matchesRes.text();
@@ -55,7 +73,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         }
         const matches = await matchesRes.json();
 
-        // 2️⃣ Fetch volunteer history for this volunteer
+        // 4️⃣ Fetch volunteer history for this same ID
         let history = [];
         try {
           const historyRes = await fetch(
@@ -73,7 +91,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           console.warn("Error loading volunteer history:", e);
         }
 
-        // 3️⃣ Build a map: event_id -> { joined: true, history_id }
+        // 5️⃣ Build joinedMap: event_id -> { joined: true, history_id }
         const map = {};
         for (const h of history) {
           map[h.event_id] = {
@@ -82,7 +100,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           };
         }
 
-        // 4️⃣ Sort events by matchScore (backend already does it, but double-check)
+        // 6️⃣ Sort matches by matchScore just in case
         matches.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
         setEvents(matches);
@@ -109,7 +127,6 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         <Hero />
         <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
           <div>
-            {/* 🔽 pass events + loading + error + joinedMap + user into EventsPanel */}
             <EventsPanel
               events={events}
               joinedMap={joinedMap}
@@ -118,7 +135,6 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
               user={user}
             />
             <ImpactPanel />
-            {/* <SkillsAvailability /> */}
           </div>
         </main>
       </div>

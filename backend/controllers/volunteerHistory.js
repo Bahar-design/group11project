@@ -19,6 +19,7 @@ exports.getVolunteerHistory = async (req, res) => {
 };
 
 // GET history for a single volunteer
+// GET history for a single volunteer
 exports.getVolunteerHistoryByVolunteer = async (req, res) => {
   try {
     const { volunteer_id } = req.params;
@@ -27,7 +28,9 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
       return res.status(400).json({ error: "Missing volunteer_id" });
     }
 
-    const result = await pool.query(
+    // 1️⃣ First, treat volunteer_id as volunteerprofile.volunteer_id
+    //    vh.volunteer_id stores user_id (from user_table)
+    let result = await pool.query(
       `
       SELECT
         vh.*,
@@ -37,17 +40,37 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
         ed.location
       FROM volunteerprofile vp
       JOIN volunteer_history vh
-        ON vh.volunteer_id = vp.user_id            -- 🔴 vh.volunteer_id is user_id
+        ON vh.volunteer_id = vp.user_id
       JOIN eventdetails ed
         ON vh.event_id = ed.event_id
-      WHERE vp.volunteer_id = $1                   -- 🔴 param is volunteerprofile.volunteer_id
+      WHERE vp.volunteer_id = $1
       ORDER BY vh.signup_date DESC
       `,
       [volunteer_id]
-    )
+    );
+
+    if (result.rows.length === 0) {
+      // 2️⃣ Fallback: treat param as user_id directly
+      result = await pool.query(
+        `
+        SELECT
+          vh.*,
+          ed.event_name,
+          ed.event_date,
+          ed.location
+        FROM volunteer_history vh
+        JOIN eventdetails ed
+          ON vh.event_id = ed.event_id
+        WHERE vh.volunteer_id = $1
+        ORDER BY vh.signup_date DESC
+        `,
+        [volunteer_id]
+      );
+    }
+
     res.status(200).json(result.rows);
   } catch (err) {
-    console.error(err);
+    console.error("getVolunteerHistoryByVolunteer error:", err);
     res.status(500).json({ error: "Failed to fetch volunteer history." });
   }
 };
