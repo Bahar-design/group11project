@@ -29,14 +29,17 @@ const poolConfig = useDatabaseUrl
 
 const pool = new Pool(poolConfig);
 
-// Avoid noisy async console output when running tests (jest may exit before these resolve).
-pool.connect()
-  .then(() => {
-    if (process.env.NODE_ENV !== 'test') console.log('Connected to PostgreSQL!');
-  })
-  .catch(err => {
-    if (process.env.NODE_ENV !== 'test') console.error('Connection error', err);
-  });
+// Avoid attempting a live connect during unit tests. In non-test environments
+// try to connect and log success/failure to aid debugging in development.
+if (process.env.NODE_ENV !== 'test') {
+  pool.connect()
+    .then(() => {
+      console.log('Connected to PostgreSQL!');
+    })
+    .catch(err => {
+      console.error('Connection error', err);
+    });
+}
 
 module.exports = pool;
 

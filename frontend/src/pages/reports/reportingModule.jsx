@@ -25,23 +25,6 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
   const [locations, setLocations] = useState([]);
   const [skills, setSkills] = useState([]);
 
-  /*
-
-  const filters = {
-    search: searchTerm,
-    location: selectedLocation,
-
-   
-
-    skill: null,
-    skillId: selectedSkill !== 'all' && selectedSkill?.skill_id ? selectedSkill.skill_id : null,
-
-    startDate: dateRange.start,
-    endDate: dateRange.end
-  };
-
-  */
-
   const filters = {
     // backend expects: volunteer, event, location, skillId, startDate, endDate
     volunteer: searchTerm || null,

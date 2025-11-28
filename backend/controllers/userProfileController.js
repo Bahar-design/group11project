@@ -267,7 +267,7 @@ async function updateUserProfile(req, res, next) {
 
       // Normalize availability to array of YYYY-MM-DD strings for Postgres date[]
       // Normalize availability to array of YYYY-MM-DD strings for Postgres date[]
-      const availabilityParam = Array.isArray(value.availability)
+  const availabilityParam = Array.isArray(value.availability)
         ? value.availability.map(d => {
             if (!d) return null;
             // Millisecond timestamp (number)
@@ -332,7 +332,7 @@ async function updateUserProfile(req, res, next) {
         const skillRows = await client.query(`SELECT skill_id, skill_name FROM skills`);
         const nameToId = new Map(skillRows.rows.map(r => [r.skill_name.toLowerCase(), r.skill_id]));
 
-        for (const s of value.skills) {
+  for (const s of value.skills) {
           const sid = nameToId.get(String(s).toLowerCase());
           if (sid) {
             try {

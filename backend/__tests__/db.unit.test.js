@@ -1,3 +1,4 @@
+// consolidated db tests below
 const mockPool = { connect: jest.fn(), query: jest.fn() };
 
 jest.mock('pg', () => ({ Pool: jest.fn(() => mockPool) }));
@@ -15,15 +16,16 @@ describe('db.js environment handling', () => {
     mockPool.connect = jest.fn().mockResolvedValue({});
   });
 
-  test('uses DATABASE_URL when provided', () => {
+  test('uses DATABASE_URL when provided', async () => {
     process.env.DATABASE_URL = 'postgres://user:pass@host/db';
     process.env.PGSSL = 'true';
-    const pool = require('../db');
+    const pool = await require('../db');
+    await new Promise(r => setImmediate(r));
     expect(pool).toBeDefined();
     expect(require('pg').Pool).toHaveBeenCalledWith(expect.objectContaining({ connectionString: process.env.DATABASE_URL }));
   });
 
-  test('uses individual env vars when DATABASE_URL not set', () => {
+  test('uses individual env vars when DATABASE_URL not set', async () => {
     delete process.env.DATABASE_URL;
     process.env.PGUSER = 'u';
     process.env.PGHOST = 'h';
@@ -31,7 +33,8 @@ describe('db.js environment handling', () => {
     process.env.PGPASSWORD = 'p';
     process.env.PGPORT = '5432';
     process.env.PGSSL = 'false';
-    const pool = require('../db');
+    const pool = await require('../db');
+    await new Promise(r => setImmediate(r));
     expect(pool).toBeDefined();
     expect(require('pg').Pool).toHaveBeenCalledWith(expect.objectContaining({ user: 'u', host: 'h' }));
   });
@@ -55,6 +58,34 @@ describe('db.js environment handling', () => {
     mockPool.connect = jest.fn().mockResolvedValue({});
     const pool = require('../db');
     expect(pool).toBeDefined();
+    process.env = origEnv;
+  });
+
+  test('connect success logs message when NODE_ENV !== test (executes .then)', async () => {
+    jest.resetModules();
+    const origEnv = { ...process.env };
+    process.env.NODE_ENV = 'development';
+    mockPool.connect = jest.fn().mockResolvedValue({});
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    require('../db');
+    // allow promise microtasks to run so .then handler executes
+    await new Promise(r => setImmediate(r));
+    expect(logSpy).toHaveBeenCalledWith('Connected to PostgreSQL!');
+    logSpy.mockRestore();
+    process.env = origEnv;
+  });
+
+  test('connect failure logs error when NODE_ENV !== test (executes .catch)', async () => {
+    jest.resetModules();
+    const origEnv = { ...process.env };
+    process.env.NODE_ENV = 'development';
+    mockPool.connect = jest.fn().mockRejectedValue(new Error('connect failed'));
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    require('../db');
+    // allow promise microtasks to run so .catch handler executes
+    await new Promise(r => setImmediate(r));
+    expect(errSpy).toHaveBeenCalled();
+    errSpy.mockRestore();
     process.env = origEnv;
   });
 });

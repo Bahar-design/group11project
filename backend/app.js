@@ -24,10 +24,10 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '';
 // Build the allowed origins list. FRONTEND_ORIGIN can be a single origin or a comma-separated list.
 // Keep local dev origin and include the common production frontend origin (Vercel) so deployed frontend can reach the API.
 const allowedOrigins = ['http://localhost:5173', 'https://group11project.vercel.app']; // keep local dev origin and production
-if (FRONTEND_ORIGIN) {
-  const parts = FRONTEND_ORIGIN.split(',').map(s => s.trim()).filter(Boolean);
-  parts.forEach(p => allowedOrigins.push(p));
-}
+// Parse FRONTEND_ORIGIN if provided (comma-separated list). Use a forgiving parser
+// that works whether FRONTEND_ORIGIN is empty or contains one or more origins.
+const parts = (FRONTEND_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+parts.forEach(p => allowedOrigins.push(p));
 
 // If FRONTEND_ORIGIN is not set, allow all origins (useful for deployed frontend without env configured).
 // In production it's recommended to set FRONTEND_ORIGIN to the allowed origin(s).
@@ -36,7 +36,10 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Return an error so the CORS middleware will trigger our error handler.
+      const err = new Error('Not allowed by CORS');
+      err.status = 400;
+      callback(err);
     }
   }
 }));
@@ -64,7 +67,7 @@ app.get('/api/health', async (req, res) => {
   try {
     // Simple query to test DB connection
     const result = await pool.query('SELECT NOW()'); 
-    res.json({
+    res.status(200).json({
       status: 'Backend running!',
       dbTime: result.rows[0].now
     });
