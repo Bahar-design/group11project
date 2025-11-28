@@ -22,13 +22,10 @@ function requireAdmin(req, res, next) {
 // GET volunteer participation
 router.get('/volunteer-participation', requireAdmin, async (req, res, next) => {
   try {
+    // volunteer participation: only volunteer search, skillId optional, location not applicable
     const filters = {
-      search: req.query.search || null,
-      location: req.query.location || null,
-      skill: req.query.skill || null,
-      skillId: req.query.skillId || null,
-      startDate: req.query.startDate || null,
-      endDate: req.query.endDate || null
+      volunteer: req.query.search || null,
+      skillId: req.query.skillId || null
     };
     const rows = await reports.getVolunteerParticipation(filters);
     res.json(rows);
@@ -43,9 +40,9 @@ router.get('/volunteer-participation', requireAdmin, async (req, res, next) => {
 router.get('/event-management', requireAdmin, async (req, res, next) => {
   try {
     const filters = {
-      search: req.query.search || null,
+      event: req.query.event || req.query.search || null,
       location: req.query.location || null,
-      skill: req.query.skill || null,
+      skillId: req.query.skillId || null,
       startDate: req.query.startDate || null,
       endDate: req.query.endDate || null
     };
@@ -60,9 +57,9 @@ router.get('/event-management', requireAdmin, async (req, res, next) => {
 router.get('/event-volunteers', requireAdmin, async (req, res, next) => {
   try {
     const filters = {
-      search: req.query.search || null,
+      volunteer: req.query.search || null,
+      event: req.query.event || null,
       location: req.query.location || null,
-      skill: req.query.skill || null,
       skillId: req.query.skillId || null,
       startDate: req.query.startDate || null,
       endDate: req.query.endDate || null
@@ -80,6 +77,28 @@ router.get('/skills', requireAdmin, async (req, res, next) => {
   try {
     const eventId = req.query.eventId || null;
     const rows = await reports.getSkills(eventId);
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET skills by event id via path param as some tests call /skills/:eventId
+router.get('/skills/:eventId', requireAdmin, async (req, res, next) => {
+  try {
+    const eventId = req.params.eventId || null;
+    const rows = await reports.getSkills(eventId);
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+// GET distinct event locations (strings) for suggestions or autofill
+router.get('/locations', requireAdmin, async (req, res, next) => {
+  try {
+    const rows = await reports.getLocations();
     res.json(rows);
   } catch (err) {
     next(err);

@@ -143,22 +143,23 @@ describe("reportsController", () => {
     expect(sql).toMatch(/WHERE es\.event_id/i);
   });
 });
+  test("filter: volunteer only", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
 
-test("filter: volunteer only", async () => {
-  pool.query.mockResolvedValueOnce({ rows: [] });
+    await reports.getVolunteerParticipation({ volunteer: "john" });
 
-  await reports.getVolunteerParticipation({ volunteer: "john" });
-
-  const sql = pool.query.mock.calls[0][0];
+  const lastCall = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+  const sql = lastCall ? lastCall[0] : '';
   expect(sql).toMatch(/LOWER\(vp\.full_name\)/i);
-});
+  });
 
 
-test("filter: event only", async () => {
-  pool.query.mockResolvedValueOnce({ rows: [] });
+  test("filter: event only", async () => {
+    pool.query.mockResolvedValueOnce({ rows: [] });
 
-  await reports.getEventManagement({ event: "cleanup" });
+    await reports.getEventManagement({ event: "cleanup" });
 
-  const sql = pool.query.mock.calls[0][0];
-  expect(sql).toMatch(/LOWER\(ed\.event_name\)/i);
-});
+  const lastCall2 = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+  const sql2 = lastCall2 ? lastCall2[0] : '';
+  expect(sql2).toMatch(/LOWER\(ed\.event_name\)/i);
+  });

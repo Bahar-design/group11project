@@ -8,6 +8,7 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
   const [reportType, setReportType] = useState('volunteer-participation');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedLocation, setSelectedLocation] = useState('all');
+  const [eventSearch, setEventSearch] = useState('');
   const [selectedSkill, setSelectedSkill] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,8 +22,8 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
   ];
 
   // Fetchable lists
-  const [locations, setLocations] = useState(['all']);
-  const [skills, setSkills] = useState(['all']);
+  const [locations, setLocations] = useState([]);
+  const [skills, setSkills] = useState([]);
 
   /*
 
@@ -42,10 +43,14 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
   */
 
   const filters = {
-  volunteer: searchTerm,
-  event: searchTerm,
-  date: dateRange.start,
-};
+    // backend expects: volunteer, event, location, skillId, startDate, endDate
+    volunteer: searchTerm || null,
+    event: eventSearch || null,
+    location: selectedLocation && selectedLocation !== 'all' ? selectedLocation : null,
+    skillId: selectedSkill && selectedSkill !== 'all' ? selectedSkill : null,
+    startDate: dateRange.start || null,
+    endDate: dateRange.end || null
+  };
 
 
   const [data, setData] = React.useState([]);
@@ -358,14 +363,25 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
                 <div className="filter-group">
                     <label>
                     <Search size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                    Search
+                    Volunteer Search
                     </label>
                     <input
-                    type="text"
-                    placeholder="Search name or email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="filter-input"
+                      type="text"
+                      placeholder="Search volunteer name..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="filter-input"
+                    />
+                </div>
+
+                <div className="filter-group">
+                    <label>Event Name</label>
+                    <input
+                      type="text"
+                      placeholder="Search event name..."
+                      value={eventSearch}
+                      onChange={(e) => setEventSearch(e.target.value)}
+                      className="filter-input"
                     />
                 </div>
 
@@ -391,15 +407,18 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
 
                 <div className="filter-group">
                     <label>Location</label>
-                    <select
-                        value={selectedLocation}
-                        onChange={(e) => setSelectedLocation(e.target.value)}
-                        className="filter-input"
-                    >
-                        {locations.map(loc => (
-                        <option key={loc} value={loc}>{loc === 'all' ? 'All Locations' : loc}</option>
-                        ))}
-                    </select>
+                    <input
+                      type="text"
+                      placeholder="Enter location (partial match)..."
+                      value={selectedLocation === 'all' ? '' : selectedLocation}
+                      onChange={(e) => setSelectedLocation(e.target.value || 'all')}
+                      className="filter-input"
+                    />
+                    <div className="location-suggestions">
+                      {locations && locations.slice(0,6).map(loc => (
+                        <button key={loc} type="button" className="location-suggestion" onClick={() => setSelectedLocation(loc)}>{loc}</button>
+                      ))}
+                    </div>
                 </div>
 
 {/*      
@@ -434,16 +453,8 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
               <div className="filter-group">
                     <label>Skill</label>
                     <select
-                      value={selectedSkill === 'all' ? 'all' : selectedSkill?.skill_id}
-                      onChange={(e) => {
-                        const id = e.target.value;
-                        if (id === 'all') {
-                          setSelectedSkill('all');
-                        } else {
-                          const found = skills.find(s => String(s.skill_id) === id);
-                          setSelectedSkill(found);
-                        }
-                      }}
+                      value={selectedSkill}
+                      onChange={(e) => { setSelectedSkill(e.target.value); }}
                       className="filter-input"
                     >
                       <option value="all">All Skills</option>

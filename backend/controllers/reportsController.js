@@ -1,27 +1,73 @@
 const pool = require('../db');
 
-function buildFilterClauses(filters, params) {
+function buildFilterClauses(filters, params, reportType = '') {
+  // reportType can be 'volunteer-participation', 'event-management', or 'event-volunteers'
   const clauses = [];
 
-  // volunteer name filter
-  if (filters.volunteer && filters.volunteer.trim() !== "") {
-    params.push(`%${filters.volunteer.toLowerCase()}%`);
+  // volunteer name filter (applies to all reports but targets vp.full_name)
+  if (filters.volunteer && String(filters.volunteer).trim() !== "") {
+    params.push(`%${String(filters.volunteer).toLowerCase()}%`);
     clauses.push(`LOWER(vp.full_name) LIKE $${params.length}`);
   }
 
-  // event name filter
-  if (filters.event && filters.event.trim() !== "") {
-    params.push(`%${filters.event.toLowerCase()}%`);
+  // event name filter (applies to event-related reports)
+  if (filters.event && String(filters.event).trim() !== "") {
+    params.push(`%${String(filters.event).toLowerCase()}%`);
     clauses.push(`LOWER(ed.event_name) LIKE $${params.length}`);
   }
 
-  // event date filter
-  if (filters.date && filters.date.trim() !== "") {
-    params.push(filters.date);
-    clauses.push(`ed.event_date = $${params.length}`);
+  // date range handling
+  // startDate/endDate are only applied to event_date for event-management
+  // and to signup_date for event-volunteers. They must NOT apply to volunteer-participation.
+  if (reportType === 'event-management') {
+    if (filters.startDate) {
+      params.push(filters.startDate);
+      clauses.push(`ed.event_date >= $${params.length}`);
+    }
+    if (filters.endDate) {
+      params.push(filters.endDate);
+      clauses.push(`ed.event_date <= $${params.length}`);
+    }
+    // legacy single-date filter support
+    if (filters.date && String(filters.date).trim() !== '') {
+      params.push(filters.date);
+      clauses.push(`ed.event_date = $${params.length}`);
+    }
   }
 
-  return clauses.length ? clauses.join(" AND ") : "";
+  if (reportType === 'event-volunteers') {
+    if (filters.startDate) {
+      params.push(filters.startDate);
+      clauses.push(`vh.signup_date >= $${params.length}`);
+    }
+    if (filters.endDate) {
+      params.push(filters.endDate);
+      clauses.push(`vh.signup_date <= $${params.length}`);
+    }
+    // legacy single-date filter support for signup_date
+    if (filters.date && String(filters.date).trim() !== '') {
+      params.push(filters.date);
+      clauses.push(`vh.signup_date = $${params.length}`);
+    }
+  }
+
+  // location filter: allow partial text match against event location/address
+  if (filters.location && String(filters.location).trim() !== '' && filters.location !== 'all') {
+    params.push(`%${String(filters.location).toLowerCase()}%`);
+    clauses.push(`LOWER(ed.location) LIKE $${params.length}`);
+  }
+
+  // skillId filter: numeric id or 'all' - join conditions expect s.skill_id or event_skills
+  if (filters.skillId && filters.skillId !== 'all') {
+    // allow either numeric id or string, coerce to number when possible
+    const skillNum = Number(filters.skillId);
+    if (!Number.isNaN(skillNum)) params.push(skillNum);
+    else params.push(filters.skillId);
+    // skill filtering is done via skill id - join aliases in queries usually use s or es
+    clauses.push(`s.skill_id = $${params.length}`);
+  }
+
+  return clauses.length ? clauses.join(' AND ') : '';
 }
 
 
@@ -82,7 +128,7 @@ function buildFilterClauses(filters, params) {
 /*
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
-  const where = buildFilterClauses(filters, params);
+  const where = buildFilterClauses(filters, params, 'volunteer-participation');
 
   const sql = `
     SELECT 
@@ -187,8 +233,7 @@ async function getVolunteerParticipation(filters = {}) {
 
 async function getEventVolunteerAssignments(filters = {}) {
   const params = [];
-  
-  const where = buildFilterClauses(filters, params);
+  const where = buildFilterClauses(filters, params, 'event-volunteers');
 
 
 
@@ -244,7 +289,7 @@ async function getEventVolunteerAssignments(filters = {}) {
 
 async function getEventManagement(filters = {}) {
   const params = [];
-  const where = buildFilterClauses(filters, params);
+  const where = buildFilterClauses(filters, params, 'event-management');
 
 
   const sql = `
@@ -298,9 +343,23 @@ async function getSkills(eventId = null) {
   return rows;
 }
 
+async function getLocations() {
+  // Return distinct event locations from eventdetails table for frontend suggestions
+  const sql = `
+    SELECT DISTINCT location
+    FROM eventdetails
+    WHERE location IS NOT NULL
+    ORDER BY location ASC
+  `;
+  const { rows } = await pool.query(sql);
+  // normalize to array of strings
+  return rows.map(r => r.location);
+}
+
 module.exports = {
   getVolunteerParticipation,
   getEventVolunteerAssignments,
   getEventManagement,
-  getSkills
+  getSkills,
+  getLocations
 };
