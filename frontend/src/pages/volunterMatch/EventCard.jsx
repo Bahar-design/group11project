@@ -1,14 +1,20 @@
 import React, { useState } from "react";
 import Chip from "./Chip";
-import API_BASE from "../../lib/apiBase"; // adjust path if needed
+import API_BASE from "../../lib/apiBase";
 
-export default function EventCard({ event, user }) {
+export default function EventCard({
+  event,
+  user,
+  initialJoined = false,
+  initialHistoryId = null,
+}) {
   // "idle" | "joining" | "joined" | "can-unjoin" | "unjoining" | "unjoined"
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState(
+    initialJoined ? "can-unjoin" : "idle"
+  );
   const [error, setError] = useState("");
-  const [historyId, setHistoryId] = useState(null);
+  const [historyId, setHistoryId] = useState(initialHistoryId);
 
-  // derive eventId safely (matches what backend sends)
   const eventId = event.id ?? event.event_id;
 
   const joinedLike =
@@ -45,9 +51,14 @@ export default function EventCard({ event, user }) {
       return;
     }
 
-    const userId = user.id || user.user_id;
+    const userId = user.id ?? user.user_id;
     if (!userId) {
       setError("No user id found. Please log in again.");
+      return;
+    }
+
+    if (!eventId) {
+      setError("No event id found for this card.");
       return;
     }
 
@@ -105,11 +116,12 @@ export default function EventCard({ event, user }) {
 
       if (!res.ok) {
         const text = await res.text();
+        console.error("Join failed response:", res.status, text);
         throw new Error(text || "Join failed");
       }
 
       const created = await res.json();
-      setHistoryId(created.history_id); // used later for DELETE
+      setHistoryId(created.history_id);
 
       setStatus("joined");
 
