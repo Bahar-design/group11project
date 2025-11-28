@@ -167,12 +167,17 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // HARD-CODE backend base URL because .env cannot be changed
-        const res = await fetch(`http://localhost:4000/api/calendar`);
+        // DIRECT URL FIX — bypass API_BASE
+        const res = await fetch("http://localhost:4000/api/calendar");
+
+        if (!res.ok) {
+          throw new Error("API returned an error");
+        }
+
         const data = await res.json();
 
         if (!Array.isArray(data)) {
-          throw new Error("Invalid response");
+          throw new Error("Invalid JSON response");
         }
 
         const formatted = data.map(ev => ({
@@ -228,7 +233,7 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
         onRequestClose={() => setModalOpen(false)}
         contentLabel="Event Details"
         style={{
-          overlay: { backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1000 },
+          overlay: { backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1000 },
           content: {
             top: "20%",
             left: "25%",
