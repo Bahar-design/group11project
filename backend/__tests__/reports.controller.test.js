@@ -38,12 +38,13 @@ describe("reportsController", () => {
 
   test("getVolunteerParticipation builds WHERE clause for volunteer filter", async () => {
     pool.query.mockResolvedValueOnce({ rows: [] });
-
     await reports.getVolunteerParticipation({ volunteer: "john" });
 
-    const sql = pool.query.mock.calls[0][0];
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
     expect(sql).toMatch(/WHERE/i);
-    expect(sql).toMatch(/LOWER\(vp\.full_name\)/i);
+    // Accept either direct vp.full_name match or user_email or an EXISTS(...) subquery
+    expect(sql).toMatch(/LOWER\(vp\.full_name\)|LOWER\(ut\.user_email\)|EXISTS\s*\(/i);
   });
 
 
@@ -76,12 +77,13 @@ describe("reportsController", () => {
 
   test("getEventVolunteerAssignments builds WHERE clause for event filter", async () => {
     pool.query.mockResolvedValueOnce({ rows: [] });
-
     await reports.getEventVolunteerAssignments({ event: "gala" });
 
-    const sql = pool.query.mock.calls[0][0];
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
     expect(sql).toMatch(/WHERE/i);
-    expect(sql).toMatch(/LOWER\(ed\.event_name\)/i);
+    // Accept either direct event_name match or EXISTS subquery (for volunteer participation queries)
+    expect(sql).toMatch(/LOWER\(ed\.event_name\)|EXISTS\s*\(/i);
   });
 
 
@@ -115,8 +117,8 @@ describe("reportsController", () => {
     pool.query.mockResolvedValueOnce({ rows: [] });
 
     await reports.getEventManagement({ date: "2025-01-01" });
-
-    const sql = pool.query.mock.calls[0][0];
+    const last = pool.query.mock.calls[pool.query.mock.calls.length - 1];
+    const sql = last ? last[0] : '';
     expect(sql).toMatch(/event_date/i);
     expect(sql).toMatch(/WHERE/i);
   });

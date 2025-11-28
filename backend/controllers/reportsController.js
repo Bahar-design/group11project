@@ -4,16 +4,35 @@ function buildFilterClauses(filters, params, reportType = '') {
   // reportType can be 'volunteer-participation', 'event-management', or 'event-volunteers'
   const clauses = [];
 
-  // volunteer name filter (applies to all reports but targets vp.full_name)
-  if (filters.volunteer && String(filters.volunteer).trim() !== "") {
+  // volunteer name filter
+  if (filters.volunteer && String(filters.volunteer).trim() !== '') {
     params.push(`%${String(filters.volunteer).toLowerCase()}%`);
-    clauses.push(`LOWER(vp.full_name) LIKE $${params.length}`);
+    // For volunteer-participation: search volunteer full name or user email
+    if (reportType === 'volunteer-participation') {
+      clauses.push(`(LOWER(vp.full_name) LIKE $${params.length} OR LOWER(ut.user_email) LIKE $${params.length})`);
+    } else if (reportType === 'event-management') {
+      // For event-management, search within aggregated volunteers for the event
+      clauses.push(
+        `EXISTS (SELECT 1 FROM volunteer_history vh2 JOIN user_table ut2 ON vh2.volunteer_id = ut2.user_id LEFT JOIN volunteerprofile vp2 ON ut2.user_id = vp2.user_id WHERE vh2.event_id = ed.event_id AND LOWER(COALESCE(vp2.full_name, ut2.user_email)) LIKE $${params.length})`
+      );
+    } else if (reportType === 'event-volunteers') {
+      clauses.push(`LOWER(COALESCE(vp.full_name, ut.user_email)) LIKE $${params.length}`);
+    } else {
+      clauses.push(`LOWER(vp.full_name) LIKE $${params.length}`);
+    }
   }
 
-  // event name filter (applies to event-related reports)
-  if (filters.event && String(filters.event).trim() !== "") {
+  // event name filter
+  if (filters.event && String(filters.event).trim() !== '') {
     params.push(`%${String(filters.event).toLowerCase()}%`);
-    clauses.push(`LOWER(ed.event_name) LIKE $${params.length}`);
+    if (reportType === 'volunteer-participation') {
+      // match volunteers who've worked on events with a matching name
+      clauses.push(
+        `EXISTS (SELECT 1 FROM volunteer_history vh2 JOIN eventdetails ed2 ON vh2.event_id = ed2.event_id WHERE vh2.volunteer_id = vp.volunteer_id AND LOWER(ed2.event_name) LIKE $${params.length})`
+      );
+    } else {
+      clauses.push(`LOWER(ed.event_name) LIKE $${params.length}`);
+    }
   }
 
   // date range handling
@@ -28,7 +47,6 @@ function buildFilterClauses(filters, params, reportType = '') {
       params.push(filters.endDate);
       clauses.push(`ed.event_date <= $${params.length}`);
     }
-    // legacy single-date filter support
     if (filters.date && String(filters.date).trim() !== '') {
       params.push(filters.date);
       clauses.push(`ed.event_date = $${params.length}`);
@@ -44,27 +62,28 @@ function buildFilterClauses(filters, params, reportType = '') {
       params.push(filters.endDate);
       clauses.push(`vh.signup_date <= $${params.length}`);
     }
-    // legacy single-date filter support for signup_date
     if (filters.date && String(filters.date).trim() !== '') {
       params.push(filters.date);
       clauses.push(`vh.signup_date = $${params.length}`);
     }
   }
 
-  // location filter: allow partial text match against event location/address
+  // location filter: for volunteer-participation search volunteer location, otherwise event location
   if (filters.location && String(filters.location).trim() !== '' && filters.location !== 'all') {
     params.push(`%${String(filters.location).toLowerCase()}%`);
-    clauses.push(`LOWER(ed.location) LIKE $${params.length}`);
+    if (reportType === 'volunteer-participation') {
+      clauses.push(`(LOWER(vp.city) LIKE $${params.length} OR LOWER(vp.state_code) LIKE $${params.length})`);
+    } else {
+      clauses.push(`LOWER(ed.location) LIKE $${params.length}`);
+    }
   }
 
-  // skillId filter: numeric id or 'all' - join conditions expect s.skill_id or event_skills
+  // skillId filter: numeric id or 'all' - cover both volunteer_skills (s) and event_skills (es)
   if (filters.skillId && filters.skillId !== 'all') {
-    // allow either numeric id or string, coerce to number when possible
     const skillNum = Number(filters.skillId);
     if (!Number.isNaN(skillNum)) params.push(skillNum);
     else params.push(filters.skillId);
-    // skill filtering is done via skill id - join aliases in queries usually use s or es
-    clauses.push(`s.skill_id = $${params.length}`);
+    clauses.push(`(s.skill_id = $${params.length} OR es.skill_id = $${params.length})`);
   }
 
   return clauses.length ? clauses.join(' AND ') : '';

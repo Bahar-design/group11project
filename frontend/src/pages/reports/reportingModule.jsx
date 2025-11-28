@@ -385,25 +385,29 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
                     />
                 </div>
 
-                <div className="filter-group">
-                    <label>Start Date</label>
-                    <input
-                    type="date"
-                    value={dateRange.start}
-                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                    className="filter-input"
-                    />
-                </div>
+                {reportType !== 'volunteer-participation' && (
+                  <>
+                    <div className="filter-group">
+                        <label>Start Date</label>
+                        <input
+                        type="date"
+                        value={dateRange.start}
+                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                        className="filter-input"
+                        />
+                    </div>
 
-                <div className="filter-group">
-                    <label>End Date</label>
-                    <input
-                    type="date"
-                    value={dateRange.end}
-                    onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                    className="filter-input"
-                    />
-                </div>
+                    <div className="filter-group">
+                        <label>End Date</label>
+                        <input
+                        type="date"
+                        value={dateRange.end}
+                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                        className="filter-input"
+                        />
+                    </div>
+                  </>
+                )}
 
                 <div className="filter-group">
                     <label>Location</label>
