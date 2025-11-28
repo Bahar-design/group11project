@@ -27,8 +27,9 @@ function buildFilterClauses(filters, params, reportType = '') {
     params.push(`%${String(filters.event).toLowerCase()}%`);
     if (reportType === 'volunteer-participation') {
       // match volunteers who've worked on events with a matching name
+      // note: volunteer_history.volunteer_id stores user_id (matches vp.user_id / ut.user_id)
       clauses.push(
-        `EXISTS (SELECT 1 FROM volunteer_history vh2 JOIN eventdetails ed2 ON vh2.event_id = ed2.event_id WHERE vh2.volunteer_id = vp.volunteer_id AND LOWER(ed2.event_name) LIKE $${params.length})`
+        `EXISTS (SELECT 1 FROM volunteer_history vh2 JOIN eventdetails ed2 ON vh2.event_id = ed2.event_id WHERE vh2.volunteer_id = vp.user_id AND LOWER(ed2.event_name) LIKE $${params.length})`
       );
     } else {
       clauses.push(`LOWER(ed.event_name) LIKE $${params.length}`);
@@ -95,109 +96,6 @@ function buildFilterClauses(filters, params, reportType = '') {
 
   return clauses.length ? clauses.join(' AND ') : '';
 }
-
-
-/*
- function buildFilterClauses(filters, params, reportType) {
-  const clauses = [];
-
-  // --- SHARED: Date range filters ---
-  if (filters.startDate) {
-    params.push(filters.startDate);
-    clauses.push('ed.event_date >= $' + params.length);
-  }
-
-  if (filters.endDate) {
-    params.push(filters.endDate);
-    clauses.push('ed.event_date <= $' + params.length);
-  }
-
-  if (filters.search && filters.search.trim() !== '') {
-    const term = `%${filters.search.toLowerCase()}%`;
-    params.push(term);
-
-    if (reportType === 'volunteer-participation') {
-      clauses.push(`(LOWER(vp.full_name) LIKE $${params.length} 
-                     OR LOWER(vp.city) LIKE $${params.length})`);
-    }
-
-    else if (reportType === 'event-volunteers') {
-      clauses.push(`(LOWER(ed.event_name) LIKE $${params.length}
-                     OR LOWER(ed.location) LIKE $${params.length}
-                     OR LOWER(vp.full_name) LIKE $${params.length}
-                     OR CAST(ed.event_date AS TEXT) LIKE $${params.length})`);
-    }
-
-    else if (reportType === 'event-management') {
-      clauses.push(`(LOWER(ed.event_name) LIKE $${params.length}
-                     OR LOWER(ed.location) LIKE $${params.length}
-                     OR CAST(ed.event_date AS TEXT) LIKE $${params.length})`);
-    }
-  }
-
-  if (filters.location && filters.location !== 'all') {
-    params.push(filters.location);
-    clauses.push('ed.location = $' + params.length);
-  }
-
-  if (filters.skillId && filters.skillId !== 'all') {
-    params.push(Number(filters.skillId));
-    clauses.push('s.skill_id = $' + params.length);
-  }
-
-  return clauses.length ? clauses.join(' AND ') : '';
-}
-
-/*
-
-
-/*
-async function getVolunteerParticipation(filters = {}) {
-  const params = [];
-  const where = buildFilterClauses(filters, params, 'volunteer-participation');
-
-  const sql = `
-    SELECT 
-      vp.volunteer_id AS volunteer_id,
-      vp.full_name AS full_name,
-      ut.user_email AS email,
-      vp.city AS city,
-      vp.state_code AS state_code,
-      ARRAY_REMOVE(ARRAY_AGG(DISTINCT s.skill_name), NULL) AS skills,
-      ARRAY_REMOVE(ARRAY_AGG(DISTINCT ed.event_name), NULL) AS events_worked,
-      COUNT(vh.history_id) AS total_events
-    FROM volunteerprofile AS vp
-    JOIN user_table AS ut 
-      ON vp.user_id = ut.user_id
-    LEFT JOIN volunteer_history AS vh 
-      ON ut.user_id = vh.volunteer_id
-    LEFT JOIN eventdetails AS ed
-      ON vh.event_id = ed.event_id
-    LEFT JOIN volunteer_skills AS vs 
-      ON vp.volunteer_id = vs.volunteer_id
-    LEFT JOIN skills AS s 
-      ON vs.skill_id = s.skill_id
-    ${where ? 'WHERE ' + where : ''}
-    GROUP BY 
-      vp.volunteer_id, 
-      vp.full_name, 
-      ut.user_email, 
-      vp.city, 
-      vp.state_code
-    ORDER BY vp.full_name ASC
-  `;
-
-  const { rows } = await pool.query(sql, params);
-
-  return rows.map(r => ({
-    ...r,
-    total_events: Number(r.total_events || 0),
-    skills: r.skills || [],
-    events_worked: r.events_worked || []
-  }));
-}
-*/
-
 
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
