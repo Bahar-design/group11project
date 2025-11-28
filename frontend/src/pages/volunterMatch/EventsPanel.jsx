@@ -1,3 +1,4 @@
+// frontend/src/pages/volunteer/EventsPanel.jsx
 import SectionCard from "./SectionCard";
 import EventCard from "./EventCard";
 
@@ -20,7 +21,7 @@ export default function EventsPanel({
         <p className="text-sm text-slate-500">Loading matched events...</p>
       ) : error ? (
         <p className="text-sm text-red-500">{error}</p>
-      ) : events.length === 0 ? (
+      ) : !events || events.length === 0 ? (
         <p className="text-sm text-slate-500">No matched events yet.</p>
       ) : (
         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">

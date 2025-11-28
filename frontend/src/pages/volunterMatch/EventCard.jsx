@@ -1,3 +1,4 @@
+// frontend/src/pages/volunteer/EventCard.jsx
 import React, { useState } from "react";
 import Chip from "./Chip";
 import API_BASE from "../../lib/apiBase";
@@ -87,7 +88,7 @@ export default function EventCard({
 
         setStatus("unjoined");
 
-        // After 10 seconds, reset back to initial state
+        // After 10 seconds, reset back to idle
         setTimeout(() => {
           setStatus("idle");
           setHistoryId(null);
@@ -145,15 +146,15 @@ export default function EventCard({
           </h4>
           <div className="mt-10 flex flex-wrap items-center text-xs text-slate-500">
             <div className="flex items-center gap-1">
-              <span className="i">📍</span>
+              <span>📍</span>
               <span>{event.location}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="i">🕒</span>
+              <span>🕒</span>
               <span>{event.time}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="i">👥</span>
+              <span>👥</span>
               <span>{event.volunteers} volunteers</span>
             </div>
           </div>
@@ -180,15 +181,12 @@ export default function EventCard({
         <Chip>{event.matchScore}% Perfect Match</Chip>
 
         <button
-          type="button"
           onClick={handleJoinClick}
-          disabled={status === "joining" || status === "unjoining"}
+          disabled={disabled}
           className={`!rounded-full px-6 py-3 text-sm font-semibold text-white transition
             ${
               joinedLike
-                ? status === "can-unjoin"
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-green-500 hover:bg-green-600"
+                ? "bg-green-500 hover:bg-green-600"
                 : "bg-rose-500 hover:bg-rose-600"
             }`}
         >
@@ -197,7 +195,7 @@ export default function EventCard({
       </div>
 
       {error && (
-        <p className="mt-2 text-xs text-red-500">
+        <p className="mt-2 text-xs text-red-700">
           {error}
         </p>
       )}
