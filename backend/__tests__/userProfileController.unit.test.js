@@ -304,4 +304,72 @@ describe('updateUserProfile unit tests', () => {
     expect(warnSpy).toHaveBeenCalled();
     warnSpy.mockRestore();
   });
+
+  it('availability normalization handles many input types and skill insert errors are caught', async () => {
+    // validator returns a mix of availability types and skills (one known, one unknown)
+    mockValidator.mockReturnValue({ value: {
+      name: 'Norm', address1: 'A', city: 'C', state: 'S', zipCode: 'Z',
+      availability: [1622505600000, '1622505600000', '2025-11-28T12:00:00Z', new Date('2025-11-28'), { year: 2025, month: { number: 11 }, day: 28 }, { format: () => '2025-11-28' }, null, '2025-11-28'],
+      skills: ['Cooking', 'UnknownSkill']
+    } });
+
+    const mockClient = {
+      query: jest.fn((sql, params) => {
+        if (/BEGIN/i.test(sql)) return Promise.resolve();
+        if (/SELECT user_id, user_email FROM user_table/i.test(sql)) return Promise.resolve({ rows: [{ user_id: 700, user_email: 'norm@example.test' }] });
+        if (/UPDATE user_table SET user_type/i.test(sql)) return Promise.resolve();
+        if (/INSERT INTO volunteerprofile/i.test(sql)) return Promise.resolve({ rows: [{ volunteer_id: 800 }] });
+        if (/DELETE FROM volunteer_skills/i.test(sql)) return Promise.resolve();
+        if (/SELECT skill_id, skill_name FROM skills/i.test(sql)) return Promise.resolve({ rows: [{ skill_id: 1, skill_name: 'Cooking' }] });
+        if (/INSERT INTO volunteer_skills/i.test(sql)) {
+          // simulate an error when inserting the known skill to exercise the catch branch
+          return Promise.reject(new Error('insert failed'));
+        }
+        if (/COMMIT/i.test(sql)) return Promise.resolve();
+        return Promise.resolve();
+      }),
+      release: jest.fn()
+    };
+
+    mockDb.connect.mockResolvedValue(mockClient);
+    // pool.query used after commit to fetch skills should return empty so code falls back to value.skills
+    mockDb.query.mockResolvedValueOnce({ rows: [] });
+
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const [req, res] = makeReqRes({ email: 'norm@example.test', type: 'volunteer' }, { name: 'Norm' });
+    const { updateUserProfile } = require('../controllers/userProfileController');
+    await updateUserProfile(req, res, jest.fn());
+
+    expect(errSpy).toHaveBeenCalled();
+    errSpy.mockRestore();
+
+    // availability should be normalized to YYYY-MM-DD strings in the response
+    const sent = res.json.mock.calls[0][0];
+    expect(Array.isArray(sent.availability)).toBe(true);
+    expect(sent.availability.length).toBeGreaterThan(0);
+    // fallback skills should equal provided skills because DB inserts failed
+    expect(sent.skills).toEqual(expect.arrayContaining(['Cooking', 'UnknownSkill']));
+  });
+
+  it('updateUserProfile returns 400 when updating email fails (unique constraint)', async () => {
+    mockValidator.mockReturnValue({ value: { name: 'E', address1: 'A', city: 'C', state: 'S', zipCode: 'Z', email: 'new-email@test' } });
+    const mockClient = {
+      query: jest.fn((sql) => {
+        if (/BEGIN/i.test(sql)) return Promise.resolve();
+        if (/SELECT user_id, user_email FROM user_table/i.test(sql)) return Promise.resolve({ rows: [{ user_id: 900, user_email: 'old@test' }] });
+        if (/UPDATE user_table SET user_type/i.test(sql)) return Promise.resolve();
+        if (/UPDATE user_table SET user_email/i.test(sql)) return Promise.reject(new Error('duplicate key'));
+        return Promise.resolve();
+      }),
+      release: jest.fn()
+    };
+
+    mockDb.connect.mockResolvedValue(mockClient);
+    const [req, res] = makeReqRes({ email: 'old@test', type: 'volunteer' }, { name: 'E', email: 'new-email@test' });
+    const { updateUserProfile } = require('../controllers/userProfileController');
+    await updateUserProfile(req, res, jest.fn());
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('Failed to update email') }));
+  });
 });

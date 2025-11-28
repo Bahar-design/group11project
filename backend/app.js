@@ -85,6 +85,8 @@ app.use((err, req, res, next) => {
 });
 
 // Start server if this file is run directly
+// The server start block is integration-only; exclude from unit test coverage
+/* istanbul ignore next */
 if (require.main === module) {
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
