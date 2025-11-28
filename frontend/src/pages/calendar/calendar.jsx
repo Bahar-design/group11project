@@ -165,22 +165,16 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   const [message, setMessage] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [attending, setAttending] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        //Call the backend route that exists
-        const res = await fetch(`${API_BASE}/calendar`);
-
-        if (!res.ok) {
-          throw new Error("Failed to load calendar data");
-        }
-
+        // Correct backend route
+        const res = await fetch(`${API_BASE}/api/calendar`);
         const data = await res.json();
 
-        //Map DB columns: event objects expected by react-big-calendar
-        const formattedEvents = data.map(ev => ({
+        // Format using real DB column names
+        const formatted = data.map(ev => ({
           id: ev.event_id,
           title: ev.event_name,
           start: new Date(ev.event_date),
@@ -190,9 +184,9 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
           max_volunteers: ev.max_volunteers
         }));
 
-        setEvents(formattedEvents);
+        setEvents(formatted);
       } catch (err) {
-        console.error(err);
+        console.error("Calendar fetch error:", err);
         setMessage("Failed to load events");
       } finally {
         setLoading(false);
@@ -205,7 +199,6 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     setModalOpen(true);
-    setAttending(false);
   };
 
   return (
@@ -241,7 +234,7 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
         style={{
           overlay: {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 1000
+            zIndex: 1000,
           },
           content: {
             top: "20%",
@@ -253,25 +246,19 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
             padding: "30px",
             borderRadius: "10px",
             boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-            overflow: "auto"
-          }
+            overflow: "auto",
+          },
         }}
       >
         {selectedEvent && (
           <div>
             <h2>{selectedEvent.title}</h2>
-            <p>
-              <strong>Date:</strong> {selectedEvent.start.toDateString()}
-            </p>
-            <p>
-              <strong>Location:</strong> {selectedEvent.location}
-            </p>
+            <p><strong>Date:</strong> {selectedEvent.start.toDateString()}</p>
+            <p><strong>Location:</strong> {selectedEvent.location}</p>
             <p>{selectedEvent.description}</p>
 
-            {selectedEvent.max_volunteers && (
-              <p>
-                <strong>Max Volunteers:</strong> {selectedEvent.max_volunteers}
-              </p>
+            {selectedEvent.max_volunteers !== undefined && (
+              <p><strong>Max Volunteers:</strong> {selectedEvent.max_volunteers}</p>
             )}
 
             <button onClick={() => setModalOpen(false)}>Close</button>
