@@ -83,7 +83,14 @@ function buildFilterClauses(filters, params, reportType = '') {
     const skillNum = Number(filters.skillId);
     if (!Number.isNaN(skillNum)) params.push(skillNum);
     else params.push(filters.skillId);
-    clauses.push(`(s.skill_id = $${params.length} OR es.skill_id = $${params.length})`);
+    // For event-management and event-volunteers, prefer checking event_skills via EXISTS
+    if (reportType === 'event-management' || reportType === 'event-volunteers') {
+      // check event_skills join for events
+      clauses.push(`EXISTS (SELECT 1 FROM event_skills es2 WHERE es2.event_id = ed.event_id AND es2.skill_id = $${params.length})`);
+    } else {
+      // Otherwise check volunteer skills join
+      clauses.push(`s.skill_id = $${params.length}`);
+    }
   }
 
   return clauses.length ? clauses.join(' AND ') : '';
@@ -194,7 +201,7 @@ async function getVolunteerParticipation(filters = {}) {
 
 async function getVolunteerParticipation(filters = {}) {
   const params = [];
-  const where = buildFilterClauses(filters, params);
+  const where = buildFilterClauses(filters, params, 'volunteer-participation');
 
 
   const sql = `

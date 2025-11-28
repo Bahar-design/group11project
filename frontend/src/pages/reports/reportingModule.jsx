@@ -85,7 +85,7 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
       return;
     }
     fetchReport(reportType);
-  }, [reportType, searchTerm, selectedLocation, selectedSkill, dateRange.start, dateRange.end]);
+  }, [reportType, searchTerm, eventSearch, selectedLocation, selectedSkill, dateRange.start, dateRange.end]);
 
   // load skills from backend
   useEffect(() => {
@@ -319,6 +319,7 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
     setSelectedLocation('all');
     setSelectedSkill('all');
     setSearchTerm('');
+    setEventSearch('');
   };
 
   return (
