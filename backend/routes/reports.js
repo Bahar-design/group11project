@@ -22,9 +22,11 @@ function requireAdmin(req, res, next) {
 // GET volunteer participation
 router.get('/volunteer-participation', requireAdmin, async (req, res, next) => {
   try {
-    // volunteer participation: only volunteer search, skillId optional, location not applicable
+    // volunteer participation: volunteer search, optional event and location, skillId optional
     const filters = {
-      volunteer: req.query.search || null,
+      volunteer: req.query.volunteer || req.query.search || null,
+      event: req.query.event || null,
+      location: req.query.location || null,
       skillId: req.query.skillId || null
     };
     const rows = await reports.getVolunteerParticipation(filters);
@@ -57,7 +59,8 @@ router.get('/event-management', requireAdmin, async (req, res, next) => {
 router.get('/event-volunteers', requireAdmin, async (req, res, next) => {
   try {
     const filters = {
-      volunteer: req.query.search || null,
+      // accept either the new 'volunteer' param or legacy 'search'
+      volunteer: req.query.volunteer || req.query.search || null,
       event: req.query.event || null,
       location: req.query.location || null,
       skillId: req.query.skillId || null,
