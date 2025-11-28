@@ -8,34 +8,34 @@ import { Link, useNavigate } from "react-router-dom";
 
 const features = [
   {
-    title: "Smart Matching System",
+    title: "Real-Time Opportunity Recommendations",
     description:
-      "Our advanced algorithm matches volunteers with events based on skills, location within 20-50 mile radius, and availability to maximize impact and minimize travel time.",
+      "Our matchmaking engine suggests events based on your skills, location, and availability, helping you find the perfect opportunity without endless searching.",
   },
   {
-    title: "Strategic Locations",
+    title: "Skill & Preference-Based Filtering",
     description:
-      "Serving Downtown Houston, Sugar Land, Katy, and Cypress with regular collection drives and emergency disaster response coordination.",
+      "Filter hundreds of community events by required skills, interests, and location. Find roles that fit your strengths, from customer service to leadership and more.",
   },
   {
-    title: "Flexible Scheduling",
+    title: "Dynamic Event Management",
     description:
-      "Choose from morning (12-4pm) or afternoon (4-8pm) shifts that work with your schedule. Maximum 4-hour commitments respect your time.",
+      "Organizers can easily create, update, and manage volunteer events. This includes locations, skill requirements, and urgency levels, all through an intuitive interface.",
   },
   {
-    title: "Skills-Based Volunteering",
+    title: "Automated Notifications & Reminders",
     description:
-      "Whether you excel in tailoring, customer service, organization, or leadership, we'll connect you with opportunities that utilize your unique talents.",
+      "Stay informed with instant notifications when you're assigned to an event, when details change, or when new opportunities open near you.",
   },
   {
-    title: "Performance Tracking",
+    title: "Impact & Participation Tracking",
     description:
-      "Track your volunteer journey with performance ratings, attendance history, and impact metrics. See how your contribution makes a difference.",
+      "Track your history across all events participated in within the Volunteer History module and watch your impact grow over time.",
   },
   {
-    title: "Emergency Response",
+    title: "Multi-Location Support for Houston Communities",
     description:
-      "Weather API integration for disaster assistance. Receive priority notifications when Houston families need urgent clothing support during emergencies.",
+      "Serving all of Houston and surrounding areas with event listings tailored to your local neighborhood, whether you're in Downtown, Sugar Land, Katy, Cypress, Galveston, etc.",
   },
 ];
 
