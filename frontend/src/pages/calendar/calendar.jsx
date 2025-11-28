@@ -144,8 +144,8 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
     </div>
   );
 }
-
 */
+
 import React, { useState, useEffect } from "react";
 import { Calendar as Calendars, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
@@ -169,11 +169,16 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Correct backend route
+        // Only fetch the calendar table
         const res = await fetch(`${API_BASE}/api/calendar`);
         const data = await res.json();
 
-        // Format using real DB column names
+        // If backend returned an error object
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid response");
+        }
+
+        // Reformat rows from DB to event objects for react-big-calendar
         const formatted = data.map(ev => ({
           id: ev.event_id,
           title: ev.event_name,
@@ -181,7 +186,7 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
           end: new Date(ev.event_date),
           location: ev.location,
           description: ev.description,
-          max_volunteers: ev.max_volunteers
+          max_volunteers: ev.max_volunteers,
         }));
 
         setEvents(formatted);
@@ -196,19 +201,14 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
     fetchEvents();
   }, []);
 
-  const handleSelectEvent = (event) => {
+  const handleSelectEvent = event => {
     setSelectedEvent(event);
     setModalOpen(true);
   };
 
   return (
     <div>
-      <Header
-        isLoggedIn={isLoggedIn}
-        user={user}
-        onLogout={onLogout}
-        currentPage="calendar"
-      />
+      <Header isLoggedIn={isLoggedIn} user={user} onLogout={onLogout} currentPage="calendar" />
 
       <div style={{ height: "80vh", margin: "30px 60px 50px" }}>
         {loading ? (
@@ -233,8 +233,8 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
         contentLabel="Event Details"
         style={{
           overlay: {
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 1000,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1000
           },
           content: {
             top: "20%",
@@ -246,8 +246,8 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
             padding: "30px",
             borderRadius: "10px",
             boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-            overflow: "auto",
-          },
+            overflow: "auto"
+          }
         }}
       >
         {selectedEvent && (
@@ -256,10 +256,7 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
             <p><strong>Date:</strong> {selectedEvent.start.toDateString()}</p>
             <p><strong>Location:</strong> {selectedEvent.location}</p>
             <p>{selectedEvent.description}</p>
-
-            {selectedEvent.max_volunteers !== undefined && (
-              <p><strong>Max Volunteers:</strong> {selectedEvent.max_volunteers}</p>
-            )}
+            <p><strong>Max Volunteers:</strong> {selectedEvent.max_volunteers}</p>
 
             <button onClick={() => setModalOpen(false)}>Close</button>
           </div>
@@ -270,4 +267,3 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
     </div>
   );
 }
-
