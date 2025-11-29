@@ -266,6 +266,7 @@ exports.deleteVolunteerRecord = async (req, res) => {
   }
 };
 */
+
 const pool = require('../db');
 
 // ------------------------------------------------------
@@ -277,13 +278,13 @@ exports.getVolunteerHistory = async (req, res) => {
       `
       SELECT 
         vh.*, 
-        vp.full_name AS volunteer_name, 
+        COALESCE(vp.full_name, 'Unknown') AS volunteer_name, 
         ed.event_name,
         ed.event_date,
         ed.location
       FROM volunteer_history vh
-      JOIN volunteerprofile vp 
-        ON vp.user_id = vh.volunteer_id      -- FIXED
+      LEFT JOIN volunteerprofile vp 
+        ON vp.user_id = vh.volunteer_id     
       JOIN eventdetails ed 
         ON vh.event_id = ed.event_id
       ORDER BY vh.signup_date DESC
@@ -310,21 +311,20 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
       return res.status(400).json({ error: "Missing volunteer_id" });
     }
 
-    // Always match volunteer_history.volunteer_id (user_id)
     const result = await pool.query(
       `
       SELECT
         vh.*,
-        vp.full_name AS volunteer_name,
+        COALESCE(vp.full_name, 'Unknown') AS volunteer_name,
         ed.event_name,
         ed.event_date,
         ed.location
       FROM volunteer_history vh
-      JOIN volunteerprofile vp 
-        ON vp.user_id = vh.volunteer_id     -- FIXED
+      LEFT JOIN volunteerprofile vp 
+        ON vp.user_id = vh.volunteer_id     
       JOIN eventdetails ed
         ON vh.event_id = ed.event_id
-      WHERE vh.volunteer_id = $1           -- using user_id correctly
+      WHERE vh.volunteer_id = $1           
       ORDER BY vh.signup_date DESC
       `,
       [volunteer_id]
@@ -451,4 +451,3 @@ exports.deleteVolunteerRecord = async (req, res) => {
     res.status(500).json({ error: "Failed to delete volunteer record." });
   }
 };
-

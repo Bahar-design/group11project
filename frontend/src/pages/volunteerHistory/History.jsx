@@ -9,12 +9,16 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
+  /*
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!user?.volunteer_id) return;
+
+
+      if (!user?.id) return;
 
       try {
-        const res = await fetch(`${API_BASE}/api/volunteer-history/my/${user.volunteer_id}`);
+        const res = await fetch(`${API_BASE}/api/volunteer-history/my/${user.id}`);
+
         if (!res.ok) throw new Error("Failed to fetch history");
         const data = await res.json();
         setHistory(data);
@@ -28,6 +32,32 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
 
     fetchHistory();
   }, [user]);
+
+*/
+
+useEffect(() => {
+  const fetchHistory = async () => {
+
+    if (!user?.user_id) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/volunteer-history/my/${user.user_id}`);
+      if (!res.ok) throw new Error("Failed to fetch history");
+
+      const data = await res.json();
+      setHistory(data);
+
+    } catch (err) {
+      console.error(err);
+      setMessage("Failed to load volunteer history");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchHistory();
+}, [user]);
+
 
   return (
     <div>
