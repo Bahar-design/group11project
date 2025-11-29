@@ -9,6 +9,27 @@ const {
 
 const router = express.Router();
 
+const { clients: sseClients } = require('../utils/sse');
+
+router.get('/stream', (req, res) => {
+  // Headers for SSE
+  res.set({
+    'Connection': 'keep-alive',
+    'Cache-Control': 'no-cache',
+    'Content-Type': 'text/event-stream'
+  });
+  res.flushHeaders && res.flushHeaders();
+
+  const id = Date.now();
+  const client = { id, res };
+  sseClients.add(client);
+
+  // keep the connection open
+  req.on('close', () => {
+    sseClients.delete(client);
+  });
+});
+
 // GET all volunteer history
 router.get('/', getVolunteerHistory);
 //individual volunteer history
@@ -23,3 +44,6 @@ router.put('/:id', updateVolunteerRecord);
 router.delete('/:id', deleteVolunteerRecord);
 
 module.exports = router;
+
+// helper used by controller to broadcast new records
+module.exports._sseClients = sseClients;

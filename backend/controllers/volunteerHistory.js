@@ -268,6 +268,7 @@ exports.deleteVolunteerRecord = async (req, res) => {
 */
 
 const pool = require('../db');
+const { broadcast } = require('../utils/sse');
 
 // ------------------------------------------------------
 // GET all volunteer history records
@@ -280,8 +281,11 @@ exports.getVolunteerHistory = async (req, res) => {
         vh.*, 
         COALESCE(vp.full_name, 'Unknown') AS volunteer_name, 
         ed.event_name,
-        ed.event_date,
-        ed.location
+        ed.description,
+        ed.location,
+        ed.skill_id AS event_skill_ids,
+        ed.urgency,
+        ed.event_date
       FROM volunteer_history vh
       LEFT JOIN volunteerprofile vp 
         ON vp.user_id = vh.volunteer_id     
@@ -291,7 +295,36 @@ exports.getVolunteerHistory = async (req, res) => {
       `
     );
 
-    res.status(200).json(result.rows);
+    // For each row, compute matched skills by comparing event skill_ids to volunteer_skills
+    const rows = result.rows;
+    const enhanced = await Promise.all(rows.map(async (r) => {
+      const eventSkillIds = r.event_skill_ids || [];
+      // fetch volunteer skills (skill_id numbers) via volunteer_skills table
+      const volSkillsRes = await pool.query(
+        `SELECT skill_id FROM volunteer_skills WHERE volunteer_id = $1`,
+        [r.volunteer_id]
+      );
+      const volSkillIds = volSkillsRes.rows.map(rr => rr.skill_id);
+      const matchedIds = eventSkillIds.filter(id => volSkillIds.includes(id));
+
+      // fetch skill names
+      let matchedSkills = [];
+      if (matchedIds.length > 0) {
+        const skillsRes = await pool.query(
+          `SELECT skill_id, skill_name FROM skills WHERE skill_id = ANY($1::int[])`,
+          [matchedIds]
+        );
+        matchedSkills = skillsRes.rows.map(s => s.skill_name);
+      }
+
+      return {
+        ...r,
+        matched_skills: matchedSkills,
+        event_skill_ids: eventSkillIds
+      };
+    }));
+
+    res.status(200).json(enhanced);
   } catch (err) {
     console.error("getVolunteerHistory error:", err);
     res.status(500).json({ error: "Failed to fetch volunteer history." });
@@ -311,26 +344,93 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
       return res.status(400).json({ error: "Missing volunteer_id" });
     }
 
-    const result = await pool.query(
-      `
-      SELECT
-        vh.*,
-        COALESCE(vp.full_name, 'Unknown') AS volunteer_name,
-        ed.event_name,
-        ed.event_date,
-        ed.location
-      FROM volunteer_history vh
-      LEFT JOIN volunteerprofile vp 
-        ON vp.user_id = vh.volunteer_id     
-      JOIN eventdetails ed
-        ON vh.event_id = ed.event_id
-      WHERE vh.volunteer_id = $1           
-      ORDER BY vh.signup_date DESC
-      `,
-      [volunteer_id]
-    );
+    let result;
+    try {
+      result = await pool.query(
+        `
+        SELECT
+          vh.*,
+          COALESCE(vp.full_name, 'Unknown') AS volunteer_name,
+          ed.event_name,
+          ed.description,
+          ed.location,
+          ed.skill_id AS event_skill_ids,
+          ed.urgency,
+          ed.event_date
+        FROM volunteer_history vh
+        LEFT JOIN volunteerprofile vp 
+          ON vp.user_id = vh.volunteer_id     
+        JOIN eventdetails ed
+          ON vh.event_id = ed.event_id
+        WHERE vh.volunteer_id = $1           
+        ORDER BY vh.signup_date DESC
+        `,
+        [volunteer_id]
+      );
+    } catch (primaryErr) {
+      // Primary query failed (maybe due to treating param as volunteerprofile.volunteer_id).
+      // Attempt fallback: treat the param as user_id stored in vh.volunteer_id
+      console.error('Primary volunteer query failed, attempting fallback:', primaryErr);
+      result = await pool.query(
+        `
+        SELECT
+          vh.*,
+          ed.event_name,
+          ed.description,
+          ed.location,
+          ed.skill_id AS event_skill_ids,
+          ed.urgency,
+          ed.event_date
+        FROM volunteer_history vh
+        JOIN eventdetails ed
+          ON vh.event_id = ed.event_id
+        WHERE vh.volunteer_id = $1
+        ORDER BY vh.signup_date DESC
+        `,
+        [volunteer_id]
+      );
+    }
 
-    res.status(200).json(result.rows);
+    const rows = result.rows;
+    const enhanced = await Promise.all(rows.map(async (r) => {
+      const eventSkillIds = r.event_skill_ids || [];
+      const volSkillsRes = await pool.query(
+        `SELECT skill_id FROM volunteer_skills WHERE volunteer_id = $1`,
+        [r.volunteer_id]
+      );
+      const volSkillIds = volSkillsRes.rows.map(rr => rr.skill_id);
+      const matchedIds = eventSkillIds.filter(id => volSkillIds.includes(id));
+      let matchedSkills = [];
+      if (matchedIds.length > 0) {
+        const skillsRes = await pool.query(
+          `SELECT skill_id, skill_name FROM skills WHERE skill_id = ANY($1::int[])`,
+          [matchedIds]
+        );
+        matchedSkills = skillsRes.rows.map(s => s.skill_name);
+      }
+      return {
+        ...r,
+        matched_skills: matchedSkills,
+        event_skill_ids: eventSkillIds
+      };
+    }));
+
+    // Also fetch volunteer full_name for header display
+    let volunteer_full_name = null;
+    try {
+      const vpRes = await pool.query(
+        `SELECT full_name FROM volunteerprofile WHERE user_id = $1`,
+        [volunteer_id]
+      );
+      if (vpRes && Array.isArray(vpRes.rows) && vpRes.rows[0]) {
+        volunteer_full_name = vpRes.rows[0].full_name || null;
+      }
+    } catch (e) {
+      // ignore errors fetching profile name; return null instead
+      volunteer_full_name = null;
+    }
+
+    res.status(200).json({ rows: enhanced, volunteer_full_name });
   } catch (err) {
     console.error("getVolunteerHistoryByVolunteer error:", err);
     res.status(500).json({ error: "Failed to fetch volunteer history." });
@@ -387,6 +487,14 @@ exports.createVolunteerRecord = async (req, res) => {
        WHERE event_id = $1`,
       [event_id]
     );
+
+    // Broadcast SSE to connected clients about new volunteer history
+    try {
+      const newRow = insertResult.rows[0];
+      broadcast(newRow);
+    } catch (e) {
+      console.error('SSE broadcast failed', e);
+    }
 
     res.status(201).json(insertResult.rows[0]);
   } catch (err) {

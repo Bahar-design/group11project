@@ -2,6 +2,10 @@ jest.mock('../db', () => ({
   query: jest.fn()
 }));
 
+jest.mock('../utils/sse', () => ({
+  broadcast: jest.fn()
+}));
+
 const pool = require('../db');
 const vh = require('../controllers/volunteerHistory');
 
@@ -17,7 +21,7 @@ function mockReqRes({ params = {}, body = {} } = {}) {
 
 describe("volunteerHistory controller unit tests", () => {
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => jest.resetAllMocks());
 
 
   //getVolunteerHistory DB error (direct)
@@ -33,14 +37,25 @@ describe("volunteerHistory controller unit tests", () => {
 
   //getVolunteerHistoryByVolunteer: FIRST QUERY successful 
   test("getVolunteerHistoryByVolunteer returns rows without fallback", async () => {
+    // 1) main select from volunteer_history JOIN eventdetails
     pool.query
-      .mockResolvedValueOnce({ rows: [{ history_id: 1 }] }); // FIRST QUERY SUCCESS
+      .mockResolvedValueOnce({ rows: [{ history_id: 1, volunteer_id: 5, event_skill_ids: [1,2] }] }) // main select
+      // 2) volunteer_skills select
+      .mockResolvedValueOnce({ rows: [{ skill_id: 2 }] })
+      // 3) skills select for matched ids
+      .mockResolvedValueOnce({ rows: [{ skill_id: 2, skill_name: 'CPR' }] })
+      // 4) volunteerprofile fetch for full name
+      .mockResolvedValueOnce({ rows: [{ full_name: 'Test V' }] });
 
     const [req, res] = mockReqRes({ params: { volunteer_id: "5" } });
     await vh.getVolunteerHistoryByVolunteer(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith([{ history_id: 1 }]);
+    // check shape: object with rows and volunteer_full_name
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      rows: expect.any(Array),
+      volunteer_full_name: 'Test V'
+    }));
   });
 
 
