@@ -174,7 +174,7 @@ export default function EventCard({
 
       <div className="mt-2 text-xs text-slate-600">
         <span className="font-medium text-slate-700">Skills Needed:</span>{" "}
-        {event.skills.join(", ")}
+        {Array.isArray(event.skills) ? event.skills.join(", ") : (event.skills || "")}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">

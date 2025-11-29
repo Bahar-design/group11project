@@ -37,13 +37,14 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
 */
 
   useEffect(() => {
-    if (!user?.user_id) return;
+    const myUserId = user?.user_id || user?.id || user?.userId || null;
+    if (!myUserId) return;
 
     let evtSource;
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/volunteer-history/my/${user.user_id}`);
+  const res = await fetch(`${API_BASE}/api/volunteer-history/my/${myUserId}`);
         if (!res.ok) throw new Error("Failed to fetch history");
 
         const data = await res.json();
@@ -68,7 +69,7 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
         try {
           const newRow = JSON.parse(e.data);
           // Only append rows relevant to this user
-          if (Number(newRow.volunteer_id) === Number(user.user_id)) {
+          if (Number(newRow.volunteer_id) === Number(myUserId)) {
             // To compute matched skills on frontend, rely on returned fields if present
             setHistory((prev) => [newRow, ...prev]);
           }

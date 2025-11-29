@@ -82,7 +82,16 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
             `${API_BASE}/api/volunteer-history/my/${volunteerId}`
           );
           if (historyRes.ok) {
-            history = await historyRes.json();
+            const hdata = await historyRes.json();
+            // API may return { rows, volunteer_full_name } or an array
+            if (Array.isArray(hdata)) {
+              history = hdata;
+            } else if (hdata && Array.isArray(hdata.rows)) {
+              history = hdata.rows;
+            } else {
+              // unexpected shape; ignore
+              history = [];
+            }
           } else {
             console.warn(
               "Failed to load volunteer history:",
