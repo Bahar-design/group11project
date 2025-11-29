@@ -1,4 +1,5 @@
 // frontend/src/pages/volunteer/MatchMaking.jsx
+/*
 import React, { useEffect, useState } from "react";
 import Hero from "./Hero.jsx";
 import EventsPanel from "./EventsPanel.jsx";
@@ -66,8 +67,8 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         setError("");
 
         // 3️⃣ Fetch matched events (this was already working before)
-       // const matchesRes = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
-        const matchesRes = await fetch(`${API_BASE}/api/matches/${currentUser.user_id}`);
+        const matchesRes = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
+        //const matchesRes = await fetch(`${API_BASE}/api/matches/${currentUser.user_id}`);
 
         if (!matchesRes.ok) {
           const text = await matchesRes.text();
@@ -103,6 +104,143 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         }
 
         // 6️⃣ Sort matches by matchScore just in case
+        matches.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+
+        setEvents(matches);
+        setJoinedMap(map);
+      } catch (err) {
+        console.error("Failed to load matched events:", err);
+        setError(err.message || "Failed to load matched events.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [user]);
+
+  return (
+    <Layout
+      currentPage="volunteer"
+      user={user}
+      isLoggedIn={isLoggedIn}
+      onLogout={onLogout}
+    >
+      <div className="min-h-screen bg-slate-50">
+        <Hero />
+        <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
+          <div>
+            <EventsPanel
+              events={events}
+              joinedMap={joinedMap}
+              loading={loading}
+              error={error}
+              user={user}
+            />
+            <ImpactPanel />
+          </div>
+        </main>
+      </div>
+    </Layout>
+  );
+}
+
+*/
+// frontend/src/pages/volunteer/MatchMaking.jsx
+import React, { useEffect, useState } from "react";
+import Hero from "./Hero.jsx";
+import EventsPanel from "./EventsPanel.jsx";
+import ImpactPanel from "./ImpactPanel.jsx";
+import Layout from "../../components/layout.jsx";
+import API_BASE from "../../lib/apiBase";
+
+import "./MatchMaking.css";
+
+export default function MatchMaking({ isLoggedIn, user, onLogout }) {
+  const [events, setEvents] = useState([]);
+  const [joinedMap, setJoinedMap] = useState({}); // event_id -> { joined, history_id }
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    // 1️⃣ Get current user (props or localStorage)
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        currentUser = JSON.parse(localStorage.getItem("user"));
+      } catch {
+        currentUser = null;
+      }
+    }
+
+    if (!currentUser) {
+      setError("Please log in to see your matched events.");
+      setLoading(false);
+      return;
+    }
+
+    console.log("CURRENT USER:", currentUser);
+
+    // 2️⃣ Identify the correct IDs
+    const userId = currentUser.user_id || currentUser.id; // used for matches
+    const volunteerId = currentUser.volunteer_id;         // used for volunteer history
+
+    if (!userId) {
+      setError("No user_id found. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
+    if (!volunteerId) {
+      console.warn("No volunteer_id found — volunteer history may not load.");
+    }
+
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError("");
+
+        // 3️⃣ Fetch matched events using USER ID
+        const matchesRes = await fetch(`${API_BASE}/api/matches/${userId}`);
+
+        if (!matchesRes.ok) {
+          const text = await matchesRes.text();
+          throw new Error(`Failed to load matches: ${matchesRes.status} ${text}`);
+        }
+
+        const matches = await matchesRes.json();
+
+        // 4️⃣ Fetch volunteer history using VOLUNTEER ID
+        let history = [];
+        if (volunteerId) {
+          try {
+            const historyRes = await fetch(
+              `${API_BASE}/api/volunteer-history/my/${volunteerId}`
+            );
+
+            if (historyRes.ok) {
+              history = await historyRes.json();
+            } else {
+              console.warn(
+                "Failed to load volunteer history:",
+                historyRes.status
+              );
+            }
+          } catch (e) {
+            console.warn("Error loading volunteer history:", e);
+          }
+        }
+
+        // 5️⃣ Build joinedMap: event_id -> { joined: true, history_id }
+        const map = {};
+        for (const h of history) {
+          map[h.event_id] = {
+            joined: true,
+            history_id: h.history_id,
+          };
+        }
+
+        // 6️⃣ Sort matches by matchScore
         matches.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
         setEvents(matches);
