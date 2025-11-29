@@ -13,6 +13,8 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
   const [joinedMap, setJoinedMap] = useState({}); // event_id -> { joined, history_id }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [debugVolunteerId, setDebugVolunteerId] = useState(null);
+  const [debugHistory, setDebugHistory] = useState([]);
 
   useEffect(() => {
     // 1️⃣ Get current user (props or localStorage)
@@ -60,6 +62,9 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       return;
     }
 
+    // expose resolved id for debugging on deployed site
+    setDebugVolunteerId(volunteerId);
+
     async function fetchData() {
       try {
         setLoading(true);
@@ -102,6 +107,9 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           console.warn("Error loading volunteer history:", e);
         }
 
+        // publish debug history for UI
+        setDebugHistory(history);
+
         // 5️⃣ Build joinedMap: event_id -> { joined: true, history_id }
         const map = {};
         for (const h of history) {
@@ -134,6 +142,10 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       isLoggedIn={isLoggedIn}
       onLogout={onLogout}
     >
+      {/* Debug panel (remove after troubleshooting): HH_DEBUG_VOL_ID */}
+      <div style={{ padding: 8, background: '#fff3cd', color: '#856404', textAlign: 'center' }}>
+        <strong>Debug</strong>: resolved volunteer id: {String(debugVolunteerId)} — history rows: {debugHistory?.length ?? 0}
+      </div>
       <div className="min-h-screen bg-slate-50">
         <Hero />
         <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
