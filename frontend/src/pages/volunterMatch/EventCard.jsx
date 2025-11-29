@@ -1,14 +1,21 @@
+// frontend/src/pages/volunteer/EventCard.jsx
 import React, { useState } from "react";
 import Chip from "./Chip";
-import API_BASE from "../../lib/apiBase"; // adjust path if needed
+import API_BASE from "../../lib/apiBase";
 
-export default function EventCard({ event, user }) {
+export default function EventCard({
+  event,
+  user,
+  initialJoined = false,
+  initialHistoryId = null,
+}) {
   // "idle" | "joining" | "joined" | "can-unjoin" | "unjoining" | "unjoined"
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState(
+    initialJoined ? "can-unjoin" : "idle"
+  );
   const [error, setError] = useState("");
-  const [historyId, setHistoryId] = useState(null);
+  const [historyId, setHistoryId] = useState(initialHistoryId);
 
-  // derive eventId safely (matches what backend sends)
   const eventId = event.id ?? event.event_id;
 
   const joinedLike =
@@ -45,9 +52,14 @@ export default function EventCard({ event, user }) {
       return;
     }
 
-    const userId = user.id || user.user_id;
+    const userId = user.id ?? user.user_id;
     if (!userId) {
       setError("No user id found. Please log in again.");
+      return;
+    }
+
+    if (!eventId) {
+      setError("No event id found for this card.");
       return;
     }
 
@@ -76,7 +88,7 @@ export default function EventCard({ event, user }) {
 
         setStatus("unjoined");
 
-        // After 10 seconds, reset back to initial state
+        // After 10 seconds, reset back to idle
         setTimeout(() => {
           setStatus("idle");
           setHistoryId(null);
@@ -105,11 +117,12 @@ export default function EventCard({ event, user }) {
 
       if (!res.ok) {
         const text = await res.text();
+        console.error("Join failed response:", res.status, text);
         throw new Error(text || "Join failed");
       }
 
       const created = await res.json();
-      setHistoryId(created.history_id); // used later for DELETE
+      setHistoryId(created.history_id);
 
       setStatus("joined");
 
@@ -133,15 +146,15 @@ export default function EventCard({ event, user }) {
           </h4>
           <div className="mt-10 flex flex-wrap items-center text-xs text-slate-500">
             <div className="flex items-center gap-1">
-              <span className="i">📍</span>
+              <span>📍</span>
               <span>{event.location}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="i">🕒</span>
+              <span>🕒</span>
               <span>{event.time}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="i">👥</span>
+              <span>👥</span>
               <span>{event.volunteers} volunteers</span>
             </div>
           </div>
@@ -168,15 +181,12 @@ export default function EventCard({ event, user }) {
         <Chip>{event.matchScore}% Perfect Match</Chip>
 
         <button
-          type="button"
           onClick={handleJoinClick}
-          disabled={status === "joining" || status === "unjoining"}
+          disabled={disabled}
           className={`!rounded-full px-6 py-3 text-sm font-semibold text-white transition
             ${
               joinedLike
-                ? status === "can-unjoin"
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-green-500 hover:bg-green-600"
+                ? "bg-green-500 hover:bg-green-600"
                 : "bg-rose-500 hover:bg-rose-600"
             }`}
         >
@@ -185,7 +195,7 @@ export default function EventCard({ event, user }) {
       </div>
 
       {error && (
-        <p className="mt-2 text-xs text-red-500">
+        <p className="mt-2 text-xs text-red-700">
           {error}
         </p>
       )}

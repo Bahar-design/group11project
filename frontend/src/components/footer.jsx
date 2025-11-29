@@ -90,9 +90,10 @@ const Footer = () => {
           <div className="footer-section">
             <h3 className="footer-section-title">Connect With Us</h3>
             <div className="footer-contact">
-              <div className="footer-contact-item clickable" role="button" tabIndex={0} onClick={() => (window.location.href = 'mailto:volunteer@houstonhearts.org')}>volunteer@houstonhearts.org</div>
-              <div className="footer-contact-item clickable" role="button" tabIndex={0} onClick={() => (window.location.href = 'tel:8327055309')}>(832) 705-5309</div>
-              <div className="footer-contact-item">4800 Calhoun Road, Houston, TX 77204</div>
+              <div className="footer-contact-item clickable" role="button" tabIndex={0} onClick={() => (window.location.href = 'https://www.linkedin.com/in/adaeze-owunna/')}>Adaeze Owunna - LinkedIn</div>
+              <div className="footer-contact-item clickable" role="button" tabIndex={0} onClick={() => (window.location.href = 'https://www.linkedin.com/in/bahar-abdi-2a2ab7389')}>Bahar Abdi - LinkedIn</div>
+              <div className="footer-contact-item clickable" role="button" tabIndex={0} onClick={() => (window.location.href = 'https://www.linkedin.com/in/gpalacios12/')}>Gabriel Palacios - LinkedIn</div>
+              <div className="footer-contact-item clickable" role="button" tabIndex={0} onClick={() => (window.location.href = 'https://www.linkedin.com/in/tiffany-carcamo/')}>Tiffany Carcamo - LinkedIn</div>
             </div>
           </div>
         </div>

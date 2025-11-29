@@ -15,10 +15,9 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
   const reportRef = useRef();
 
   const reportTypes = [
-    { id: 'volunteer-participation', icon: '👥', title: 'Volunteer Participation History', desc: 'History of each volunteer\'s event participation' },
-   // { id: 'volunteer-history', icon: '📋', title: 'Detailed Volunteer History', desc: 'History of each volunteer\'s event participation' },
-    { id: 'event-management', icon: '📅', title: 'Event Management', desc: 'Overview of all events and their details' },
-    { id: 'event-volunteers', icon: '🤝', title: 'Event Volunteer Assignments', desc: 'Detailed list of volunteer assignments per event' }
+    { id: 'volunteer-participation', title: 'Volunteer Participation History', desc: 'History of each volunteer\'s event participation' },
+    { id: 'event-management', title: 'Event Management', desc: 'Overview of all events and their details' },
+    { id: 'event-volunteers', title: 'Event Volunteer Assignments', desc: 'Detailed list of volunteer assignments per event' }
   ];
 
   // Fetchable lists
@@ -89,10 +88,6 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
   }, []);
 
   const renderReportTable = () => {
-    /*
-  const filteredVolunteers = data || [];
-  const filteredEvents = data || [];
-  */
     let filteredVolunteers = [];
     let filteredEvents = [];
 
@@ -273,7 +268,7 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
     setLoading(true);
     try {
       const printWindow = window.open('', '_blank');
-      const title = '📊 Reporting Dashboard';
+      const title = 'Reporting Dashboard';
       const content = `
         <!doctype html>
         <html>
@@ -310,7 +305,7 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
       <div className="reporting-container">
         <div className="reporting-wrapper">
             <h1 className="reporting-title">
-            📊 Reporting Dashboard
+            Reporting Dashboard
             </h1>
             
             <p className="reporting-subtitle">
@@ -330,7 +325,6 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
                     onClick={() => setReportType(report.id)}
                     className={`report-type-card ${reportType === report.id ? 'active' : ''}`}
                 >
-                    <div className="report-type-icon">{report.icon}</div>
                     <h4 className="report-type-name">{report.title}</h4>
                     <p className="report-type-desc">{report.desc}</p>
                 </div>
@@ -409,35 +403,6 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
                     </div>
                 </div>
 
-{/*      
-                <div className="filter-group">
-                    <label>Skill</label>
-                    <select
-                      value={selectedSkill && (selectedSkill.skill_id || selectedSkill)}
-                      onChange={(e) => {
-                        const id = e.target.value;
-                        const found = skills.find(s => String(s.skill_id) === String(id));
-                        setSelectedSkill(found || id);
-                      }}
-                      className="filter-input"
-                    >
-                      {skills.map(skill => (
-                        <option key={skill.skill_id} value={skill.skill_id}>{skill.skill_name}</option>
-                      ))}
-                    </select>
-                </div>
-                </div>
-
-                <div className="filter-actions">
-                <button
-                    onClick={clearFilters}
-                    className="clear-filters-btn"
-                >
-                    Clear Filters
-                </button>
-                </div>
-            </div> 
-            */}
               <div className="filter-group">
                     <label>Skill</label>
                     <select
@@ -489,17 +454,6 @@ const ReportingModule = ({ isLoggedIn, user, onLogout }) => {
                 {loading ? 'Generating...' : 'Export to PDF'}
                 </button>
             </div>
-            </div>
-
-            <div className="help-section">
-            <h4 className="help-title">💡 How to Use</h4>
-            <ul className="help-list">
-                <li><strong>Select a report type</strong> to view different aspects of volunteer activities</li>
-                <li><strong>Use filters</strong> to narrow down results by date range, location, skills, or search terms</li>
-                <li><strong>Preview the data</strong> in the table below before exporting</li>
-                <li><strong>Export to CSV</strong> for data analysis in Excel or Google Sheets</li>
-                <li><strong>Export to PDF</strong> for professional reports and presentations</li>
-            </ul>
             </div>
         </div>
       </div>

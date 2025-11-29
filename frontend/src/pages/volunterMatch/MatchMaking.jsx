@@ -1,22 +1,21 @@
-// frontend/src/pages/volunteer/MatchMaking.jsx (path based on your imports)
+// frontend/src/pages/volunteer/MatchMaking.jsx
 import React, { useEffect, useState } from "react";
 import Hero from "./Hero.jsx";
 import EventsPanel from "./EventsPanel.jsx";
-import SkillsAvailability from "./SkillsAvailability.jsx";
 import ImpactPanel from "./ImpactPanel.jsx";
-import SectionCard from "./SectionCard.jsx";
 import Layout from "../../components/layout.jsx";
-import API_BASE from "../../lib/apiBase"; // ✅ make sure this path matches your project
+import API_BASE from "../../lib/apiBase";
 
 import "./MatchMaking.css";
 
 export default function MatchMaking({ isLoggedIn, user, onLogout }) {
   const [events, setEvents] = useState([]);
+  const [joinedMap, setJoinedMap] = useState({}); // event_id -> { joined, history_id }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // get user either from props or from localStorage (after refresh)
+    // 1️⃣ Get current user (props or localStorage)
     let currentUser = user;
     if (!currentUser) {
       try {
@@ -26,29 +25,86 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       }
     }
 
-    if (!currentUser || (!currentUser.id && !currentUser.user_id)) {
+    if (!currentUser) {
       setError("Please log in to see your matched events.");
       setLoading(false);
       return;
     }
 
-    const volunteerId = currentUser.id || currentUser.user_id;
+    // 2️⃣ Try to find volunteer_id from multiple places
+    let volunteerId = currentUser.volunteer_id || null;
 
-    async function fetchMatches() {
+    // Fallback: check cached profile if your app stores it
+    if (!volunteerId) {
+      try {
+        const cachedProfile = JSON.parse(
+          localStorage.getItem("hh_userProfile")
+        );
+        if (cachedProfile?.volunteer_id) {
+          volunteerId = cachedProfile.volunteer_id;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // Final fallback: use user.id / user.user_id like you had originally.
+    // This matches the behavior from when matches were already working.
+    if (!volunteerId) {
+      volunteerId = currentUser.id || currentUser.user_id;
+    }
+
+    if (!volunteerId) {
+      setError("No volunteer identifier found. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
+    async function fetchData() {
       try {
         setLoading(true);
         setError("");
 
-        const res = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Server responded ${res.status}: ${text}`);
+        // 3️⃣ Fetch matched events (this was already working before)
+        const matchesRes = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
+        if (!matchesRes.ok) {
+          const text = await matchesRes.text();
+          throw new Error(`Failed to load matches: ${matchesRes.status} ${text}`);
+        }
+        const matches = await matchesRes.json();
+
+        // 4️⃣ Fetch volunteer history for this same ID
+        let history = [];
+        try {
+          const historyRes = await fetch(
+            `${API_BASE}/api/volunteer-history/my/${volunteerId}`
+          );
+          if (historyRes.ok) {
+            history = await historyRes.json();
+          } else {
+            console.warn(
+              "Failed to load volunteer history:",
+              historyRes.status
+            );
+          }
+        } catch (e) {
+          console.warn("Error loading volunteer history:", e);
         }
 
-        const data = await res.json();
-        // backend already sorts by matchScore, but sort again just in case
-        data.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-        setEvents(data);
+        // 5️⃣ Build joinedMap: event_id -> { joined: true, history_id }
+        const map = {};
+        for (const h of history) {
+          map[h.event_id] = {
+            joined: true,
+            history_id: h.history_id,
+          };
+        }
+
+        // 6️⃣ Sort matches by matchScore just in case
+        matches.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+
+        setEvents(matches);
+        setJoinedMap(map);
       } catch (err) {
         console.error("Failed to load matched events:", err);
         setError(err.message || "Failed to load matched events.");
@@ -57,7 +113,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       }
     }
 
-    fetchMatches();
+    fetchData();
   }, [user]);
 
   return (
@@ -71,15 +127,14 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         <Hero />
         <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
           <div>
-            {/* 🔽 pass events + loading + error into EventsPanel */}
-            <EventsPanel 
-              events={events} 
-              loading={loading} 
-              error={error} 
+            <EventsPanel
+              events={events}
+              joinedMap={joinedMap}
+              loading={loading}
+              error={error}
               user={user}
             />
             <ImpactPanel />
-            {/* <SkillsAvailability /> */}
           </div>
         </main>
       </div>
