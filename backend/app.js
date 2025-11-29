@@ -10,6 +10,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const historyRoutes = require('./routes/historyRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
+const matchRoutes = require('./routes/matchRoutes');
 
 
 const app = express();
@@ -56,6 +57,8 @@ app.use('/api/login', loginRoutes); // login endpoint
 app.use("/api/register", registrationRouter);       //for registration
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/events', eventRoutes);
+// Ensure matches route is available on this app instance as well
+app.use('/api/matches', matchRoutes);
 app.use('/api/volunteer-history', historyRoutes);
 app.use('/api/calendar', calendarRoutes);
 // Reports endpoints
