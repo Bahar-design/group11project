@@ -164,43 +164,44 @@ export default function MyCalendar({ isLoggedIn, user, onLogout }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        // DIRECT URL FIX — bypass API_BASE
-        const res = await fetch("http://localhost:4000/api/calendar");
-
-        if (!res.ok) {
-          throw new Error("API returned an error");
-        }
-
-        const data = await res.json();
-
-        if (!Array.isArray(data)) {
-          throw new Error("Invalid JSON response");
-        }
-
-        const formatted = data.map(ev => ({
-          id: ev.event_id,
-          title: ev.event_name,
-          start: new Date(ev.event_date),
-          end: new Date(ev.event_date),
-          location: ev.location,
-          description: ev.description,
-          max_volunteers: ev.max_volunteers,
-        }));
-
-        setEvents(formatted);
-      } catch (err) {
-        console.error("Calendar fetch error:", err);
-        setMessage("Failed to load events");
-      } finally {
-        setLoading(false);
+useEffect(() => {
+  const fetchEvents = async () => {
+    try {
+      // Hardcode backend URL because API_BASE is empty
+      const res = await fetch(`http://localhost:4000/api/calendar`);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
       }
-    };
 
-    fetchEvents();
-  }, []);
+      const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid response format");
+      }
+
+      const formatted = data.map(ev => ({
+        id: ev.event_id,
+        title: ev.event_name,
+        start: new Date(ev.event_date),
+        end: new Date(ev.event_date),
+        location: ev.location,
+        description: ev.description,
+        max_volunteers: ev.max_volunteers,
+      }));
+
+      setEvents(formatted);
+    } catch (err) {
+      console.error("Calendar fetch error:", err);
+      setMessage("Failed to load events");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchEvents();
+}, []);
+
 
   const handleSelectEvent = event => {
     setSelectedEvent(event);
