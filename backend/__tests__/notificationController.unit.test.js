@@ -1,8 +1,13 @@
-jest.mock('../db');
+
+jest.mock('../db', () => ({
+  query: jest.fn()
+}));
+
 const pool = require('../db');
 const notif = require('../controllers/notificationController');
 
-// helper
+
+//helper
 function mockReqRes({ params = {}, query = {}, body = {} } = {}) {
   const req = { params, query, body };
   const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
@@ -15,7 +20,7 @@ describe('notificationController - unit tests', () => {
     if (notif.__getMessages) notif.__getMessages().length = 0;
   });
 
-  // ------------------- sendMessage -------------------
+  //send message
   test('sendMessage returns 400 when fields are missing', async () => {
     const [req, res] = mockReqRes({ body: { from: '', to: '', message: '' } });
     await notif.sendMessage(req, res);
@@ -246,5 +251,62 @@ test('getVolunteerInbox falls back to in-memory messages when DB user not found'
 
   expect(res.status).toHaveBeenCalledWith(200);
   expect(res.json.mock.calls[0][0].length).toBeGreaterThan(0);
+});
+
+it('GET /api/volunteer-history/my/:id returns 500 when both queries fail', async () => {
+  const pool = require('../db');
+  const original = pool.query;
+
+  // Make BOTH queries throw
+  pool.query = jest.fn(() => { throw new Error("DB exploded"); });
+
+  const res = await request(app).get('/api/volunteer-history/my/3');
+
+  expect(res.statusCode).toBe(500);
+  expect(res.body.error).toMatch(/failed/i);
+
+  pool.query = original;
+});
+
+it('POST /api/volunteer-history returns 500 when DB insert fails', async () => {
+  const pool = require('../db');
+  const original = pool.query;
+
+  // Make first insert fail
+  pool.query = jest.fn(() => { throw new Error("Insert failed"); });
+
+  const res = await request(app)
+    .post('/api/volunteer-history')
+    .send({ volunteer_id: 1, event_id: 1 });
+
+  expect(res.statusCode).toBe(500);
+  expect(res.body.error).toMatch(/failed/i);
+
+  pool.query = original;
+});
+
+test('getAllNotifications returns rows', async () => {
+  pool.query.mockResolvedValueOnce({ rows: [{ message_ID: 1 }] });
+  const [req, res] = mockReqRes();
+  await notif.getAllNotifications(req, res);
+  expect(res.status).toHaveBeenCalledWith(200);
+});
+
+test('getAllNotifications handles DB error', async () => {
+  pool.query.mockRejectedValueOnce(new Error('fail'));
+  const [req, res] = mockReqRes();
+  await notif.getAllNotifications(req, res);
+  expect(res.status).toHaveBeenCalledWith(500);
+});
+test('getAdmins handles DB error', async () => {
+  pool.query.mockRejectedValueOnce(new Error('DB fail'));
+  const [req, res] = mockReqRes();
+  await notif.getAdmins(req, res);
+  expect(res.status).toHaveBeenCalledWith(500);
+});
+test('getVolunteerInbox returns 400 on invalid id', async () => {
+  const [req, res] = mockReqRes({ params: { volunteerId: 'x' } });
+  await notif.getVolunteerInbox(req, res);
+  expect(res.status).toHaveBeenCalledWith(400);
 });
 
