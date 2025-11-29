@@ -57,7 +57,7 @@ describe('notificationController - unit tests', () => {
     );
   });
 
-  // ------------------- getUserNotifications -------------------
+  //getUserNotifications 
   test('getUserNotifications returns 400 if email missing', async () => {
     const [req, res] = mockReqRes({ query: {} });
     await notif.getUserNotifications(req, res);
@@ -79,7 +79,7 @@ describe('notificationController - unit tests', () => {
     expect(res.status).toHaveBeenCalledWith(500);
   });
 
-  // ------------------- deleteNotification -------------------
+  //deleteNotification 
   test('deleteNotification 404 when not found', async () => {
     pool.query.mockResolvedValueOnce({ rows: [] });
     const [req, res] = mockReqRes({ params: { id: '9' } });
@@ -94,7 +94,7 @@ describe('notificationController - unit tests', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
-  // ------------------- markMessageAsSent -------------------
+  //markMessageAsSent 
   test('markMessageAsSent returns 404 if not found', async () => {
     pool.query.mockResolvedValueOnce({ rowCount: 0 });
     const [req, res] = mockReqRes({ params: { id: '999' } });
@@ -112,7 +112,7 @@ describe('notificationController - unit tests', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
-  // ------------------- getVolunteers/getAdmins -------------------
+  //getVolunteers/getAdmins 
   test('getVolunteers returns DB rows', async () => {
     pool.query.mockResolvedValueOnce({ rows: [{ user_id: 1, email: 'v@v.com' }] });
     const [req, res] = mockReqRes();
@@ -142,7 +142,7 @@ describe('notificationController - unit tests', () => {
     expect(res.json).toHaveBeenCalledWith(expect.any(Array));
   });
 
-  // ------------------- getAdminInbox -------------------
+  //getAdminInbox 
   test('getAdminInbox invalid id', async () => {
     const [req, res] = mockReqRes({ params: { adminId: 'abc' } });
     await notif.getAdminInbox(req, res);
@@ -165,7 +165,7 @@ describe('notificationController - unit tests', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
-  // ------------------- getVolunteerInbox -------------------
+  //getVolunteerInbox 
   test('getVolunteerInbox DB success', async () => {
     pool.query
       .mockResolvedValueOnce({ rows: [{ user_email: 'a@b', user_type: 'volunteer' }] })
@@ -182,7 +182,7 @@ describe('notificationController - unit tests', () => {
     expect(res.status).toHaveBeenCalledWith(500);
   });
 
-  // ------------------- getInboxByEmail -------------------
+  //getInboxByEmail 
   test('getAdminInboxByEmail returns 400 if no email', async () => {
     const [req, res] = mockReqRes({ params: {} });
     await notif.getAdminInboxByEmail(req, res);
@@ -221,7 +221,7 @@ test('getAdminInbox falls back to in-memory messages when DB admin not found', a
   // DB returns user not found
   pool.query.mockResolvedValueOnce({ rows: [] });
 
-  // create an in-memory message for an admin
+  //create an in-memory message for an admin
   notif.__getMessages().push({
     id: 1,
     from: "volunteer@test.com",
