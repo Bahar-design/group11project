@@ -283,7 +283,7 @@ exports.getVolunteerHistory = async (req, res) => {
         ed.location
       FROM volunteer_history vh
       JOIN volunteerprofile vp 
-        ON vp.user_id = vh.volunteer_id      -- FIXED
+        ON vp.user_id = vh.volunteer_id     
       JOIN eventdetails ed 
         ON vh.event_id = ed.event_id
       ORDER BY vh.signup_date DESC
@@ -321,10 +321,10 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
         ed.location
       FROM volunteer_history vh
       JOIN volunteerprofile vp 
-        ON vp.user_id = vh.volunteer_id     -- FIXED
+        ON vp.user_id = vh.volunteer_id     
       JOIN eventdetails ed
         ON vh.event_id = ed.event_id
-      WHERE vh.volunteer_id = $1           -- using user_id correctly
+      WHERE vh.volunteer_id = $1           
       ORDER BY vh.signup_date DESC
       `,
       [volunteer_id]
