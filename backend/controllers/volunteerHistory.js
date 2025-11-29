@@ -268,25 +268,27 @@ exports.deleteVolunteerRecord = async (req, res) => {
 */
 const pool = require('../db');
 
-// ----------------------------------------------------------
-// GET ALL volunteer history
-// ----------------------------------------------------------
+// ------------------------------------------------------
+// GET all volunteer history records
+// ------------------------------------------------------
 exports.getVolunteerHistory = async (req, res) => {
   try {
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       SELECT 
-        vh.*,
-        vp.full_name AS volunteer_name,
+        vh.*, 
+        vp.full_name AS volunteer_name, 
         ed.event_name,
         ed.event_date,
         ed.location
       FROM volunteer_history vh
       JOIN volunteerprofile vp 
-          ON vh.volunteer_id = vp.user_id   -- FIXED
+        ON vp.user_id = vh.volunteer_id      -- FIXED
       JOIN eventdetails ed 
-          ON vh.event_id = ed.event_id
+        ON vh.event_id = ed.event_id
       ORDER BY vh.signup_date DESC
-    `);
+      `
+    );
 
     res.status(200).json(result.rows);
   } catch (err) {
@@ -296,9 +298,10 @@ exports.getVolunteerHistory = async (req, res) => {
 };
 
 
-// ----------------------------------------------------------
-// GET history for a SINGLE volunteer (user_id)
-// ----------------------------------------------------------
+// ------------------------------------------------------
+// GET history for ONE volunteer
+// volunteer_id IS ACTUALLY THE user_id
+// ------------------------------------------------------
 exports.getVolunteerHistoryByVolunteer = async (req, res) => {
   try {
     const { volunteer_id } = req.params;
@@ -307,36 +310,27 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
       return res.status(400).json({ error: "Missing volunteer_id" });
     }
 
-    // STEP 1: Look up via volunteerprofile.volunteer_id → user_id
-    const profile = await pool.query(
-      `SELECT user_id FROM volunteerprofile WHERE volunteer_id = $1`,
-      [volunteer_id]
-    );
-
-    let userId = profile.rows[0]?.user_id || volunteer_id;  
-    // if profile not found, volunteer_id IS user_id
-
+    // Always match volunteer_history.volunteer_id (user_id)
     const result = await pool.query(
       `
-      SELECT 
+      SELECT
         vh.*,
         vp.full_name AS volunteer_name,
         ed.event_name,
         ed.event_date,
         ed.location
       FROM volunteer_history vh
-      LEFT JOIN volunteerprofile vp
-          ON vh.volunteer_id = vp.user_id
+      JOIN volunteerprofile vp 
+        ON vp.user_id = vh.volunteer_id     -- FIXED
       JOIN eventdetails ed
-          ON vh.event_id = ed.event_id
-      WHERE vh.volunteer_id = $1
+        ON vh.event_id = ed.event_id
+      WHERE vh.volunteer_id = $1           -- using user_id correctly
       ORDER BY vh.signup_date DESC
       `,
-      [userId]
+      [volunteer_id]
     );
 
     res.status(200).json(result.rows);
-
   } catch (err) {
     console.error("getVolunteerHistoryByVolunteer error:", err);
     res.status(500).json({ error: "Failed to fetch volunteer history." });
@@ -344,9 +338,10 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
 };
 
 
-// ----------------------------------------------------------
+// ------------------------------------------------------
 // CREATE volunteer record
-// ----------------------------------------------------------
+// volunteer_id MUST equal user_id
+// ------------------------------------------------------
 exports.createVolunteerRecord = async (req, res) => {
   try {
     let { volunteer_id, event_id, user_id } = req.body;
@@ -355,21 +350,27 @@ exports.createVolunteerRecord = async (req, res) => {
       return res.status(400).json({ error: "event_id is required." });
     }
 
-    // volunteer_id is always the user ID used in user_table
+    // volunteer_id should ALWAYS be user_id
     if (!volunteer_id && user_id) volunteer_id = user_id;
+
     if (!volunteer_id) {
-      return res.status(400).json({ error: "volunteer_id or user_id is required." });
+      return res.status(400).json({
+        error: "volunteer_id or user_id is required.",
+      });
     }
 
-    // prevent duplicates
-    const dup = await pool.query(
-      `SELECT 1 FROM volunteer_history WHERE volunteer_id = $1 AND event_id = $2`,
+    // Prevent duplicate signup
+    const existing = await pool.query(
+      `SELECT 1 FROM volunteer_history 
+       WHERE volunteer_id = $1 AND event_id = $2`,
       [volunteer_id, event_id]
     );
-    if (dup.rows.length > 0) {
+
+    if (existing.rows.length > 0) {
       return res.status(409).json({ error: "You have already joined this event." });
     }
 
+    // Insert row
     const insertResult = await pool.query(
       `
       INSERT INTO volunteer_history (volunteer_id, event_id, signup_date)
@@ -379,14 +380,15 @@ exports.createVolunteerRecord = async (req, res) => {
       [volunteer_id, event_id]
     );
 
-    // increment count
+    // Increase event volunteer count
     await pool.query(
-      `UPDATE eventdetails SET volunteers = COALESCE(volunteers, 0) + 1 WHERE event_id = $1`,
+      `UPDATE eventdetails 
+       SET volunteers = COALESCE(volunteers,0) + 1 
+       WHERE event_id = $1`,
       [event_id]
     );
 
     res.status(201).json(insertResult.rows[0]);
-
   } catch (err) {
     console.error("createVolunteerRecord error:", err);
     res.status(500).json({ error: "Failed to create volunteer record." });
@@ -394,9 +396,9 @@ exports.createVolunteerRecord = async (req, res) => {
 };
 
 
-// ----------------------------------------------------------
-// UPDATE
-// ----------------------------------------------------------
+// ------------------------------------------------------
+// UPDATE volunteer record
+// ------------------------------------------------------
 exports.updateVolunteerRecord = async (req, res) => {
   try {
     const { id } = req.params;
@@ -413,11 +415,11 @@ exports.updateVolunteerRecord = async (req, res) => {
       [volunteer_id, event_id, id]
     );
 
-    if (result.rows.length === 0)
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Volunteer history record not found." });
+    }
 
     res.status(200).json(result.rows[0]);
-
   } catch (err) {
     console.error("updateVolunteerRecord error:", err);
     res.status(500).json({ error: "Failed to update volunteer record." });
@@ -425,25 +427,28 @@ exports.updateVolunteerRecord = async (req, res) => {
 };
 
 
-// ----------------------------------------------------------
-// DELETE
-// ----------------------------------------------------------
+// ------------------------------------------------------
+// DELETE record
+// ------------------------------------------------------
 exports.deleteVolunteerRecord = async (req, res) => {
   try {
     const { id } = req.params;
 
     const result = await pool.query(
-      `DELETE FROM volunteer_history WHERE history_id = $1 RETURNING *`,
+      `DELETE FROM volunteer_history 
+       WHERE history_id = $1 
+       RETURNING *`,
       [id]
     );
 
-    if (result.rows.length === 0)
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Volunteer record not found." });
+    }
 
     res.status(200).json(result.rows[0]);
-
   } catch (err) {
     console.error("deleteVolunteerRecord error:", err);
     res.status(500).json({ error: "Failed to delete volunteer record." });
   }
 };
+
