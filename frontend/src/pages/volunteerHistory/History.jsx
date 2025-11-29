@@ -9,6 +9,7 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [volunteerName, setVolunteerName] = useState("");
+  const [resolvedIdForDebug, setResolvedIdForDebug] = useState(null);
 
   /*
   useEffect(() => {
@@ -64,7 +65,8 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
     // Last fallback: legacy volunteer_id placed on the user object
     if (!myUserId && currentUser) myUserId = currentUser.volunteer_id || null;
 
-    // Helpful debug log — when deployed you can open DevTools Console and confirm which id the History page uses
+    // Expose resolved id in state so the deployed UI shows it even if console logs are hidden
+    setResolvedIdForDebug(myUserId);
     try {
       console.log('History resolved volunteer id:', myUserId);
     } catch (e) { /* ignore */ }
