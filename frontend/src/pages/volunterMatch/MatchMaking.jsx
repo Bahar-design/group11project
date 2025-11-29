@@ -151,7 +151,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
               error={error}
               user={user}
             />
-            <ImpactPanel />
+            <ImpactPanel user={user} />
           </div>
         </main>
       </div>

@@ -35,14 +35,46 @@ export default function ImpactPanel({ user }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.id) return; // Wait for user info to exist
+    // Accept different id shapes coming from various auth flows
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        currentUser = JSON.parse(localStorage.getItem('user'));
+      } catch (e) {
+        currentUser = null;
+      }
+    }
+
+    let myUserId = null;
+    if (currentUser) myUserId = currentUser.user_id || currentUser.id || null;
+
+    if (!myUserId) {
+      try {
+        const cached = JSON.parse(localStorage.getItem('hh_userProfile'));
+        if (cached?.user_id) myUserId = cached.user_id;
+        else if (cached?.volunteer_id) myUserId = cached.volunteer_id;
+      } catch (e) { /* ignore */ }
+    }
+
+    if (!myUserId && currentUser) myUserId = currentUser.volunteer_id || null;
+    if (!myUserId) {
+      setHistory([]);
+      setLoading(false);
+      return;
+    }
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/volunteer-history/my/${user.id}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const res = await fetch(`${API_BASE}/api/volunteer-history/my/${myUserId}`);
+        if (!res.ok) {
+          console.warn('Volunteer history request failed', res.status);
+          setHistory([]);
+          return;
+        }
         const data = await res.json();
-        setHistory(data);
+        // normalize shapes: could be { rows, volunteer_full_name } or an array
+        const rows = Array.isArray(data) ? data : (Array.isArray(data?.rows) ? data.rows : []);
+        setHistory(rows);
       } catch (err) {
         console.error("Failed to load volunteer history:", err);
         setHistory([]);
@@ -57,7 +89,7 @@ export default function ImpactPanel({ user }) {
   // Total impact calculation
   const totalImpact = {
     families: history.length * 3, // Example: 3 families per event
-    hours: history.reduce((sum, h) => sum + (h.hours_worked || 0), 0),
+    hours: history.reduce((sum, h) => sum + (Number(h.hours_worked) || 0), 0),
     items: history.length * 50,   // Example: 50 items per event
   };
 
@@ -87,7 +119,7 @@ export default function ImpactPanel({ user }) {
       ) : (
         <div className="space-y-3">
           {history.map((a) => (
-            <ActivityItem key={a.history_id} activity={a} />
+            <ActivityItem key={a.history_id || `${a.event_id}-${a.signup_date}`} activity={a} />
           ))}
 
           <div className="rounded-xl border border-slate-200 p-3">
