@@ -38,7 +38,12 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
 
   useEffect(() => {
     const myUserId = user?.user_id || user?.id || user?.userId || null;
-    if (!myUserId) return;
+    if (!myUserId) {
+      // ensure we don't stay stuck on the loading screen when no user id is available
+      setMessage("Please log in to view your volunteer history.");
+      setLoading(false);
+      return;
+    }
 
     let evtSource;
 

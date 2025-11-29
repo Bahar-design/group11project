@@ -491,7 +491,61 @@ exports.createVolunteerRecord = async (req, res) => {
     // Broadcast SSE to connected clients about new volunteer history
     try {
       const newRow = insertResult.rows[0];
-      broadcast(newRow);
+
+      // Enrich: fetch event details
+      let eventInfo = {};
+      try {
+        const ev = await pool.query(
+          `SELECT event_id, event_name, description, location, skill_id AS event_skill_ids, urgency, event_date FROM eventdetails WHERE event_id = $1`,
+          [event_id]
+        );
+        if (ev && ev.rows && ev.rows[0]) eventInfo = ev.rows[0];
+      } catch (e) {
+        console.error('Failed to fetch event details for SSE enrichment', e);
+      }
+
+      // Enrich: compute matched skills names
+      let matchedSkills = [];
+      try {
+        const eventSkillIds = eventInfo.event_skill_ids || [];
+        const volSkillsRes = await pool.query(
+          `SELECT skill_id FROM volunteer_skills WHERE volunteer_id = $1`,
+          [volunteer_id]
+        );
+        const volSkillIds = (volSkillsRes.rows || []).map(r => r.skill_id);
+        const matchedIds = (eventSkillIds || []).filter(id => volSkillIds.includes(id));
+        if (matchedIds.length > 0) {
+          const skillsRes = await pool.query(
+            `SELECT skill_id, skill_name FROM skills WHERE skill_id = ANY($1::int[])`,
+            [matchedIds]
+          );
+          matchedSkills = (skillsRes.rows || []).map(s => s.skill_name);
+        }
+      } catch (e) {
+        console.error('Failed to compute matched skills for SSE enrichment', e);
+      }
+
+      // Enrich: volunteer full name
+      let volunteer_full_name = null;
+      try {
+        const vpRes = await pool.query(
+          `SELECT full_name FROM volunteerprofile WHERE user_id = $1`,
+          [volunteer_id]
+        );
+        if (vpRes && vpRes.rows && vpRes.rows[0]) volunteer_full_name = vpRes.rows[0].full_name;
+      } catch (e) {
+        // ignore
+      }
+
+      const enriched = {
+        ...newRow,
+        ...eventInfo,
+        matched_skills: matchedSkills,
+        volunteer_full_name,
+        event_skill_ids: eventInfo.event_skill_ids || []
+      };
+
+      broadcast(enriched);
     } catch (e) {
       console.error('SSE broadcast failed', e);
     }
