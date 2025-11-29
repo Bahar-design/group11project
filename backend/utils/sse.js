@@ -1,7 +1,10 @@
 // Simple SSE helper used by routes and controllers to share client set
 const clients = new Set();
+let lastBroadcast = null;
 
 function broadcast(obj) {
+  // store last broadcast for quick debugging
+  lastBroadcast = obj;
   const payload = typeof obj === 'string' ? obj : JSON.stringify(obj);
   for (const c of Array.from(clients)) {
     try {
@@ -13,9 +16,13 @@ function broadcast(obj) {
       c.res.write(`data: ${payload}\n\n`);
     } catch (e) {
       // remove client on write failure
-      try { clients.delete(c); } catch(_){}
+      try { clients.delete(c); } catch(_){ }
     }
   }
 }
 
-module.exports = { clients, broadcast };
+function getLastBroadcast() {
+  return lastBroadcast;
+}
+
+module.exports = { clients, broadcast, getLastBroadcast };

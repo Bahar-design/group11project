@@ -94,12 +94,14 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
   }, [user]);
 
 
+  const displayName = volunteerName || (history[0] && (history[0].volunteer_name || history[0].volunteer_full_name)) || '';
+
   return (
     <div>
       <Header isLoggedIn={isLoggedIn} user={user} onLogout={onLogout} currentPage="history" />
 
       <div style={{ margin: "30px 60px" }}>
-  <h1>{volunteerName ? `${volunteerName}'s Volunteer History` : 'Your Volunteer History'}</h1>
+  <h1>{displayName ? `${displayName}'s Impact Story` : 'Your Impact Story'}</h1>
 
         {loading ? (
           <p>Loading history...</p>

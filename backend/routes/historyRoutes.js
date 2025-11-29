@@ -9,7 +9,7 @@ const {
 
 const router = express.Router();
 
-const { clients: sseClients } = require('../utils/sse');
+const { clients: sseClients, getLastBroadcast } = require('../utils/sse');
 
 router.get('/stream', (req, res) => {
   // Headers for SSE
@@ -34,6 +34,16 @@ router.get('/stream', (req, res) => {
     sseClients.delete(client);
   });
 });
+
+  // Debug endpoint to return last broadcasted payload (useful to check deployed server state)
+  router.get('/debug/last-broadcast', (req, res) => {
+    try {
+      const last = getLastBroadcast();
+      res.status(200).json({ lastBroadcast: last });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to retrieve last broadcast.' });
+    }
+  });
 
 // GET all volunteer history
 router.get('/', getVolunteerHistory);

@@ -545,6 +545,13 @@ exports.createVolunteerRecord = async (req, res) => {
         event_skill_ids: eventInfo.event_skill_ids || []
       };
 
+      // Debug: log enriched payload so deployed hosts can confirm what's sent
+      try {
+        console.log('SSE enriched payload:', JSON.stringify(enriched));
+      } catch (e) {
+        console.log('SSE enriched payload (non-serializable)');
+      }
+
       broadcast(enriched);
     } catch (e) {
       console.error('SSE broadcast failed', e);
