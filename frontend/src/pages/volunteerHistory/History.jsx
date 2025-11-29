@@ -11,10 +11,19 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
 
   useEffect(() => {
     const fetchHistory = async () => {
+
+
+      if (!user?.id) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/volunteer-history/my/${user.id}`);
+
+        /*
       if (!user?.volunteer_id) return;
 
       try {
         const res = await fetch(`${API_BASE}/api/volunteer-history/my/${user.volunteer_id}`);
+        */
         if (!res.ok) throw new Error("Failed to fetch history");
         const data = await res.json();
         setHistory(data);
