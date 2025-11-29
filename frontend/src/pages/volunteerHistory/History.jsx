@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
 import API_BASE from "../../lib/apiBase";
-import "./volunteerHistory.css";
+import "./History.css";
 
 export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
   const [history, setHistory] = useState([]);
