@@ -28,6 +28,14 @@ router.get('/stream', (req, res) => {
   const id = Date.now();
   const client = { id, res };
   sseClients.add(client);
+  // If test clients set a special header, close immediately to avoid hanging unit tests
+  if (req.headers['x-test-sse-close']) {
+    // write a goodbye and end
+    res.write(': test-close\n\n');
+    res.end();
+    sseClients.delete(client);
+    return;
+  }
 
   // keep the connection open
   req.on('close', () => {

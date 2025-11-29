@@ -37,7 +37,8 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
 */
 
   useEffect(() => {
-    const myUserId = user?.user_id || user?.id || user?.userId || null;
+    // accept multiple possible id shapes that might come from different auth flows
+    const myUserId = user?.user_id || user?.id || user?.userId || user?.volunteer_id || user?.volId || user?.volunteerId || null;
     if (!myUserId) {
       // ensure we don't stay stuck on the loading screen when no user id is available
       setMessage("Please log in to view your volunteer history.");
@@ -49,14 +50,18 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
 
     const fetchHistory = async () => {
       try {
-  const res = await fetch(`${API_BASE}/api/volunteer-history/my/${myUserId}`);
+        const res = await fetch(`${API_BASE}/api/volunteer-history/my/${myUserId}`);
         if (!res.ok) throw new Error("Failed to fetch history");
 
         const data = await res.json();
-        // API returns { rows, volunteer_full_name }
-        const rows = data.rows || data;
+        // API commonly returns { rows, volunteer_full_name } but be defensive
+        const rows = Array.isArray(data.rows) ? data.rows : (Array.isArray(data) ? data : []);
         setHistory(rows);
-        if (data.volunteer_full_name) setVolunteerName(data.volunteer_full_name);
+        // try multiple fallback sources for volunteer's display name
+        const nameFromPayload = data.volunteer_full_name || (rows[0] && (rows[0].volunteer_full_name || rows[0].volunteer_name));
+        const nameFromUser = user?.full_name || user?.fullName || user?.name;
+        if (nameFromPayload) setVolunteerName(nameFromPayload);
+        else if (nameFromUser) setVolunteerName(nameFromUser);
       } catch (err) {
         console.error(err);
         setMessage("Failed to load volunteer history");
@@ -72,11 +77,16 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
       evtSource = new EventSource(`${API_BASE.replace(/\/$/, '')}/api/volunteer-history/stream`);
       evtSource.onmessage = (e) => {
         try {
-          const newRow = JSON.parse(e.data);
-          // Only append rows relevant to this user
-          if (Number(newRow.volunteer_id) === Number(myUserId)) {
-            // To compute matched skills on frontend, rely on returned fields if present
-            setHistory((prev) => [newRow, ...prev]);
+          const payload = JSON.parse(e.data);
+          // payload may be a single enriched row or an object with rows
+          if (Array.isArray(payload.rows)) {
+            const relevant = payload.rows.filter(r => Number(r.volunteer_id) === Number(myUserId));
+            if (relevant.length) setHistory(prev => [...relevant, ...prev]);
+            // if payload includes volunteer_full_name, update title
+            if (payload.volunteer_full_name) setVolunteerName(payload.volunteer_full_name);
+          } else if (payload && payload.volunteer_id && Number(payload.volunteer_id) === Number(myUserId)) {
+            setHistory(prev => [payload, ...prev]);
+            if (payload.volunteer_full_name) setVolunteerName(payload.volunteer_full_name || volunteerName);
           }
         } catch (err) {
           // ignore JSON parse errors

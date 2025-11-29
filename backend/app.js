@@ -30,9 +30,9 @@ const allowedOrigins = ['http://localhost:5173', 'https://group11project.vercel.
 const parts = (FRONTEND_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
 parts.forEach(p => allowedOrigins.push(p));
 
-// If FRONTEND_ORIGIN is not set (no extra parts), we'll allow all origins to ease deployment/testing.
+// Do NOT allow all origins by default during tests; keep a strict allow-list.
 // In production you should set FRONTEND_ORIGIN and restrict origins for security.
-const allowAllOrigins = parts.length === 0;
+const allowAllOrigins = false;
 app.use(cors({
   origin: function (origin, callback) {
     // If origin is missing (curl, server-to-server) or we allow all, permit
