@@ -66,7 +66,9 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         setError("");
 
         // 3️⃣ Fetch matched events (this was already working before)
-        const matchesRes = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
+       // const matchesRes = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
+        const matchesRes = await fetch(`${API_BASE}/api/matches/${currentUser.user_id}`);
+
         if (!matchesRes.ok) {
           const text = await matchesRes.text();
           throw new Error(`Failed to load matches: ${matchesRes.status} ${text}`);
