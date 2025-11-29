@@ -37,8 +37,31 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
 */
 
   useEffect(() => {
-    // accept multiple possible id shapes that might come from different auth flows
-    const myUserId = user?.user_id || user?.id || user?.userId || user?.volunteer_id || user?.volId || user?.volunteerId || null;
+    // Accept multiple possible id shapes that might come from different auth flows.
+    // Match the behavior used in MatchMaking.jsx: prefer volunteer_id from profile cache when available.
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        currentUser = JSON.parse(localStorage.getItem('user'));
+      } catch (e) {
+        currentUser = null;
+      }
+    }
+
+    let myUserId = null;
+    // prefer explicit volunteer_id from the user object
+    if (currentUser) myUserId = currentUser.volunteer_id || null;
+
+    // fallback: check cached profile (MatchMaking uses 'hh_userProfile')
+    if (!myUserId) {
+      try {
+        const cachedProfile = JSON.parse(localStorage.getItem('hh_userProfile'));
+        if (cachedProfile?.volunteer_id) myUserId = cachedProfile.volunteer_id;
+      } catch { /* ignore */ }
+    }
+
+    // final fallback: user id shapes (user_id, id, userId)
+    if (!myUserId && currentUser) myUserId = currentUser.user_id || currentUser.id || currentUser.userId || null;
     if (!myUserId) {
       // ensure we don't stay stuck on the loading screen when no user id is available
       setMessage("Please log in to view your volunteer history.");
