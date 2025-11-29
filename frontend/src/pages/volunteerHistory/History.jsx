@@ -49,19 +49,25 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
     }
 
     let myUserId = null;
-    // prefer explicit volunteer_id from the user object
-    if (currentUser) myUserId = currentUser.volunteer_id || null;
+    // Prefer authoritative user id shapes that map to volunteer_history.volunteer_id
+    if (currentUser) myUserId = currentUser.user_id || currentUser.id || currentUser.userId || null;
 
-    // fallback: check cached profile (MatchMaking uses 'hh_userProfile')
+    // Fallback: check cached profile (MatchMaking uses 'hh_userProfile') - it may contain user_id or volunteer_id
     if (!myUserId) {
       try {
         const cachedProfile = JSON.parse(localStorage.getItem('hh_userProfile'));
-        if (cachedProfile?.volunteer_id) myUserId = cachedProfile.volunteer_id;
+        if (cachedProfile?.user_id) myUserId = cachedProfile.user_id;
+        else if (cachedProfile?.volunteer_id) myUserId = cachedProfile.volunteer_id;
       } catch { /* ignore */ }
     }
 
-    // final fallback: user id shapes (user_id, id, userId)
-    if (!myUserId && currentUser) myUserId = currentUser.user_id || currentUser.id || currentUser.userId || null;
+    // Last fallback: legacy volunteer_id placed on the user object
+    if (!myUserId && currentUser) myUserId = currentUser.volunteer_id || null;
+
+    // Helpful debug log — when deployed you can open DevTools Console and confirm which id the History page uses
+    try {
+      console.log('History resolved volunteer id:', myUserId);
+    } catch (e) { /* ignore */ }
     if (!myUserId) {
       // ensure we don't stay stuck on the loading screen when no user id is available
       setMessage("Please log in to view your volunteer history.");
