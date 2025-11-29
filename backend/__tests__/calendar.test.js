@@ -2,38 +2,33 @@ const request = require('supertest');
 const app = require('../app');
 
 describe('Calendar API', () => {
-  it('GET /api/calendar returns all calendar events', async () => {
+  it('GET /api/calendar returns all events', async () => {
     const res = await request(app).get('/api/calendar');
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThanOrEqual(0);
   });
 
-  it('POST /api/calendar creates a new calendar event', async () => {
-    const calendarEvent = {
-      title: 'Community Meeting',
+  it('POST /api/calendar creates a new event', async () => {
+    const event = {
+      event_name: 'Community Meeting',
       description: 'Discuss upcoming events',
-      date: '2025-10-20',
+      event_date: '2025-10-20',
       location: 'Community Center',
-      attendees: ['Alice', 'Bob']
+      max_volunteers: 50
     };
 
     const res = await request(app)
       .post('/api/calendar')
-      .send(calendarEvent);
+      .send(event);
 
     expect(res.statusCode).toBe(201);
-    expect(res.body.title).toBe('Community Meeting');
-    expect(res.body.attendees).toContain('Alice');
+    expect(res.body.event_name).toBe('Community Meeting');
+    expect(res.body.location).toBe('Community Center');
   });
 
-  it('POST /api/calendar fails on invalid data', async () => {
+  it('POST /api/calendar fails when missing required fields', async () => {
     const invalidEvent = {
-      title: '',
-      description: '',
-      date: '',
-      location: '',
-      attendees: []
+      description: 'No name or date'
     };
 
     const res = await request(app)
@@ -45,13 +40,13 @@ describe('Calendar API', () => {
   });
 
   it('PUT /api/calendar/:id updates an event', async () => {
-    // Create an event first
+    // Create an event to update
     const event = {
-      title: 'Beach Cleanup',
+      event_name: 'Beach Cleanup',
       description: 'Volunteer cleanup event',
-      date: '2025-10-25',
+      event_date: '2025-10-25',
       location: 'Santa Monica Beach',
-      attendees: ['John']
+      max_volunteers: 20
     };
 
     const createRes = await request(app)
@@ -60,25 +55,24 @@ describe('Calendar API', () => {
 
     const id = createRes.body.id;
 
-    // Update the event
-    const updated = { ...event, title: 'Beach Cleanup (Updated)' };
+    // Now update it
+    const updatedData = { event_name: 'Beach Cleanup (Updated)' };
 
     const res = await request(app)
       .put(`/api/calendar/${id}`)
-      .send(updated);
+      .send(updatedData);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.title).toBe('Beach Cleanup (Updated)');
+    expect(res.body.event_name).toBe('Beach Cleanup (Updated)');
   });
 
   it('DELETE /api/calendar/:id deletes an event', async () => {
-    // Create an event to delete
     const event = {
-      title: 'To Delete',
+      event_name: 'To Delete',
       description: 'Test deletion event',
-      date: '2025-11-15',
+      event_date: '2025-11-15',
       location: 'Library Hall',
-      attendees: ['Eve']
+      max_volunteers: 10
     };
 
     const createRes = await request(app)
@@ -87,10 +81,9 @@ describe('Calendar API', () => {
 
     const id = createRes.body.id;
 
-    // Delete it
     const res = await request(app).delete(`/api/calendar/${id}`);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.title).toBe('To Delete');
+    expect(res.body.event_name).toBe('To Delete');
   });
 });

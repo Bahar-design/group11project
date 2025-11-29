@@ -1,9 +1,11 @@
-const pool = require('../db'); // adjust path as needed
+const pool = require('../db');
 
 // GET all events
 exports.getAllEvents = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM calendar ORDER BY event_date ASC');
+    const result = await pool.query(
+      'SELECT * FROM eventdetails ORDER BY event_date ASC'
+    );
     res.status(200).json(result.rows);
   } catch (err) {
     console.error(err);
@@ -21,7 +23,7 @@ exports.createEvent = async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO calendar (event_name, event_date, location, description, max_volunteers)
+      `INSERT INTO eventdetails (event_name, event_date, location, description, max_volunteers)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
       [event_name, event_date, location, description, max_volunteers]
@@ -41,13 +43,13 @@ exports.updateEvent = async (req, res) => {
     const { event_name, event_date, location, description, max_volunteers } = req.body;
 
     const result = await pool.query(
-      `UPDATE calendar
+      `UPDATE eventdetails
        SET event_name = COALESCE($1, event_name),
            event_date = COALESCE($2, event_date),
            location = COALESCE($3, location),
            description = COALESCE($4, description),
            max_volunteers = COALESCE($5, max_volunteers)
-       WHERE event_id = $6
+       WHERE id = $6
        RETURNING *`,
       [event_name, event_date, location, description, max_volunteers, id]
     );
@@ -68,7 +70,10 @@ exports.deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query('DELETE FROM calendar WHERE event_id = $1 RETURNING *', [id]);
+    const result = await pool.query(
+      'DELETE FROM eventdetails WHERE id = $1 RETURNING *',
+      [id]
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Event not found.' });
@@ -81,10 +86,13 @@ exports.deleteEvent = async (req, res) => {
   }
 };
 
-// rename function
+// Attend event (leave as is)
 exports.attendEvent = async (req, res) => {
   const { volunteer_id, event_id } = req.body;
-  if (!volunteer_id || !event_id) return res.status(400).json({ error: "Missing volunteer_id or event_id" });
+
+  if (!volunteer_id || !event_id) {
+    return res.status(400).json({ error: "Missing volunteer_id or event_id" });
+  }
 
   try {
     const result = await pool.query(
@@ -105,4 +113,3 @@ exports.attendEvent = async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 };
-
