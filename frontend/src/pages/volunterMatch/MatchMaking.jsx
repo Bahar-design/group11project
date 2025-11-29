@@ -13,8 +13,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
   const [joinedMap, setJoinedMap] = useState({}); // event_id -> { joined, history_id }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [debugVolunteerId, setDebugVolunteerId] = useState(null);
-  const [debugHistory, setDebugHistory] = useState([]);
+  
 
   useEffect(() => {
     // 1️⃣ Get current user (props or localStorage)
@@ -33,8 +32,9 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       return;
     }
 
-    // 2️⃣ Try to find volunteer_id from multiple places
-    let volunteerId = currentUser.volunteer_id || null;
+  // 2️⃣ Try to find volunteer identifier from multiple places
+  // Prefer authoritative user_id/id shapes that map to volunteer_history.volunteer_id
+  let volunteerId = currentUser.user_id || currentUser.id || null;
 
     // Fallback: check cached profile if your app stores it
     if (!volunteerId) {
@@ -50,10 +50,9 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       }
     }
 
-    // Final fallback: use user.id / user.user_id like you had originally.
-    // This matches the behavior from when matches were already working.
+    // Fallback: legacy volunteer_id property
     if (!volunteerId) {
-      volunteerId = currentUser.id || currentUser.user_id;
+      volunteerId = currentUser.volunteer_id || null;
     }
 
     if (!volunteerId) {
@@ -62,8 +61,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       return;
     }
 
-    // expose resolved id for debugging on deployed site
-    setDebugVolunteerId(volunteerId);
+  // resolved volunteer id will be used below; no debug banner
 
     async function fetchData() {
       try {
@@ -107,8 +105,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           console.warn("Error loading volunteer history:", e);
         }
 
-        // publish debug history for UI
-        setDebugHistory(history);
+  // no debug UI; use history for joinedMap
 
         // 5️⃣ Build joinedMap: event_id -> { joined: true, history_id }
         const map = {};
@@ -142,10 +139,7 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       isLoggedIn={isLoggedIn}
       onLogout={onLogout}
     >
-      {/* Debug panel (remove after troubleshooting): HH_DEBUG_VOL_ID */}
-      <div style={{ padding: 8, background: '#fff3cd', color: '#856404', textAlign: 'center' }}>
-        <strong>Debug</strong>: resolved volunteer id: {String(debugVolunteerId)} — history rows: {debugHistory?.length ?? 0}
-      </div>
+      
       <div className="min-h-screen bg-slate-50">
         <Hero />
         <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">

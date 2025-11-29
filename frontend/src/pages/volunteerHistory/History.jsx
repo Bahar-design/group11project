@@ -9,7 +9,7 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [volunteerName, setVolunteerName] = useState("");
-  const [resolvedIdForDebug, setResolvedIdForDebug] = useState(null);
+  
 
   /*
   useEffect(() => {
@@ -65,11 +65,7 @@ export default function VolunteerHistory({ user, isLoggedIn, onLogout }) {
     // Last fallback: legacy volunteer_id placed on the user object
     if (!myUserId && currentUser) myUserId = currentUser.volunteer_id || null;
 
-    // Expose resolved id in state so the deployed UI shows it even if console logs are hidden
-    setResolvedIdForDebug(myUserId);
-    try {
-      console.log('History resolved volunteer id:', myUserId);
-    } catch (e) { /* ignore */ }
+    // resolved volunteer id available in myUserId; do not leak debug UI
     if (!myUserId) {
       // ensure we don't stay stuck on the loading screen when no user id is available
       setMessage("Please log in to view your volunteer history.");

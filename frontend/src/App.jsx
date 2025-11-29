@@ -21,6 +21,7 @@ import Calendar from './pages/calendar/calendar';
 import MatchMaking from "./pages/volunterMatch/MatchMaking";
 import UserProfiles from "./pages/user_profiles/userProfile";
 import HomePage from './pages/homepage/HomePage';
+import VolunteerHistory from './pages/volunteerHistory/History.jsx';
 import EventsPage from './pages/events/Events';
 import ReportingModule from './pages/reports/reportingModule';
 import About from "./pages/about/about.jsx";
@@ -82,6 +83,11 @@ export default function App() {
           } />
           <Route path="/calendar" element={<Calendar isLoggedIn={isLoggedIn} onLogout={handleLogout} user={user} />} />
           <Route path="/match-making" element={<MatchMaking isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />} />
+          <Route path="/history" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} authChecked={authChecked}>
+              <VolunteerHistory isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
+          } />
         </Routes>
       </Router>
     );

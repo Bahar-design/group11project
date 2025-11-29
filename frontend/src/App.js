@@ -1,7 +1,7 @@
 // App.js
 import React, { useState } from "react";
 import HomePage from "./HomePage";
-import VolunteerHistory from "./VolunteerHistory";
+import VolunteerHistory from "./pages/volunteerHistory/History";
 import './App.css';
 
 function App() {
