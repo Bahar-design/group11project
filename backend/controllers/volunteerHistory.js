@@ -345,32 +345,39 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
     }
 
     let result;
+    let treatedAsVolunteerProfile = false;
+    // First, try to treat the param as volunteerprofile.volunteer_id
     try {
       result = await pool.query(
         `
         SELECT
           vh.*,
-          COALESCE(vp.full_name, 'Unknown') AS volunteer_name,
+          vp.full_name AS volunteer_name,
           ed.event_name,
           ed.description,
           ed.location,
           ed.skill_id AS event_skill_ids,
           ed.urgency,
           ed.event_date
-        FROM volunteer_history vh
-        LEFT JOIN volunteerprofile vp 
-          ON vp.user_id = vh.volunteer_id     
+        FROM volunteerprofile vp
+        JOIN volunteer_history vh
+          ON vh.volunteer_id = vp.user_id
         JOIN eventdetails ed
           ON vh.event_id = ed.event_id
-        WHERE vh.volunteer_id = $1           
+        WHERE vp.volunteer_id = $1
         ORDER BY vh.signup_date DESC
         `,
         [volunteer_id]
       );
+      treatedAsVolunteerProfile = true;
     } catch (primaryErr) {
-      // Primary query failed (maybe due to treating param as volunteerprofile.volunteer_id).
-      // Attempt fallback: treat the param as user_id stored in vh.volunteer_id
+      // If the DB call itself failed (not just returned empty), log and continue to fallback
       console.error('Primary volunteer query failed, attempting fallback:', primaryErr);
+      // fallback below
+    }
+
+    // If first query returned no rows, or an error occurred, try treating param as vh.volunteer_id (user_id)
+    if (!result || result.rows.length === 0) {
       result = await pool.query(
         `
         SELECT
@@ -389,6 +396,7 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
         `,
         [volunteer_id]
       );
+      treatedAsVolunteerProfile = false;
     }
 
     const rows = result.rows;
@@ -415,15 +423,27 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
       };
     }));
 
-    // Also fetch volunteer full_name for header display
+    // Also fetch volunteer full_name for header display. Try to pick the correct lookup
     let volunteer_full_name = null;
     try {
-      const vpRes = await pool.query(
-        `SELECT full_name FROM volunteerprofile WHERE user_id = $1`,
-        [volunteer_id]
-      );
-      if (vpRes && Array.isArray(vpRes.rows) && vpRes.rows[0]) {
-        volunteer_full_name = vpRes.rows[0].full_name || null;
+      if (treatedAsVolunteerProfile) {
+        // param is volunteerprofile.volunteer_id
+        const vpRes = await pool.query(
+          `SELECT full_name FROM volunteerprofile WHERE volunteer_id = $1`,
+          [volunteer_id]
+        );
+        if (vpRes && Array.isArray(vpRes.rows) && vpRes.rows[0]) {
+          volunteer_full_name = vpRes.rows[0].full_name || null;
+        }
+      } else {
+        // param is user_id stored in volunteer_history.volunteer_id
+        const vpRes = await pool.query(
+          `SELECT full_name FROM volunteerprofile WHERE user_id = $1`,
+          [volunteer_id]
+        );
+        if (vpRes && Array.isArray(vpRes.rows) && vpRes.rows[0]) {
+          volunteer_full_name = vpRes.rows[0].full_name || null;
+        }
       }
     } catch (e) {
       // ignore errors fetching profile name; return null instead
