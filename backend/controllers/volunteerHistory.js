@@ -76,6 +76,59 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
   }
 };
 
+// DEBUG helper: inspect mappings and both query strategies for given id
+exports.inspectVolunteerMapping = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: 'Missing id param' });
+
+    const out = { param: id };
+
+    // 1) Treat id as volunteerprofile.volunteer_id -> find corresponding user_id and vh rows
+    try {
+      const vpToUser = await pool.query(
+        `SELECT volunteer_id, user_id, full_name FROM volunteerprofile WHERE volunteer_id = $1`,
+        [id]
+      );
+      out.volunteerprofile = vpToUser.rows || [];
+      if (vpToUser.rows && vpToUser.rows[0]) {
+        const userId = vpToUser.rows[0].user_id;
+        out.volunteerprofile_user_id = userId;
+        const vhRows = await pool.query(
+          `SELECT * FROM volunteer_history WHERE volunteer_id = $1 ORDER BY signup_date DESC`,
+          [userId]
+        );
+        out.vh_for_volunteerprofile = vhRows.rows || [];
+      }
+    } catch (e) {
+      out.volunteerprofile_error = String(e.message || e);
+    }
+
+    // 2) Treat id as user_id stored in volunteer_history.volunteer_id
+    try {
+      const vhDirect = await pool.query(
+        `SELECT * FROM volunteer_history WHERE volunteer_id = $1 ORDER BY signup_date DESC`,
+        [id]
+      );
+      out.vh_direct = vhDirect.rows || [];
+
+      // also try to find a volunteerprofile for this user_id
+      const vp = await pool.query(
+        `SELECT volunteer_id, user_id, full_name FROM volunteerprofile WHERE user_id = $1`,
+        [id]
+      );
+      out.volunteerprofile_for_user = vp.rows || [];
+    } catch (e) {
+      out.vh_direct_error = String(e.message || e);
+    }
+
+    res.status(200).json(out);
+  } catch (err) {
+    console.error('inspectVolunteerMapping error:', err);
+    res.status(500).json({ error: 'Failed to inspect mapping' });
+  }
+};
+
 // POST create a new volunteer record
 // POST create a new volunteer record
 exports.createVolunteerRecord = async (req, res) => {

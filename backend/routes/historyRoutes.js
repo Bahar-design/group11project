@@ -1,11 +1,12 @@
 const express = require('express');
+const historyController = require('../controllers/volunteerHistory');
 const {
   getVolunteerHistory,
   getVolunteerHistoryByVolunteer,
   createVolunteerRecord,
   updateVolunteerRecord,
   deleteVolunteerRecord
-} = require('../controllers/volunteerHistory');
+} = historyController;
 
 const router = express.Router();
 
@@ -52,6 +53,14 @@ router.get('/stream', (req, res) => {
       res.status(500).json({ error: 'Failed to retrieve last broadcast.' });
     }
   });
+
+  // Inspect mapping and fallback queries for a given id (controller may not export this in some test stubs)
+  if (typeof historyController.inspectVolunteerMapping === 'function') {
+    router.get('/inspect/:id', historyController.inspectVolunteerMapping);
+  } else {
+    // provide a safe placeholder handler so router initialization never crashes in tests
+    router.get('/inspect/:id', (req, res) => res.status(404).json({ error: 'inspectVolunteerMapping not available' }));
+  }
 
 // GET all volunteer history
 router.get('/', getVolunteerHistory);
