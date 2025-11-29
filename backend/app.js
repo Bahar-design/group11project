@@ -30,18 +30,20 @@ const allowedOrigins = ['http://localhost:5173', 'https://group11project.vercel.
 const parts = (FRONTEND_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
 parts.forEach(p => allowedOrigins.push(p));
 
-// If FRONTEND_ORIGIN is not set, allow all origins (useful for deployed frontend without env configured).
-// In production it's recommended to set FRONTEND_ORIGIN to the allowed origin(s).
+// If FRONTEND_ORIGIN is not set (no extra parts), we'll allow all origins to ease deployment/testing.
+// In production you should set FRONTEND_ORIGIN and restrict origins for security.
+const allowAllOrigins = parts.length === 0;
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      // Return an error so the CORS middleware will trigger our error handler.
-      const err = new Error('Not allowed by CORS');
-      err.status = 400;
-      callback(err);
+    // If origin is missing (curl, server-to-server) or we allow all, permit
+    if (!origin || allowAllOrigins || allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+    // Otherwise reject and log for diagnostics
+    console.warn('Blocked CORS origin:', origin);
+    const err = new Error('Not allowed by CORS');
+    err.status = 400;
+    return callback(err);
   }
 }));
 

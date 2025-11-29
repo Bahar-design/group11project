@@ -18,6 +18,11 @@ router.get('/stream', (req, res) => {
     'Cache-Control': 'no-cache',
     'Content-Type': 'text/event-stream'
   });
+  res.status(200);
+  // clients should retry in 3 seconds if the connection drops
+  res.write('retry: 3000\n');
+  // send a comment to open the stream
+  res.write(': connected\n\n');
   res.flushHeaders && res.flushHeaders();
 
   const id = Date.now();
