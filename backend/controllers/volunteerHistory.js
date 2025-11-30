@@ -230,8 +230,11 @@ exports.createVolunteerRecord = async (req, res) => {
     let volunteerName = volRes?.rows && volRes.rows[0] ? (volRes.rows[0].full_name || "Volunteer") : "Volunteer";
     const volunteerEmail = volRes?.rows && volRes.rows[0] ? volRes.rows[0].user_email : undefined;
 
+    // Note: some DB schemas do not include an `event_skill_ids` column on eventdetails.
+    // We avoid selecting that non-existent column and instead use the event_skills
+    // table as a reliable source for skill ids (there's an existing fallback below).
     const eventRes = await pool.query(
-      `SELECT event_id, event_name, location, event_date, event_skill_ids FROM eventdetails WHERE event_id = $1`,
+      `SELECT event_id, event_name, location, event_date FROM eventdetails WHERE event_id = $1`,
       [event_id]
     );
     const eventRow = eventRes?.rows?.[0] || {};
