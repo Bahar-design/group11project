@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1764464875577" clover="3.2.0">
+  <project timestamp="1764464875578" name="All files">
+    <metrics statements="38" coveredstatements="36" conditionals="6" coveredconditionals="6" methods="6" coveredmethods="5" elements="50" coveredelements="47" complexity="0" loc="38" ncloc="38" packages="1" files="1" classes="1"/>
+    <file name="historyRoutes.js" path="C:\Users\bahar\group11project\backend\routes\historyRoutes.js">
+      <metrics statements="38" coveredstatements="36" conditionals="6" coveredconditionals="6" methods="6" coveredmethods="5"/>
+      <line num="1" count="25" type="stmt"/>
+      <line num="2" count="25" type="stmt"/>
+      <line num="9" count="25" type="stmt"/>
+      <line num="11" count="25" type="stmt"/>
+      <line num="13" count="25" type="stmt"/>
+      <line num="15" count="25" type="stmt"/>
+      <line num="17" count="2" type="stmt"/>
+      <line num="22" count="2" type="stmt"/>
+      <line num="24" count="2" type="stmt"/>
+      <line num="26" count="2" type="stmt"/>
+      <line num="27" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="29" count="2" type="stmt"/>
+      <line num="30" count="2" type="stmt"/>
+      <line num="33" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="35" count="1" type="stmt"/>
+      <line num="36" count="1" type="stmt"/>
+      <line num="37" count="1" type="stmt"/>
+      <line num="70" count="0" type="stmt"/>
+      <line num="71" count="0" type="stmt"/>
+      <line num="76" count="25" type="stmt"/>
+      <line num="77" count="2" type="stmt"/>
+      <line num="78" count="2" type="stmt"/>
+      <line num="79" count="1" type="stmt"/>
+      <line num="81" count="1" type="stmt"/>
+      <line num="86" count="25" type="cond" truecount="2" falsecount="0"/>
+      <line num="87" count="2" type="stmt"/>
+      <line num="90" count="23" type="stmt"/>
+      <line num="94" count="25" type="stmt"/>
+      <line num="96" count="25" type="stmt"/>
+      <line num="98" count="25" type="stmt"/>
+      <line num="101" count="25" type="stmt"/>
+      <line num="104" count="25" type="stmt"/>
+      <line num="106" count="25" type="stmt"/>
+      <line num="109" count="25" type="stmt"/>
+      <line num="114" count="25" type="stmt"/>
+      <line num="118" count="25" type="stmt"/>
+      <line num="122" count="25" type="stmt"/>
+      <line num="123" count="25" type="stmt"/>
+    </file>
+  </project>
+</coverage>

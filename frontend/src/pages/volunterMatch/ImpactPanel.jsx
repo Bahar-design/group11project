@@ -75,10 +75,39 @@ export default function ImpactPanel({ user }) {
         const data = await res.json();
         // normalize shapes: could be { rows, volunteer_full_name } or an array
         const rows = Array.isArray(data.rows) ? data.rows : (Array.isArray(data) ? data : []);
-        setHistory(rows);
+        // Normalize each row to expected keys so the UI shows matched skills reliably
+        const normalize = (r) => {
+          const event_skill_names = r.event_skill_names || r.eventSkills || r.event_skill_names || r.event_skill_ids && Array.isArray(r.event_skill_ids) ? r.event_skill_ids : [];
+          const matched_skills = r.matched_skills || r.matchedSkills || r.matched || [];
+          const urgencyRaw = r.urgency || r.urgency_level || r.urgency_level_id || r.urgency_id;
+          return {
+            ...r,
+            event_skill_names: Array.isArray(event_skill_names) ? event_skill_names : [],
+            matched_skills: Array.isArray(matched_skills) ? matched_skills : [],
+            urgencyRaw
+          };
+        };
+
+        const normRows = rows.map(normalize);
+        setHistory(normRows);
         // try to set volunteer name from payload
         const nameFromPayload = data.volunteer_full_name || (rows[0] && (rows[0].volunteer_full_name || rows[0].volunteer_name));
         if (nameFromPayload) setVolunteerName(nameFromPayload);
+
+        // Also try to fetch canonical user profile by email (user_table -> volunteerprofile) if available
+        try {
+          const email = currentUser?.user_email || currentUser?.email || null;
+          if (email) {
+            const p = await fetch(`${API_BASE}/api/user-profile?email=${encodeURIComponent(email)}`);
+            if (p.ok) {
+              const pj = await p.json();
+              // API returns 'name' for the profile controller
+              if (pj && pj.name) setVolunteerName(pj.name);
+            }
+          }
+        } catch (e) {
+          // ignore profile fetch failures
+        }
       } catch (err) {
         console.error("Failed to load volunteer history:", err);
         setHistory([]);
@@ -96,12 +125,22 @@ export default function ImpactPanel({ user }) {
       evtSource.onmessage = (e) => {
         try {
           const payload = JSON.parse(e.data);
+          const toRow = (r) => {
+            const event_skill_names = r.event_skill_names || r.eventSkills || r.event_skill_ids || [];
+            const matched_skills = r.matched_skills || r.matchedSkills || r.matched || [];
+            return {
+              ...r,
+              event_skill_names: Array.isArray(event_skill_names) ? event_skill_names : [],
+              matched_skills: Array.isArray(matched_skills) ? matched_skills : []
+            };
+          };
+
           if (Array.isArray(payload.rows)) {
-            const relevant = payload.rows.filter(r => Number(r.volunteer_id) === Number(myUserId));
+            const relevant = payload.rows.map(toRow).filter(r => Number(r.volunteer_id) === Number(myUserId));
             if (relevant.length) setHistory(prev => [...relevant, ...prev]);
             if (payload.volunteer_full_name) setVolunteerName(payload.volunteer_full_name);
           } else if (payload && payload.volunteer_id && Number(payload.volunteer_id) === Number(myUserId)) {
-            setHistory(prev => [payload, ...prev]);
+            setHistory(prev => [toRow(payload), ...prev]);
             if (payload.volunteer_full_name) setVolunteerName(payload.volunteer_full_name || volunteerName);
           }
         } catch (err) { /* ignore parse errors */ }
@@ -139,32 +178,47 @@ export default function ImpactPanel({ user }) {
         <div className="space-y-3">
           {/* Tabular list similar to History.jsx but compact for the side panel */}
           <div className="overflow-auto">
-            <table className="w-full text-sm">
+            <table className="min-w-full text-sm table-auto border-collapse">
               <thead>
                 <tr className="text-left text-xs text-slate-500">
-                  <th className="pb-2">Event Name</th>
-                  <th className="pb-2">Description</th>
-                  <th className="pb-2">Location</th>
-                  <th className="pb-2">Required Skills</th>
-                  <th className="pb-2">Matched Skills</th>
-                  <th className="pb-2">Urgency</th>
-                  <th className="pb-2">Event Date</th>
-                  <th className="pb-2">Signup Date</th>
+                  <th className="pb-2 px-3 border-b border-slate-200">Event Name</th>
+                  <th className="pb-2 px-3 border-b border-slate-200">Description</th>
+                  <th className="pb-2 px-3 border-b border-slate-200">Location</th>
+                  <th className="pb-2 px-3 border-b border-slate-200">Required Skills</th>
+                  <th className="pb-2 px-3 border-b border-slate-200">Matched Skills</th>
+                  <th className="pb-2 px-3 border-b border-slate-200">Urgency</th>
+                  <th className="pb-2 px-3 border-b border-slate-200">Event Date</th>
+                  <th className="pb-2 px-3 border-b border-slate-200">Signup Date</th>
                 </tr>
               </thead>
               <tbody className="text-slate-700">
-                {history.map((h) => (
-                  <tr key={h.history_id || `${h.event_id}-${h.signup_date}`} className="border-t border-slate-100">
-                    <td className="py-2 pr-3">{h.event_name}</td>
-                    <td className="py-2 pr-3">{h.description}</td>
-                    <td className="py-2 pr-3">{h.location}</td>
-                    <td className="py-2 pr-3">{(h.event_skill_names || []).join(', ')}</td>
-                    <td className="py-2 pr-3">{(h.matched_skills || []).join(', ')}</td>
-                    <td className="py-2 pr-3">{h.urgency}</td>
-                    <td className="py-2 pr-3">{h.event_date ? new Date(h.event_date).toLocaleDateString() : '—'}</td>
-                    <td className="py-2 pr-3">{h.signup_date ? new Date(h.signup_date).toLocaleDateString() : '—'}</td>
-                  </tr>
-                ))}
+                {history.map((h) => {
+                  // map urgency raw value to friendly label
+                  const urgencyLabel = (u) => {
+                    if (!u && u !== 0) return '—';
+                    const s = String(u).toLowerCase();
+                    if (['3','critical','high'].includes(s)) return 'Critical';
+                    if (['2','medium','moderate'].includes(s)) return 'Medium';
+                    if (['1','low','minor'].includes(s)) return 'Low';
+                    return String(u);
+                  };
+
+                  const matched = (h.matched_skills && h.matched_skills.length) ? h.matched_skills : (h.matchedSkills && h.matchedSkills.length ? h.matchedSkills : []);
+                  const required = (h.event_skill_names && h.event_skill_names.length) ? h.event_skill_names : (h.eventSkills || []);
+
+                  return (
+                    <tr key={h.history_id || `${h.event_id}-${h.signup_date}`} className="border-t border-slate-100">
+                      <td className="py-2 px-3 align-top border border-slate-100">{h.event_name || `Event #${h.event_id}`}</td>
+                      <td className="py-2 px-3 align-top border border-slate-100 whitespace-normal">{h.description}</td>
+                      <td className="py-2 px-3 align-top border border-slate-100">{h.location}</td>
+                      <td className="py-2 px-3 align-top border border-slate-100">{required.join(', ')}</td>
+                      <td className="py-2 px-3 align-top border border-slate-100">{matched.length ? matched.join(', ') : '—'}</td>
+                      <td className="py-2 px-3 align-top border border-slate-100">{urgencyLabel(h.urgencyRaw || h.urgency)}</td>
+                      <td className="py-2 px-3 align-top border border-slate-100">{h.event_date ? new Date(h.event_date).toLocaleDateString() : '—'}</td>
+                      <td className="py-2 px-3 align-top border border-slate-100">{h.signup_date ? new Date(h.signup_date).toLocaleDateString() : '—'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
