@@ -220,9 +220,10 @@ export default function ImpactPanel({ user }) {
                   const urgencyLabel = (u) => {
                     if (!u && u !== 0) return '—';
                     const s = String(u).toLowerCase();
-                    if (['3','critical','high'].includes(s)) return 'Critical';
-                    if (['2','medium','moderate'].includes(s)) return 'Medium';
-                    if (['1','low','minor'].includes(s)) return 'Low';
+                    if (['4','critical'].includes(s)) return 'Critical';
+                    if (['3','high'].includes(s)) return 'High';
+                    if (['2','medium'].includes(s)) return 'Medium';
+                    if (['1','low'].includes(s)) return 'Low';
                     return String(u);
                   };
 

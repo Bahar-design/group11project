@@ -370,6 +370,7 @@ exports.createVolunteerRecord = async (req, res) => {
         event_name: eventName,
         description: eventRow.description,
         location: eventLoc,
+        urgency: eventRow.urgency,
         event_date: eventDate,
         event_skill_names,
         matched_skills
