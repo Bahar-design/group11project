@@ -468,7 +468,7 @@ exports.deleteVolunteerRecord = async (req, res) => {
           VALUES ($1, $2, $3, TRUE)
           `,
           [
-            "system",
+            "Event Update",
             adminEmail,
             `${volunteerName} has UNJOINED "${event_name}" (Date: ${eventDate}).`
           ]
@@ -487,7 +487,7 @@ exports.deleteVolunteerRecord = async (req, res) => {
           VALUES ($1, $2, $3, TRUE)
           `,
           [
-            "system",
+            "Event Update",
             volunteerEmail,
             `You have been removed from "${event_name}" scheduled on ${eventDate}.`
           ]
