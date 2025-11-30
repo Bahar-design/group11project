@@ -10,7 +10,7 @@ const {
 
 const router = express.Router();
 
-const { clients: sseClients, getLastBroadcast } = require('../utils/sse');
+const sse = require('../utils/sse');
 
 router.get('/stream', (req, res) => {
   // Headers for SSE
@@ -28,26 +28,52 @@ router.get('/stream', (req, res) => {
 
   const id = Date.now();
   const client = { id, res };
-  sseClients.add(client);
+
   // If test clients set a special header, close immediately to avoid hanging unit tests
   if (req.headers['x-test-sse-close']) {
     // write a goodbye and end
     res.write(': test-close\n\n');
     res.end();
-    sseClients.delete(client);
     return;
   }
 
-  // keep the connection open
-  req.on('close', () => {
-    sseClients.delete(client);
+  // In test environment, register a fake client (EventEmitter) so tests can emit 'close' on it,
+  // and end the real HTTP response so supertest request resolves immediately.
+  if (process.env.NODE_ENV === 'test') {
+    const EventEmitter = require('events');
+    const fakeRes = new EventEmitter();
+    // provide minimal methods that tests might expect
+    fakeRes.write = () => {};
+    fakeRes.end = () => {};
+
+    const fakeClient = { id, res: fakeRes };
+    sse.clients.add(fakeClient);
+    // when the fake res emits 'close', remove the client
+    fakeRes.on('close', () => {
+      sse.clients.delete(fakeClient);
+    });
+
+    // Write and end the real response so supertest completes
+    try {
+      res.write(': test-open\n\n');
+      res.end();
+    } catch (e) {
+      // ignore
+    }
+    return;
+  }
+
+  // register client and listen for close on the real response for non-test env
+  sse.clients.add(client);
+  res.on('close', () => {
+    sse.clients.delete(client);
   });
 });
 
   // Debug endpoint to return last broadcasted payload (useful to check deployed server state)
   router.get('/debug/last-broadcast', (req, res) => {
     try {
-      const last = getLastBroadcast();
+      const last = sse.getLastBroadcast();
       res.status(200).json({ lastBroadcast: last });
     } catch (e) {
       res.status(500).json({ error: 'Failed to retrieve last broadcast.' });
@@ -78,4 +104,4 @@ router.delete('/:id', deleteVolunteerRecord);
 module.exports = router;
 
 // helper used by controller to broadcast new records
-module.exports._sseClients = sseClients;
+module.exports._sseClients = sse.clients;

@@ -33,6 +33,7 @@ function ActivityItem({ activity }) {
 export default function ImpactPanel({ user }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [volunteerName, setVolunteerName] = useState("");
 
   useEffect(() => {
     // Accept different id shapes coming from various auth flows
@@ -73,8 +74,11 @@ export default function ImpactPanel({ user }) {
         }
         const data = await res.json();
         // normalize shapes: could be { rows, volunteer_full_name } or an array
-        const rows = Array.isArray(data) ? data : (Array.isArray(data?.rows) ? data.rows : []);
+        const rows = Array.isArray(data.rows) ? data.rows : (Array.isArray(data) ? data : []);
         setHistory(rows);
+        // try to set volunteer name from payload
+        const nameFromPayload = data.volunteer_full_name || (rows[0] && (rows[0].volunteer_full_name || rows[0].volunteer_name));
+        if (nameFromPayload) setVolunteerName(nameFromPayload);
       } catch (err) {
         console.error("Failed to load volunteer history:", err);
         setHistory([]);
@@ -84,31 +88,46 @@ export default function ImpactPanel({ user }) {
     };
 
     fetchHistory();
-  }, [user]);
 
-  // Total impact calculation
-  const totalImpact = {
-    families: history.length * 3, // Example: 3 families per event
-    hours: history.reduce((sum, h) => sum + (Number(h.hours_worked) || 0), 0),
-    items: history.length * 50,   // Example: 50 items per event
-  };
+    // subscribe to SSE stream for live updates (so joins appear immediately)
+    let evtSource;
+    try {
+      evtSource = new EventSource(`${API_BASE.replace(/\/$/, '')}/api/volunteer-history/stream`);
+      evtSource.onmessage = (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          if (Array.isArray(payload.rows)) {
+            const relevant = payload.rows.filter(r => Number(r.volunteer_id) === Number(myUserId));
+            if (relevant.length) setHistory(prev => [...relevant, ...prev]);
+            if (payload.volunteer_full_name) setVolunteerName(payload.volunteer_full_name);
+          } else if (payload && payload.volunteer_id && Number(payload.volunteer_id) === Number(myUserId)) {
+            setHistory(prev => [payload, ...prev]);
+            if (payload.volunteer_full_name) setVolunteerName(payload.volunteer_full_name || volunteerName);
+          }
+        } catch (err) { /* ignore parse errors */ }
+      };
+      evtSource.onerror = () => { /* ignore errors */ };
+    } catch (err) {
+      console.warn('SSE not available for ImpactPanel', err);
+    }
+
+    return () => {
+      if (evtSource) evtSource.close();
+    };
+  }, [user]);
 
   return (
     <SectionCard
       title={
         <div className="flex items-center gap-2">
-          <span>🎉 Your Impact Story</span>
+          <span>🎉 {volunteerName ? `${volunteerName}'s Volunteer History` : 'Your Volunteer History'}</span>
         </div>
       }
       className="h-full"
       right={
         <div className="text-right text-xs">
-          <div className="font-bold text-slate-900">
-            {history.length
-              ? (totalImpact.hours / history.length).toFixed(1)
-              : "—"}
-          </div>
-          <div className="text-slate-500">Avg Hours</div>
+          <div className="font-bold text-slate-900">{history.length}</div>
+          <div className="text-slate-500">Events</div>
         </div>
       }
     >
@@ -118,28 +137,46 @@ export default function ImpactPanel({ user }) {
         <p className="text-sm text-slate-500">No activity found yet.</p>
       ) : (
         <div className="space-y-3">
-          {history.map((a) => (
-            <ActivityItem key={a.history_id || `${a.event_id}-${a.signup_date}`} activity={a} />
-          ))}
+          {/* Tabular list similar to History.jsx but compact for the side panel */}
+          <div className="overflow-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-slate-500">
+                  <th className="pb-2">Event Name</th>
+                  <th className="pb-2">Description</th>
+                  <th className="pb-2">Location</th>
+                  <th className="pb-2">Required Skills</th>
+                  <th className="pb-2">Matched Skills</th>
+                  <th className="pb-2">Urgency</th>
+                  <th className="pb-2">Event Date</th>
+                  <th className="pb-2">Signup Date</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-700">
+                {history.map((h) => (
+                  <tr key={h.history_id || `${h.event_id}-${h.signup_date}`} className="border-t border-slate-100">
+                    <td className="py-2 pr-3">{h.event_name}</td>
+                    <td className="py-2 pr-3">{h.description}</td>
+                    <td className="py-2 pr-3">{h.location}</td>
+                    <td className="py-2 pr-3">{(h.event_skill_names || []).join(', ')}</td>
+                    <td className="py-2 pr-3">{(h.matched_skills || []).join(', ')}</td>
+                    <td className="py-2 pr-3">{h.urgency}</td>
+                    <td className="py-2 pr-3">{h.event_date ? new Date(h.event_date).toLocaleDateString() : '—'}</td>
+                    <td className="py-2 pr-3">{h.signup_date ? new Date(h.signup_date).toLocaleDateString() : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <div className="rounded-xl border border-slate-200 p-3">
             <div className="mb-2 text-sm font-semibold text-slate-800">
               Total Impact This Year
             </div>
-            <div className="grid grid-cols-3 gap-3 text-center text-xs">
+            <div className="grid grid-cols-1 gap-3 text-center text-xs">
               <div className="rounded-lg bg-emerald-50 p-3">
-                <div className="font-bold text-emerald-700">
-                  {totalImpact.families}
-                </div>
-                <div className="text-slate-600">families helped</div>
-              </div>
-              <div className="rounded-lg bg-sky-50 p-3">
-                <div className="font-bold text-sky-700">{totalImpact.hours}h</div>
-                <div className="text-slate-600">hours volunteered</div>
-              </div>
-              <div className="rounded-lg bg-amber-50 p-3">
-                <div className="font-bold text-amber-700">{totalImpact.items}+</div>
-                <div className="text-slate-600">items processed</div>
+                <div className="font-bold text-emerald-700">{history.length}</div>
+                <div className="text-slate-600">events participated</div>
               </div>
             </div>
           </div>
