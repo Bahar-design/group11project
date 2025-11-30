@@ -77,14 +77,27 @@ export default function ImpactPanel({ user }) {
         const rows = Array.isArray(data.rows) ? data.rows : (Array.isArray(data) ? data : []);
         // Normalize each row to expected keys so the UI shows matched skills reliably
         const normalize = (r) => {
-          const event_skill_names = r.event_skill_names || r.eventSkills || r.event_skill_names || r.event_skill_ids && Array.isArray(r.event_skill_ids) ? r.event_skill_ids : [];
-          const matched_skills = r.matched_skills || r.matchedSkills || r.matched || [];
+          // Required skills may come as event_skill_names (names) or event_skill_ids (ids)
+          let event_skill_names = [];
+          if (Array.isArray(r.event_skill_names) && r.event_skill_names.length) event_skill_names = r.event_skill_names;
+          else if (Array.isArray(r.eventSkills) && r.eventSkills.length) event_skill_names = r.eventSkills;
+          else if (Array.isArray(r.event_skill_ids) && r.event_skill_ids.length) event_skill_names = r.event_skill_ids;
+
+          // matched skills should be names (not ids). If the API returns matched ids, we try to map later
+          let matched_skills = [];
+          if (Array.isArray(r.matched_skills) && r.matched_skills.length) matched_skills = r.matched_skills;
+          else if (Array.isArray(r.matchedSkills) && r.matchedSkills.length) matched_skills = r.matchedSkills;
+          else if (Array.isArray(r.matched) && r.matched.length) matched_skills = r.matched;
+
           const urgencyRaw = r.urgency || r.urgency_level || r.urgency_level_id || r.urgency_id;
+
           return {
             ...r,
             event_skill_names: Array.isArray(event_skill_names) ? event_skill_names : [],
             matched_skills: Array.isArray(matched_skills) ? matched_skills : [],
-            urgencyRaw
+            urgencyRaw,
+            // ensure description exists (some SSE payloads may omit it; fallback to empty string)
+            description: r.description || r.event_description || ''
           };
         };
 
@@ -120,20 +133,30 @@ export default function ImpactPanel({ user }) {
 
     // subscribe to SSE stream for live updates (so joins appear immediately)
     let evtSource;
-    try {
+          try {
       evtSource = new EventSource(`${API_BASE.replace(/\/$/, '')}/api/volunteer-history/stream`);
       evtSource.onmessage = (e) => {
         try {
           const payload = JSON.parse(e.data);
+
+          // Helper to convert incoming payload into a normalized row
           const toRow = (r) => {
             const event_skill_names = r.event_skill_names || r.eventSkills || r.event_skill_ids || [];
             const matched_skills = r.matched_skills || r.matchedSkills || r.matched || [];
             return {
               ...r,
               event_skill_names: Array.isArray(event_skill_names) ? event_skill_names : [],
-              matched_skills: Array.isArray(matched_skills) ? matched_skills : []
+              matched_skills: Array.isArray(matched_skills) ? matched_skills : [],
+              description: r.description || r.event_description || '',
+              urgencyRaw: r.urgency || r.urgencyRaw || r.urgency_level || r.urgency_id
             };
           };
+
+          // If payload signals a deletion for a history row, remove it from state
+          if (payload && payload.deleted && payload.history_id) {
+            setHistory(prev => prev.filter(row => String(row.history_id) !== String(payload.history_id)));
+            return;
+          }
 
           if (Array.isArray(payload.rows)) {
             const relevant = payload.rows.map(toRow).filter(r => Number(r.volunteer_id) === Number(myUserId));

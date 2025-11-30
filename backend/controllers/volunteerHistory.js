@@ -234,7 +234,7 @@ exports.createVolunteerRecord = async (req, res) => {
     // We avoid selecting that non-existent column and instead use the event_skills
     // table as a reliable source for skill ids (there's an existing fallback below).
     const eventRes = await pool.query(
-      `SELECT event_id, event_name, location, event_date FROM eventdetails WHERE event_id = $1`,
+      `SELECT event_id, event_name, location, event_date, description, urgency FROM eventdetails WHERE event_id = $1`,
       [event_id]
     );
     const eventRow = eventRes?.rows?.[0] || {};
@@ -511,6 +511,20 @@ exports.deleteVolunteerRecord = async (req, res) => {
     }
 
     // END NOTIFICATIONS FOR UNJOIN EVENT (NEW)
+    // Broadcast deletion so SSE clients can remove row live
+    try {
+      const payload = {
+        history_id: row.history_id,
+        volunteer_id: row.volunteer_id,
+        event_id: row.event_id,
+        deleted: true
+      };
+      broadcast(payload);
+    } catch (e) {
+      // non-fatal
+      console.error('Failed to broadcast deletion SSE:', e);
+    }
+
     res.status(200).json({ message: "Record deleted", deleted: row });
   } catch (err) {
     console.error("deleteVolunteerRecord error:", err);
