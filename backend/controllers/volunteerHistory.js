@@ -62,6 +62,7 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
           FROM event_skills es
           JOIN skills s ON es.skill_id = s.skill_id
           JOIN volunteer_skills vs ON vs.skill_id = es.skill_id
+          -- volunteer_skills.volunteer_id references volunteerprofile.volunteer_id
           WHERE es.event_id = ed.event_id AND vs.volunteer_id = vp.volunteer_id
         ) matched ON true
         WHERE vp.volunteer_id = $1
@@ -87,8 +88,11 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
            LEFT JOIN LATERAL (
              SELECT array_agg(s.skill_name ORDER BY s.skill_name) AS skills
              FROM event_skills es JOIN skills s ON es.skill_id = s.skill_id
-             JOIN volunteer_skills vs ON vs.skill_id = es.skill_id
-             WHERE es.event_id = ed.event_id AND vs.volunteer_id = $1
+            JOIN volunteer_skills vs ON vs.skill_id = es.skill_id
+            -- convert provided user_id ($1) to volunteerprofile.volunteer_id for matching
+            WHERE es.event_id = ed.event_id AND vs.volunteer_id = (
+              SELECT volunteer_id FROM volunteerprofile WHERE user_id = $1
+            )
            ) matched ON true
            WHERE vh.volunteer_id = $1
            ORDER BY vh.signup_date DESC`,
@@ -133,8 +137,10 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
             SELECT array_agg(s.skill_name ORDER BY s.skill_name) AS skills
             FROM event_skills es
             JOIN skills s ON es.skill_id = s.skill_id
-            JOIN volunteer_skills vs ON vs.skill_id = es.skill_id
-            WHERE es.event_id = ed.event_id AND vs.volunteer_id = $1
+              JOIN volunteer_skills vs ON vs.skill_id = es.skill_id
+              WHERE es.event_id = ed.event_id AND vs.volunteer_id = (
+                SELECT volunteer_id FROM volunteerprofile WHERE user_id = $1
+              )
           ) matched ON true
           WHERE vh.volunteer_id = $1
           ORDER BY vh.signup_date DESC
@@ -310,9 +316,19 @@ exports.createVolunteerRecord = async (req, res) => {
       // Fetch volunteer skill ids (defensive)
       let volSkillRows = [];
       try {
+        // volunteer_history.volunteer_id is a user_table.user_id; map to volunteerprofile.volunteer_id
+        let vpId = null;
+        try {
+          const vpRes = await pool.query(`SELECT volunteer_id FROM volunteerprofile WHERE user_id = $1`, [volunteer_id]);
+          vpId = vpRes && Array.isArray(vpRes.rows) && vpRes.rows[0] ? vpRes.rows[0].volunteer_id : null;
+        } catch (_) {
+          vpId = null;
+        }
+
+        const volunteerSkillLookupId = vpId || volunteer_id;
         const volSkillsRes = await pool.query(
           `SELECT skill_id FROM volunteer_skills WHERE volunteer_id = $1`,
-          [volunteer_id]
+          [volunteerSkillLookupId]
         );
         volSkillRows = Array.isArray(volSkillsRes && volSkillsRes.rows) ? volSkillsRes.rows : [];
       } catch (_) {
