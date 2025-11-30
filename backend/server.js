@@ -22,7 +22,8 @@ const { sendEventDayReminders } = require("./controllers/reminders");
 
 //Schedule daily reminders at 7 AM
 //cron.schedule("0 7 * * *", sendEventDayReminders);
-cron.schedule("* * * * *", sendEventDayReminders);     //for testing every minute
+cron.schedule("* * * * *", () => sendEventDayReminders(1));
+
 
 
 // ✅ Test route to confirm DB connection
