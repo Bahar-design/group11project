@@ -243,7 +243,7 @@ exports.createVolunteerRecord = async (req, res) => {
         VALUES ($1, $2, $3, TRUE)
         `,
         [
-          "system",
+          "Event Update",
           adminEmail,
           `${volunteerName} has joined "${eventName}" scheduled on ${eventDate}.`
         ]
@@ -258,7 +258,7 @@ exports.createVolunteerRecord = async (req, res) => {
         VALUES ($1, $2, $3, TRUE)
         `,
         [
-          "system",
+          "Event Update",
           volunteerEmail,
           `Congratulations ${volunteerName}! You joined "${eventName}".\nLocation: ${eventLoc}\nDate: ${eventDate}`
         ]
