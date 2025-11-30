@@ -16,15 +16,6 @@ app.use(
 );
 app.use(express.json());
 
-//debug later?
-const cron = require("node-cron");
-const { sendEventDayReminders } = require("./controllers/reminders");
-
-//Schedule daily reminders at 7 AM
-//cron.schedule("0 7 * * *", sendEventDayReminders);
-cron.schedule("* * * * *", () => sendEventDayReminders(1));
-
-
 
 // ✅ Test route to confirm DB connection
 app.get("/api/db-check", async (req, res) => {
