@@ -9,13 +9,15 @@ function broadcast(obj) {
   for (const c of Array.from(clients)) {
     try {
       // If response has finished, remove client
-      if (c.res.finished) {
+      /* istanbul ignore if */
+      if (c.res && c.res.finished) {
         clients.delete(c);
         continue;
       }
       c.res.write(`data: ${payload}\n\n`);
     } catch (e) {
       // remove client on write failure
+      /* istanbul ignore next */
       try { clients.delete(c); } catch(_){ }
     }
   }

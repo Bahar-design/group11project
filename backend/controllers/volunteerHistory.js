@@ -148,6 +148,16 @@ exports.getVolunteerHistoryByVolunteer = async (req, res) => {
       if (!result || !Array.isArray(result.rows)) result = { rows: [] };
     }
 
+    // Normalize rows: ensure event_skill_names and matched_skills exist and expose volunteer_full_name
+    result.rows = result.rows.map(r => {
+      const row = Object.assign({}, r);
+      row.event_skill_names = Array.isArray(row.event_skill_names) ? row.event_skill_names : [];
+      row.matched_skills = Array.isArray(row.matched_skills) ? row.matched_skills : [];
+      // support different naming from queries
+      row.volunteer_full_name = row.volunteer_full_name || row.volunteer_name || row.full_name || null;
+      return row;
+    });
+
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("getVolunteerHistoryByVolunteer error:", err);
