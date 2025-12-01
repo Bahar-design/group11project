@@ -137,7 +137,8 @@ async function getVolunteers(req, res) {
     // fallback for tests
     try {
       const { users } = require('./loginController');
-      const fallback = users.filter(u => u.type === 'volunteer').map((u, idx) => ({ user_id: idx + 1, email: u.email }));
+      const fallback = users.filter(u => u.type === 'volunteer')
+        .map((u, idx) => ({ user_id: idx + 1, email: u.email }));
       return res.status(200).json(fallback);
     } catch {
       return res.status(200).json([]);
@@ -161,7 +162,8 @@ async function getAdmins(req, res) {
 
     try {
       const { users } = require('./loginController');
-      const fallback = users.filter(u => u.type === 'admin').map((u, idx) => ({ user_id: idx + 1, email: u.email }));
+      const fallback = users.filter(u => u.type === 'admin')
+        .map((u, idx) => ({ user_id: idx + 1, email: u.email }));
       return res.status(200).json(fallback);
     } catch {
       return res.status(200).json([]);
@@ -169,105 +171,6 @@ async function getAdmins(req, res) {
   } catch (err) {
     console.error('Error fetching admins:', err);
     res.status(500).json({ message: 'Server error fetching admins' });
-  }
-}
-
-//get admin inbox
-async function getAdminInbox(req, res) {
-  try {
-    const adminId = parseInt(req.params.adminId);
-    if (Number.isNaN(adminId)) return res.status(400).json({ message: 'Invalid admin id' });
-
-    const userRes = await pool.query('SELECT user_email, user_type FROM user_table WHERE user_id = $1', [adminId]);
-    if (userRes.rows.length === 0 || userRes.rows[0].user_type !== 'admin') {
-      // fallback
-      try {
-        const { users } = require('./loginController');
-        const admin = users.find((u, idx) => idx + 1 === adminId && u.type === 'admin');
-        if (!admin) return res.status(404).json({ message: 'Admin not found' });
-        const inbox = messages.filter(m =>
-          Array.isArray(m.to) ? m.to.includes(admin.email.toLowerCase()) : m.message_to.toLowerCase() === admin.email.toLowerCase()
-        );
-        return res.status(200).json(inbox);
-      } catch {
-        return res.status(404).json({ message: 'Admin not found' });
-      }
-    }
-
-    const email = userRes.rows[0].user_email.trim().toLowerCase();
-    const inboxRes = await pool.query(
-      'SELECT * FROM notifications WHERE LOWER(message_to) = LOWER($1) ORDER BY "message_ID" DESC',
-      [email]
-    );
-    res.status(200).json(inboxRes.rows);
-  } catch (err) {
-    console.error('Error fetching admin inbox:', err);
-    res.status(500).json({ message: 'Server error fetching admin inbox' });
-  }
-}
-
-//get volunteer inbox
-async function getVolunteerInbox(req, res) {
-  try {
-    const volunteerId = parseInt(req.params.volunteerId);
-    if (Number.isNaN(volunteerId)) return res.status(400).json({ message: 'Invalid volunteer id' });
-
-    const userRes = await pool.query('SELECT user_email, user_type FROM user_table WHERE user_id = $1', [volunteerId]);
-    if (userRes.rows.length === 0 || userRes.rows[0].user_type !== 'volunteer') {
-      try {
-        const { users } = require('./loginController');
-        const vol = users.find((u, idx) => idx + 1 === volunteerId && u.type === 'volunteer');
-        if (!vol) return res.status(404).json({ message: 'Volunteer not found' });
-        const inbox = messages.filter(m =>
-          Array.isArray(m.to) ? m.to.includes(vol.email.toLowerCase()) : m.message_to.toLowerCase() === vol.email.toLowerCase()
-        );
-        return res.status(200).json(inbox);
-      } catch {
-        return res.status(404).json({ message: 'Volunteer not found' });
-      }
-    }
-
-    const email = userRes.rows[0].user_email.trim().toLowerCase();
-    const inboxRes = await pool.query(
-      'SELECT * FROM notifications WHERE LOWER(message_to) = LOWER($1) ORDER BY "message_ID" DESC',
-      [email]
-    );
-    res.status(200).json(inboxRes.rows);
-  } catch (err) {
-    console.error('Error fetching volunteer inbox:', err);
-    res.status(500).json({ message: 'Server error fetching volunteer inbox' });
-  }
-}
-
-//get admin inbox by email
-async function getAdminInboxByEmail(req, res) {
-  try {
-    const email = req.params.email;
-    if (!email) return res.status(400).json({ message: 'Email required' });
-    const inboxRes = await pool.query(
-      'SELECT * FROM notifications WHERE LOWER(message_to) = LOWER($1) ORDER BY "message_ID" DESC',
-      [email.trim()]
-    );
-    res.status(200).json(inboxRes.rows);
-  } catch (err) {
-    console.error('Error fetching admin inbox by email:', err);
-    res.status(500).json({ message: 'Server error fetching admin inbox by email' });
-  }
-}
-
-//get volunteer inbox by email
-async function getVolunteerInboxByEmail(req, res) {
-  try {
-    const email = req.params.email;
-    if (!email) return res.status(400).json({ message: 'Email required' });
-    const inboxRes = await pool.query(
-      'SELECT * FROM notifications WHERE LOWER(message_to) = LOWER($1) ORDER BY "message_ID" DESC',
-      [email.trim()]
-    );
-    res.status(200).json(inboxRes.rows);
-  } catch (err) {
-    console.error('Error fetching volunteer inbox by email:', err);
-    res.status(500).json({ message: 'Server error fetching volunteer inbox by email' });
   }
 }
 
@@ -303,10 +206,6 @@ module.exports = {
   markMessageAsSent,
   getVolunteers,
   getAdmins,
-  getAdminInbox,
-  getVolunteerInbox,
-  getAdminInboxByEmail,
-  getVolunteerInboxByEmail,
   searchEmails
 };
 

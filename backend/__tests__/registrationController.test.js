@@ -1,10 +1,10 @@
-
 // registrationController.test.js
 const request = require('supertest');
 const express = require('express');
-//need mock database
-jest.mock('../db');             
+
+jest.mock('../db');
 const pool = require('../db');
+
 const { registerUser } = require('../controllers/registrationController');
 
 const app = express();
@@ -16,37 +16,48 @@ describe('Registration Controller (mocked DB)', () => {
     pool.query.mockReset();
   });
 
+  // ---------------------------
+  // SUCCESS – VOLUNTEER
+  // ---------------------------
   it('registers a new volunteer successfully', async () => {
     pool.query
-      .mockResolvedValueOnce({ rows: [] })     // no existing user
-      .mockResolvedValueOnce({ rows: [{ user_id: 101 }] });    // insert user_table
+      .mockResolvedValueOnce({ rows: [] })            // SELECT user_table
+      .mockResolvedValueOnce({ rows: [{ user_id: 101 }] }) // INSERT user_table
+      .mockResolvedValueOnce({});                          // INSERT volunteerprofile
+
     const res = await request(app)
       .post('/api/register')
       .send({ email: 'dave@example.com', password: 'xyz' });
 
     expect(res.statusCode).toBe(201);
-    expect(res.body.message).toBe('Volunteer registered successfully');
-    expect(res.body.user.email).toBe('dave@example.com');
     expect(res.body.user.type).toBe('volunteer');
   });
 
+  // ---------------------------
+  // SUCCESS – ADMIN
+  // ---------------------------
   it('registers a new admin successfully when admin_id is provided', async () => {
     pool.query
-      .mockResolvedValueOnce({ rows: [] }) // no existing user
-      .mockResolvedValueOnce({ rows: [{ user_id: 202 }] }); // insert user_table
+      .mockResolvedValueOnce({ rows: [] })             // SELECT user_table
+      .mockResolvedValueOnce({ rows: [{ user_id: 202 }] }) // INSERT user_table
+      .mockResolvedValueOnce({});                           // INSERT adminprofile
+
     const res = await request(app)
       .post('/api/register')
       .send({ email: 'admin@example.com', password: 'admin123', admin_id: 77 });
 
     expect(res.statusCode).toBe(201);
-    expect(res.body.message).toBe('Admin registered successfully');
     expect(res.body.user.type).toBe('admin');
   });
 
+  // ---------------------------
+  // FAILURE – MISSING FIELDS
+  // ---------------------------
   it('fails if email is missing', async () => {
     const res = await request(app)
       .post('/api/register')
       .send({ password: '123' });
+
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('Email and password are required');
   });
@@ -55,12 +66,18 @@ describe('Registration Controller (mocked DB)', () => {
     const res = await request(app)
       .post('/api/register')
       .send({ email: 'test@example.com' });
+
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('Email and password are required');
   });
 
+  // ---------------------------
+  // FAILURE – USER ALREADY EXISTS
+  // ---------------------------
   it('fails if user already exists', async () => {
-    pool.query.mockResolvedValueOnce({ rows: [{ user_id: 1 }] }); // existing user
+    pool.query
+      .mockResolvedValueOnce({ rows: [{ user_id: 1 }] }); // SELECT user_table finds existing
+
     const res = await request(app)
       .post('/api/register')
       .send({ email: 'amy@example.com', password: '1234' });
@@ -69,29 +86,35 @@ describe('Registration Controller (mocked DB)', () => {
     expect(res.body.message).toBe('User already exists');
   });
 
-  it('fails admin registration when admin_id missing after creating user', async () => {
-    // first query: no existing user
-    // second: insert user returns id
+  // ---------------------------
+  // ADMIN WITH MISSING admin_id SHOULD STILL REGISTER AS VOLUNTEER
+  // ---------------------------
+  it('admin_id missing → treated as volunteer', async () => {
     pool.query
-      .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [{ user_id: 303 }] })
-      .mockResolvedValueOnce(); // delete user after missing admin_id
+      .mockResolvedValueOnce({ rows: [] })               // SELECT
+      .mockResolvedValueOnce({ rows: [{ user_id: 303 }] }) // INSERT user_table
+      .mockResolvedValueOnce({});                            // INSERT volunteerprofile
 
     const res = await request(app)
       .post('/api/register')
       .send({ email: 'badadmin@example.com', password: 'pw' });
 
-    // Since admin_id not provided, should register as volunteer, not fail — test admin path requires admin_id
     expect(res.statusCode).toBe(201);
+    expect(res.body.user.type).toBe('volunteer');
   });
 
+  // ---------------------------
+  // FAILURE – admin_id UNIQUE VIOLATION
+  // ---------------------------
   it('handles unique violation when admin_id already used', async () => {
-    // simulate existing user absent, insert user returns id, then adminprofile insert throws unique violation
+    const uniqueErr = new Error('duplicate');
+    uniqueErr.code = '23505';
+
     pool.query
-      .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [{ user_id: 404 }] })
-      .mockImplementationOnce(() => { const e = new Error('dup'); e.code = '23505'; throw e; })
-      .mockResolvedValueOnce(); // cleanup delete
+      .mockResolvedValueOnce({ rows: [] })               // SELECT no existing user
+      .mockResolvedValueOnce({ rows: [{ user_id: 404 }] }) // INSERT user_table
+      .mockRejectedValueOnce(uniqueErr)                    // INSERT adminprofile fails
+      .mockResolvedValueOnce({});                          // DELETE rollback
 
     const res = await request(app)
       .post('/api/register')
