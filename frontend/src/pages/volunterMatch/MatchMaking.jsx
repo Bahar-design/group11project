@@ -13,7 +13,6 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
   const [joinedMap, setJoinedMap] = useState({}); // event_id -> { joined, history_id }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
 
   useEffect(() => {
     // 1️⃣ Get current user (props or localStorage)
@@ -32,11 +31,9 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       return;
     }
 
-  // 2️⃣ Try to find volunteer identifier from multiple places
-  // Prefer authoritative user_id/id shapes that map to volunteer_history.volunteer_id
-  let volunteerId = currentUser.user_id || currentUser.id || null;
+    // 2️⃣ Try to find volunteer identifier from multiple places
+    let volunteerId = currentUser.user_id || currentUser.id || null;
 
-    // Fallback: check cached profile if your app stores it
     if (!volunteerId) {
       try {
         const cachedProfile = JSON.parse(
@@ -50,7 +47,6 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       }
     }
 
-    // Fallback: legacy volunteer_id property
     if (!volunteerId) {
       volunteerId = currentUser.volunteer_id || null;
     }
@@ -61,16 +57,12 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       return;
     }
 
-  // resolved volunteer id will be used below; no debug banner
-
     async function fetchData() {
       try {
         setLoading(true);
         setError("");
 
-        // 3️⃣ Fetch matched events (this was already working before)
         const matchesRes = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
-        //const matchesRes = await fetch(`${API_BASE}/api/matches/${currentUser.user_id}`);
 
         if (!matchesRes.ok) {
           const text = await matchesRes.text();
@@ -78,7 +70,6 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         }
         const matches = await matchesRes.json();
 
-        // 4️⃣ Fetch volunteer history for this same ID
         let history = [];
         try {
           const historyRes = await fetch(
@@ -86,13 +77,11 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           );
           if (historyRes.ok) {
             const hdata = await historyRes.json();
-            // API may return { rows, volunteer_full_name } or an array
             if (Array.isArray(hdata)) {
               history = hdata;
             } else if (hdata && Array.isArray(hdata.rows)) {
               history = hdata.rows;
             } else {
-              // unexpected shape; ignore
               history = [];
             }
           } else {
@@ -105,9 +94,6 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           console.warn("Error loading volunteer history:", e);
         }
 
-  // no debug UI; use history for joinedMap
-
-        // 5️⃣ Build joinedMap: event_id -> { joined: true, history_id }
         const map = {};
         for (const h of history) {
           map[h.event_id] = {
@@ -116,7 +102,6 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           };
         }
 
-        // 6️⃣ Sort matches by matchScore just in case
         matches.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
         setEvents(matches);
@@ -139,23 +124,28 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
       isLoggedIn={isLoggedIn}
       onLogout={onLogout}
     >
-      
       <div className="min-h-screen bg-slate-50">
         <Hero />
-        <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
-          <div>
-            <EventsPanel
-              events={events}
-              joinedMap={joinedMap}
-              loading={loading}
-              error={error}
-              user={user}
-            />
-            <ImpactPanel user={user} />
+
+        {/* 🔥 Stack EventsPanel and ImpactPanel vertically */}
+        <main className="mx-auto max-w-7xl px-4 py-8">
+          <div className="flex flex-col gap-8"> 
+            <div>
+              <EventsPanel
+                events={events}
+                joinedMap={joinedMap}
+                loading={loading}
+                error={error}
+                user={user}
+              />
+            </div>
+
+            <div>
+              <ImpactPanel user={user} />
+            </div>
           </div>
         </main>
       </div>
     </Layout>
   );
 }
-
