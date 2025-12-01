@@ -179,7 +179,14 @@ export default function EventCard({
           <div className="mt-10 flex flex-wrap items-center text-xs text-slate-500">
             <div className="flex items-center gap-1">
               <span>📍</span>
-              <span>{event.location}</span>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-blue-600 hover:text-blue-800"
+              >
+                {event.location}
+              </a>
             </div>
             <div className="flex items-center gap-1">
               <span>🕒</span>
