@@ -15,11 +15,9 @@ const AdminNotificationsTab = ({ user }) => {
   const [expandedId, setExpandedId] = useState(null);
   const inputRef = useRef(null);
 
-  //autocomplete
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  //Load notifications and inbox
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.email) return;
@@ -35,7 +33,6 @@ const AdminNotificationsTab = ({ user }) => {
           : [];
         setInbox(filteredInbox);
       } catch (err) {
-        console.error('Error loading notifications:', err);
         setNotifications([]);
         setInbox([]);
       } finally {
@@ -45,7 +42,6 @@ const AdminNotificationsTab = ({ user }) => {
     fetchData();
   }, [user]);
 
-  //Fetch email suggestions
   const handleInputChange = async (e) => {
     const value = e.target.value;
     setInputValue(value);
@@ -63,12 +59,9 @@ const AdminNotificationsTab = ({ user }) => {
       setSuggestions(
         data.filter(email => !toEmails.includes(email.toLowerCase()))
       );
-    } catch (err) {
-      console.error('Error fetching email suggestions:', err);
-    }
+    } catch {}
   };
 
-  //Add recipient manually or by suggestion
   const handleInputKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
       e.preventDefault();
@@ -93,7 +86,6 @@ const AdminNotificationsTab = ({ user }) => {
     }
   };
 
-  //Delete notification or inbox message
   const handleDeleteNotification = async (id, isInbox = false) => {
     try {
       await fetch(`${API_BASE}/api/notifications/${id}`, { method: 'DELETE' });
@@ -102,17 +94,13 @@ const AdminNotificationsTab = ({ user }) => {
       } else {
         setNotifications(prev => prev.filter(n => n.message_ID !== id));
       }
-    } catch (err) {
-      console.error('Error deleting message:', err);
-    }
+    } catch {}
   };
 
-  //Expand / collapse
   const handleToggleView = (id) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
-  //Send message
   const handleSend = async (e) => {
     e.preventDefault();
     setSending(true);
@@ -156,7 +144,6 @@ const AdminNotificationsTab = ({ user }) => {
 
   return (
     <div className="admin-notifications-tab">
-      {/* Send Message Section */}
       <section
         className="notifications-section"
         style={{
@@ -279,16 +266,13 @@ const AdminNotificationsTab = ({ user }) => {
         </div>
       </section>
 
-      {/* Notifications Section */}
       <section
         className="notifications-section"
         style={{
           backgroundColor: '#fff6f6ff',
           borderRadius: '10px',
           border: '2px solid #c78d8dff',
-          marginBottom: '1rem',
-          maxHeight: '250px',
-          overflowY: 'auto',
+          marginBottom: '1rem'
         }}
       >
         <div
@@ -310,6 +294,7 @@ const AdminNotificationsTab = ({ user }) => {
             Notifications
           </h3>
         </div>
+
         <div style={{ padding: '1rem' }}>
           {!Array.isArray(notifications) || notifications.length === 0 ? (
             <p>No notifications</p>
@@ -339,6 +324,7 @@ const AdminNotificationsTab = ({ user }) => {
                         <div style={{ fontSize: '0.9rem' }}>{n.message_text}</div>
                       )}
                     </div>
+
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button
                         onClick={() => handleToggleView(n.message_ID)}
@@ -352,6 +338,7 @@ const AdminNotificationsTab = ({ user }) => {
                       >
                         {isExpanded ? 'Hide' : 'View'}
                       </button>
+
                       <button
                         onClick={() => handleDeleteNotification(n.message_ID)}
                         style={{
@@ -366,6 +353,7 @@ const AdminNotificationsTab = ({ user }) => {
                       </button>
                     </div>
                   </div>
+
                   {isExpanded && (
                     <div style={{ marginTop: '0.5rem' }}>{n.message_text}</div>
                   )}
