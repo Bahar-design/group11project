@@ -44,6 +44,38 @@ export default function EventCard({
     disabled = true;
   }
 
+  // 🔥 Priority mapping based on urgency (smallint 1–4 from DB)
+  const severity =
+    event.urgency !== undefined && event.urgency !== null
+      ? Number(event.urgency)
+      : null;
+
+  let priorityLabel = "";
+  let priorityClasses = "";
+
+  if (severity !== null && !Number.isNaN(severity)) {
+    switch (severity) {
+      case 1:
+        priorityLabel = "LOW";
+        priorityClasses = "bg-green-100 text-green-700";   // 1 = low (green)
+        break;
+      case 2:
+        priorityLabel = "MEDIUM";
+        priorityClasses = "bg-yellow-100 text-yellow-700"; // 2 = medium (yellow)
+        break;
+      case 3:
+        priorityLabel = "HIGH";
+        priorityClasses = "bg-red-100 text-red-700";       // 3 = high (red)
+        break;
+      case 4:
+        priorityLabel = "CRITICAL";
+        priorityClasses = "bg-purple-200 text-red-800";       // 4 = critical (dark red)
+        break;
+      default:
+        priorityLabel = "";
+    }
+  }
+
   async function handleJoinClick() {
     setError("");
 
@@ -159,15 +191,12 @@ export default function EventCard({
             </div>
           </div>
         </div>
-        {event.priority && (
+
+        {priorityLabel && (
           <span
-            className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
-              event.priority === "HIGH"
-                ? "bg-rose-100 text-rose-700"
-                : "bg-amber-100 text-amber-700"
-            }`}
+            className={`rounded-full px-2 py-1 text-[10px] font-semibold ${priorityClasses}`}
           >
-            {event.priority} PRIORITY
+            {priorityLabel} PRIORITY
           </span>
         )}
       </div>
