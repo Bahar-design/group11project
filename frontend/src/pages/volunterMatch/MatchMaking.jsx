@@ -14,6 +14,9 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // 🔹 NEW: how to sort the matched events
+  const [sortMode, setSortMode] = useState("percentage"); // "percentage" | "priority"
+
   useEffect(() => {
     // 1️⃣ Get current user (props or localStorage)
     let currentUser = user;
@@ -62,14 +65,35 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
         setLoading(true);
         setError("");
 
+        // 1️⃣ Get matched events for this volunteer
         const matchesRes = await fetch(`${API_BASE}/api/matches/${volunteerId}`);
 
         if (!matchesRes.ok) {
           const text = await matchesRes.text();
           throw new Error(`Failed to load matches: ${matchesRes.status} ${text}`);
         }
-        const matches = await matchesRes.json();
 
+        const rawMatches = await matchesRes.json();
+
+        // 2️⃣ Filter out events that are in the past (by DATE)
+        // Example rule: if event date is 2025-11-28 and today is 2025-12-01 → hide it.
+        // If same day or future → show it.
+        const now = new Date();
+        const todayStr = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+        const upcomingMatches = Array.isArray(rawMatches)
+          ? rawMatches.filter((ev) => {
+              if (!ev.date) return true; // if backend didn't send a date, don't hide it
+
+              const eventDate = new Date(ev.date);
+              if (Number.isNaN(eventDate.getTime())) return true;
+
+              const eventStr = eventDate.toISOString().slice(0, 10);
+              return eventStr >= todayStr; // keep today and future
+            })
+          : [];
+
+        // 3️⃣ Load volunteer history so we can mark joined/unjoin
         let history = [];
         try {
           const historyRes = await fetch(
@@ -102,9 +126,11 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           };
         }
 
-        matches.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+        // ❌ remove this old line if you still have it:
+        // matches.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
-        setEvents(matches);
+        // 4️⃣ Save filtered matches + joined info
+        setEvents(upcomingMatches);
         setJoinedMap(map);
       } catch (err) {
         console.error("Failed to load matched events:", err);
@@ -116,6 +142,27 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
 
     fetchData();
   }, [user]);
+
+    // 🔹 Sort events based on current filter mode
+    const sortedEvents = (() => {
+      const arr = [...events];
+  
+      if (sortMode === "priority") {
+        // Sort by urgency: 4 (Critical) → 1 (Low)
+        arr.sort(
+          (a, b) =>
+            (Number(b.urgency) || 0) - (Number(a.urgency) || 0)
+        );
+      } else {
+        // Default: sort by match percentage, high → low
+        arr.sort(
+          (a, b) =>
+            (Number(b.matchScore) || 0) - (Number(a.matchScore) || 0)
+        );
+      }
+  
+      return arr;
+    })();
 
   return (
     <Layout
@@ -132,11 +179,13 @@ export default function MatchMaking({ isLoggedIn, user, onLogout }) {
           <div className="flex flex-col gap-8"> 
             <div>
               <EventsPanel
-                events={events}
+                events={sortedEvents}
                 joinedMap={joinedMap}
                 loading={loading}
                 error={error}
                 user={user}
+                sortMode={sortMode}
+                setSortMode={setSortMode}
               />
             </div>
 
