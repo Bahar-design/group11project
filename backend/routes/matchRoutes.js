@@ -12,6 +12,12 @@ const {
 
 // GET /api/matches/:userId
 // :userId is the USERS table id, NOT volunteer_id
+// This route:
+// 1. Finds the volunteerprofile row for this user_id
+// 2. Loads their skills
+// 3. Loads all events + required skills
+// 4. Computes a matchScore for each event
+// 5. Returns events sorted best → worst match
 router.get("/:userId", async (req, res) => {
   const userId = req.params.userId;
 
@@ -30,17 +36,20 @@ router.get("/:userId", async (req, res) => {
     );
 
     if (vrows.length === 0) {
-      return res.status(404).json({ error: "Volunteer profile not found for this user" });
+      return res
+        .status(404)
+        .json({ error: "Volunteer profile not found for this user" });
     }
 
     const volunteer = vrows[0];
-    const volunteerId = volunteer.volunteer_id; // <-- this is what we use for skills, etc.
+    const volunteerId = volunteer.volunteer_id; // <-- used for skills, etc.
 
     // 2. Normalize availability -> preferredDates[]
+    // availability is stored as DATE in the DB (YYYY-MM-DD)
     let preferredDates = [];
 
     if (typeof volunteer.availability === "string") {
-      // "2025-12-03, 2025-12-04"
+      // e.g. "2025-12-03" or "2025-12-03, 2025-12-04"
       preferredDates = volunteer.availability
         .split(",")
         .map((s) => s.trim())
@@ -69,11 +78,19 @@ router.get("/:userId", async (req, res) => {
     // Build user object for match functions
     const user = {
       preferredLocations: volunteer.city ? [volunteer.city] : [],
-      preferredDates,
+      preferredDates, // array of YYYY-MM-DD strings
       skills: volunteerSkills,
     };
 
     // 4. Get all events with their date + location + skill names (via skill_id integer[])
+    // eventdetails schema (relevant columns):
+    // - event_id        int (PK)
+    // - event_name      varchar(100)
+    // - location        text
+    // - urgency         smallint (1=Low,2=Medium,3=High,4=Critical)
+    // - event_date      date
+    // - volunteers      int
+    // - skill_id        int[]  (skills needed for the event)
     const { rows: eventRows } = await pool.query(`
       SELECT 
         e.event_id,
@@ -106,13 +123,14 @@ router.get("/:userId", async (req, res) => {
         id: ev.event_id,
         title: ev.event_name,
         location: ev.location,
-        date: ev.event_date,
+        date: ev.event_date, // Date from PG → serialized by Express
         skillsNeeded: skillNames,
 
+        // extra fields your frontend may use
         volunteers: ev.volunteers || 0,
         skills: skillNames,
-        priority: "LOW",
-        urgency: ev.urgency,
+        priority: "LOW", // if you ever want to map urgency → label, you can here
+        urgency: ev.urgency, // 1–4 (1=Low, 4=Critical)
       };
 
       const locScore = matchByLocation(user, event);
@@ -123,6 +141,7 @@ router.get("/:userId", async (req, res) => {
         locScore,
         skillScore,
         dateScore
+        // you *could* later pass urgency into this if you want urgency to affect scoring
       );
 
       return { ...event, matchScore };
