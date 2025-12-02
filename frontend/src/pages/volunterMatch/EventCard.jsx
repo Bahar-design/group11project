@@ -221,7 +221,7 @@ export default function EventCard({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <Chip>{event.matchScore}% Perfect Match</Chip>
+        <Chip>{event.matchScore}% Match</Chip>
 
         <button
           onClick={handleJoinClick}
